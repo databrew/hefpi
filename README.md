@@ -1,15 +1,19 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-hefpi
-=====
+
+# hepfi <a href='https://github.com/databrew/hepfi'><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental) <!-- badges: end -->
 
-`hepfi` is a web application for the visual exploration of the World Bank's Health Equity and Financial Protection Indicators. It is currently under active development.
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+<!-- badges: end -->
 
-Installation
-------------
+`hepfi` is a web application for the visual exploration of the World
+Bank’s Health Equity and Financial Protection Indicators. It is
+currently under active development.
+
+## Installation
 
 You can install hefpi from github by running the following:
 
