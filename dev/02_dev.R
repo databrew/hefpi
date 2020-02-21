@@ -16,7 +16,6 @@ usethis::use_package("ggimage")
 usethis::use_package("hexSticker") 
 usethis::use_package("extrafont") 
 
-
 ## 2.3 Add tests
 usethis::use_test( "app" )
 
@@ -34,7 +33,7 @@ usethis::use_vignette("hefpi")
 devtools::build_vignettes()
 
 ## 3.2 Code coverage
-usethis::use_github()
+# usethis::use_github()
 # usethis::use_travis()
 # usethis::use_appveyor()
 
