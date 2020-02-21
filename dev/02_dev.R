@@ -12,6 +12,9 @@ usethis::use_package("RColorBrewer")
 usethis::use_package("sp") 
 usethis::use_package("shinyjs") 
 usethis::use_package("shinydashboard") 
+usethis::use_package("ggimage") 
+usethis::use_package("hexSticker") 
+usethis::use_package("extrafont") 
 
 
 ## 2.3 Add tests
