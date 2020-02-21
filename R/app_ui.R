@@ -1,13 +1,12 @@
 #' @import shiny
 app_ui <- function() {
   tagList(
-    # Leave this function for adding external resources
-    golem_add_external_resources(
+    # golem_add_external_resources(
       # tags$script(src="www/script.js"),
       # tags$script(src="www/handlers.js"),
-      # tags$link(rel="stylesheet", type="text/css", href="www/custom.css")
+      tags$link(rel="stylesheet", type="text/css", href="www/custom.css"),
       
-    ),
+    # ),
     # List the first level UI elements here 
     fluidPage(
       h1("hefpi")
