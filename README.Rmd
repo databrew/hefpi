@@ -64,4 +64,11 @@ You can install hefpi from github by running the following:
 devtools::install_github('databrew/hepfi')
 ```
 
+## Reproducing this package
+
+In order to build this package and run the application correctly, one should:
+
+1. Clone this repository: `git clone https://github.com/databrew/hefpi`.  
+2. Populate the `data-raw` files with the following two files (supplied directly from the WB): (a) `hefpi_full_database.dta` and (b) `Indicator_description.xlsx`. 
+3. Run `Rscript dev/run_dev.R`
 
