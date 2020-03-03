@@ -27,6 +27,21 @@ app_ui <- function() {
     tabItems(
       tabItem(
         tabName="main",
+        navbarPage('',
+                   navbarMenu("Population mean",
+                              tabPanel("Nost recent value"),
+                              tabPanel("Trends")),
+                   tabPanel('Quintile trends'),
+                   tabPanel('Quintile dotplot for countries'),
+                   tabPanel('Quintile dotplot for indicators'),
+                   navbarMenu("Concentration index",
+                              tabPanel("Nost recent value"),
+                              tabPanel("Trends")),
+                   navbarMenu("Data availability",
+                              tabPanel("Per indicator"),
+                              tabPanel("Per country"))
+                   
+                   )
       ),
       tabItem(
         tabName = 'about',
