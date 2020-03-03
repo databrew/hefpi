@@ -21,9 +21,10 @@ app_ui <- function() {
   
   # BODY
   body <- dashboardBody(
-    tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
-    ),
+    golem_add_external_resources(),
+    # tags$head(
+    #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    # ),
     tabItems(
       tabItem(
         tabName="main",
@@ -85,11 +86,10 @@ golem_add_external_resources <- function(){
   
   tags$head(
     golem::activate_js(),
-    golem::favicon()#,
+    golem::favicon(),
     # Add here all the external resources
     # If you have a custom.css in the inst/app/www
-    # Or for example, you can add shinyalert::useShinyalert() here
-    #tags$link(rel="stylesheet", type="text/css", href="www/custom.css")
+    tags$link(rel="stylesheet", type="text/css", href="www/custom.css")
     # tags$link(rel="stylesheet", type="text/css", href="www/custom.css")
   )
 }
