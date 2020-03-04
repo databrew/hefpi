@@ -3,7 +3,7 @@
 app_ui <- function() {
   
   # HEADER
-  header <- dashboardHeader(title = tags$a(tags$img(src='www/wbg-favicon.png',height='32', alt = 'WBG')))
+  header <- dashboardHeader(title = tags$a(tags$img(src='www/imf_logo.png', alt = 'WBG')))
   
   # SIDEBAR
   sidebar <- dashboardSidebar(
