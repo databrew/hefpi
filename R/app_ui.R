@@ -3,19 +3,19 @@
 app_ui <- function() {
   
   # HEADER
-  header <- dashboardHeader(title = tags$a(tags$img(src='www/imf_logo.png', alt = 'WBG')))
+  header <- dashboardHeader(title = tags$a(tags$img(src='www/wb_logo.png', alt = 'WBG')))
   
   # SIDEBAR
   sidebar <- dashboardSidebar(
     sidebarMenu(
       menuItem(
         text="Main",
-        tabName="main",
-        icon=icon("archway")),
+        tabName="main"
+        ),
       menuItem(
         text = 'About',
-        tabName = 'about',
-        icon = icon("cog", lib = "glyphicon"))
+        tabName = 'about'
+        )
     )
   )
   
@@ -40,12 +40,12 @@ app_ui <- function() {
                                      h3('Sort of big heading (h3)'),
                                      h4('Not so big heading (h4)'),
                                      h5('Small heading (h5)'),
-                                     h6('Tiny heading (h6)'))
+                                     h6('Heading w/ background (h6)'))
                             ),
                             fluidRow(
                               column(4,
-                                     h3('A bunch of inputs',
-                                        selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
+                                     h4('A bunch of inputs'),
+                                      p(selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
                                         radioButtons('xyz', 'What do you like?', choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
                                         dateRangeInput('aslk', 'Date range', start = Sys.Date() - 20, end = Sys.Date() - 5),
                                         actionButton('action', 'This is a button', icon = icon('download')),
@@ -53,7 +53,8 @@ app_ui <- function() {
                                         textInput('qwer', 'This is some text input'))),
                               column(4,
                                      h4('Here is some regular text'),
-                                     p('This is normal (ie, p) text'),
+                                     p('This is normal (ie, p) text, This is normal (ie, p) text, This is normal (ie, p) text,
+                                       This is normal (ie, p) text, This is normal (ie, p) text, This is normal (ie, p) text'),
                                      helpText('This is "help text"')),
                               shinydashboard::box(title = 'This is another box',
                                                   width = 4,
