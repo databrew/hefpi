@@ -22,15 +22,50 @@ app_ui <- function() {
   # BODY
   body <- dashboardBody(
     golem_add_external_resources(),
-    # tags$head(
-    #   tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
-    # ),
     tabItems(
       tabItem(
         tabName="main",
-        navbarPage('',
+        navbarPage(title = '',
+                   tabPanel(title = "Xing's test page",
+                            fluidRow(
+                              shinydashboard::box(title = 'This is another box',
+                                                  width = 6,
+                                                  status = 'warning',
+                                                  collapsible = TRUE,
+                                                  footer = 'This is a footer',
+                                                  plotOutput('plot1')),
+                              column(6,
+                                     h1('Big heading (h1)'),
+                                     h2('Less big heading (h2)'),
+                                     h3('Sort of big heading (h3)'),
+                                     h4('Not so big heading (h4)'),
+                                     h5('Small heading (h5)'),
+                                     h6('Tiny heading (h6)'))
+                            ),
+                            fluidRow(
+                              column(4,
+                                     h3('A bunch of inputs',
+                                        selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
+                                        radioButtons('xyz', 'What do you like?', choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
+                                        dateRangeInput('aslk', 'Date range', start = Sys.Date() - 20, end = Sys.Date() - 5),
+                                        actionButton('action', 'This is a button', icon = icon('download')),
+                                        sliderInput('lakjaasa', 'This is a slider', min = 0, max = 100, value = 25),
+                                        textInput('qwer', 'This is some text input'))),
+                              column(4,
+                                     h4('Here is some regular text'),
+                                     p('This is normal (ie, p) text'),
+                                     helpText('This is "help text"')),
+                              shinydashboard::box(title = 'This is another box',
+                                                  width = 4,
+                                                  status = 'info',
+                                                  collapsible = TRUE,
+                                                  footer = 'This is a footer',
+                                                  leaflet::leafletOutput('l1')
+                            )
+                            )
+                   ),
                    navbarMenu("Population mean",
-                              tabPanel("Nost recent value"),
+                              tabPanel("Most recent value"),
                               tabPanel("Trends")),
                    tabPanel('Quintile trends'),
                    tabPanel('Quintile dotplot for countries'),
@@ -42,7 +77,7 @@ app_ui <- function() {
                               tabPanel("Per indicator"),
                               tabPanel("Per country"))
                    
-                   )
+        )
       ),
       tabItem(
         tabName = 'about',
