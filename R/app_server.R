@@ -1,7 +1,8 @@
 #' @import shiny
 app_server <- function(input, output,session) {
   # List the first level callModules here
-  
+  callModule(mod_leaflet_server, 'leaf1')
+
   output$plot1 <- renderPlot({
     barplot(1:10, col = grey(seq(0, 1, length = 10)),
             main = 'This is a plot',

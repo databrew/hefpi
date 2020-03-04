@@ -2,8 +2,11 @@
 
 export(mod_example_module_server)
 export(mod_example_module_ui)
+export(mod_leaflet_server)
+export(mod_leaflet_ui)
 export(run_app)
 import(dplyr)
+import(leaflet)
 import(shiny)
 import(shinydashboard)
 importFrom(config,get)
