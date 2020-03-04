@@ -26,7 +26,23 @@ app_ui <- function() {
       tabItem(
         tabName="main",
         navbarPage(title = '',
-                   tabPanel(title = "Xing's test page",
+                   navbarMenu("Population mean",
+                              tabPanel("Most recent value",
+                                       fluidPage(column(4),
+                                                 column(4,
+                                                        mod_leaflet_ui("leaf1")),
+                                                 column(4))),
+                              tabPanel("Trends")),
+                   tabPanel('Quintile trends'),
+                   tabPanel('Quintile dotplot for countries'),
+                   tabPanel('Quintile dotplot for indicators'),
+                   navbarMenu("Concentration index",
+                              tabPanel("Most recent value"),
+                              tabPanel("Trends")),
+                   navbarMenu("Data availability",
+                              tabPanel("Per indicator"),
+                              tabPanel("Per country")),
+                   tabPanel(title = "CSS test page",
                             fluidRow(
                               shinydashboard::box(title = 'This is another box',
                                                   width = 6,
@@ -45,12 +61,12 @@ app_ui <- function() {
                             fluidRow(
                               column(4,
                                      h4('A bunch of inputs'),
-                                      p(selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
-                                        radioButtons('xyz', 'What do you like?', choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
-                                        dateRangeInput('aslk', 'Date range', start = Sys.Date() - 20, end = Sys.Date() - 5),
-                                        actionButton('action', 'This is a button', icon = icon('download')),
-                                        sliderInput('lakjaasa', 'This is a slider', min = 0, max = 100, value = 25),
-                                        textInput('qwer', 'This is some text input'))),
+                                     p(selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
+                                       radioButtons('xyz', 'What do you like?', choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
+                                       dateRangeInput('aslk', 'Date range', start = Sys.Date() - 20, end = Sys.Date() - 5),
+                                       actionButton('action', 'This is a button', icon = icon('download')),
+                                       sliderInput('lakjaasa', 'This is a slider', min = 0, max = 100, value = 25),
+                                       textInput('qwer', 'This is some text input'))),
                               column(4,
                                      h4('Here is some regular text'),
                                      p('This is normal (ie, p) text, This is normal (ie, p) text, This is normal (ie, p) text,
@@ -62,21 +78,9 @@ app_ui <- function() {
                                                   collapsible = TRUE,
                                                   footer = 'This is a footer',
                                                   leaflet::leafletOutput('l1')
+                              )
                             )
-                            )
-                   ),
-                   navbarMenu("Population mean",
-                              tabPanel("Most recent value"),
-                              tabPanel("Trends")),
-                   tabPanel('Quintile trends'),
-                   tabPanel('Quintile dotplot for countries'),
-                   tabPanel('Quintile dotplot for indicators'),
-                   navbarMenu("Concentration index",
-                              tabPanel("Nost recent value"),
-                              tabPanel("Trends")),
-                   navbarMenu("Data availability",
-                              tabPanel("Per indicator"),
-                              tabPanel("Per country"))
+                   )
                    
         )
       ),
