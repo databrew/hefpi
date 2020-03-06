@@ -4,7 +4,7 @@
 
 library(sp)
 library(rgdal)
-world <- readOGR('from_other/world/', 'TM_WORLD_BORDERS-0.3')
+world <- readOGR('from_other/world_small/', 'TM_WORLD_BORDERS_SIMPL-0.3')
 usethis::use_data(world, overwrite = T)
 
 
