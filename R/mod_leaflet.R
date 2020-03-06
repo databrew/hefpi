@@ -58,7 +58,7 @@ mod_leaflet_server <- function(input, output, session,
 }
     
 ## To be copied in the UI
-mod_leaflet_ui("leaf1")
+# mod_leaflet_ui("leaf1")
 
 ## To be copied in the server
 # callModule(mod_leaflet_server, 'leaf1')
