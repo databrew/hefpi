@@ -53,9 +53,18 @@ mod_social_ui <- function(id){
 }
 
 # Module Server
-#' @rdname mod_social_server
-#' @export
+#' @title mod_social_server
+#' @description Mod social server
+#'
+#' @param input internal
+#' @param output internal
+#' @param session internal
+#'
+#' @rdname mod_social
+#'
 #' @keywords internal
+#' @export 
+#' @importFrom shiny NS tagList 
 
 mod_social_server <- function(input, output, session){
   ns <- session$ns
