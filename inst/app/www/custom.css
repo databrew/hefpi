@@ -1484,13 +1484,9 @@ a:active,a:focus,a:hover {
 
 
 /* ########## selectInput ######### */
-.select {
-    padding: 15px;
-    font-size: 14pt;
-    border-radius: 0;
-    outline: none;
-    border: 2px solid #3A506B;
-    color: #3A506B;
+label {
+    color: grey;
+    font-weight: 200;
 }
 
 
