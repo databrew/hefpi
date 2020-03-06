@@ -183,6 +183,7 @@ cd /home/rstudio/ShinyApps/shiny
 R
 sudo su - -c "R -e \"install.packages('readxl')\""
 sudo su - -c "R -e \"devtools::install_github('rstudio/DT')\""
+sudo su - -c "R -e \"devtools::install_github('aoles/shinyURL')\""
 sudo su - -c "R -e \"install.packages('shinydashboard')\""
 sudo su - -c "R -e \"install.packages('shiny')\""
 sudo su - -c "R -e \"install.packages('RPostgreSQL')\""
