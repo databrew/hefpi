@@ -7,6 +7,8 @@ indicators <- readxl::read_excel('from_wb/Indicator_description.xlsx')
 names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
 usethis::use_data(indicators, overwrite = T)
 
+
+
 # Read in the full database
 df <- haven::read_dta('from_wb/hefpi_full_database.dta')
 df$bin <- 
@@ -20,6 +22,25 @@ df <- df %>%
               dplyr::select(variable_name:unit_of_measure),
             by = c('indic' = 'variable_name'))
 usethis::use_data(df, overwrite = T)
+
+# Get indicators in a form usable for the selectInput function
+indicators_list <- 
+  df %>%
+  dplyr::distinct(bin, indic) %>%
+  filter(!is.na(bin)) %>%
+  arrange(bin, indic) %>%
+  left_join(indicators %>% dplyr::select(variable_name, indicator_name, indicator_description, unit_of_measure),
+            by = c('indic' = 'variable_name'))
+indicator_groups <- unique(indicators_list$bin)
+out_list <- list()
+for(i in 1:length(indicator_groups)){
+  this_group <- indicator_groups[i]
+  these_elements <- indicators_list %>% filter(bin == this_group)
+  these_elements <- as.list(these_elements$indicator_name)
+  out_list[[this_group]] <- these_elements
+}  
+indicators_list <- out_list
+usethis::use_data(indicators_list, overwrite = T)
 
 
 # # Read in the raw data from the website
