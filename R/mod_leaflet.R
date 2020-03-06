@@ -15,19 +15,17 @@
 #' @import leaflet
 #' @importFrom shiny NS tagList 
 mod_leaflet_ui <- function(id){
-  
   ns <- NS(id)
   # tagList(
 
-  
   fluidPage(
     column(8,
            leafletOutput(
              ns('leafy')
            )),
     column(4,
-           selectInput('indicator', 'Indicator',
-                       choices = indicators_list),
+           # selectInput('indicator', 'Indicator',
+           #             choices = indicators_list),
            sliderInput('date_range',
                           'Date range',
                           min = 1982,
