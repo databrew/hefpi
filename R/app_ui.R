@@ -2,6 +2,9 @@
 #' @import shinydashboard
 app_ui <- function() {
   
+
+  
+  
   # HEADER
   header <- dashboardHeader(title = tags$a(tags$img(src='www/wb_logo.png', alt = 'WBG')))
   
@@ -26,23 +29,27 @@ app_ui <- function() {
       tabItem(
         tabName="main",
         navbarPage(title = '',
-                   navbarMenu("Population mean",
-                              tabPanel("Most recent value",
-                                       fluidPage(column(4),
-                                                 column(4,
+                   navbarMenu("Most recent value",
+                              tabPanel("Population mean",
+                                       fluidPage(column(2), 
+                                                 column(5,
                                                         mod_leaflet_ui("leaf1")),
-                                                 column(4))),
-                              tabPanel("Trends")),
-                   tabPanel('Quintile trends'),
-                   tabPanel('Quintile dotplot for countries'),
-                   tabPanel('Quintile dotplot for indicators'),
-                   navbarMenu("Concentration index",
-                              tabPanel("Most recent value"),
-                              tabPanel("Trends")),
-                   navbarMenu("Data availability",
-                              tabPanel("Per indicator"),
-                              tabPanel("Per country")),
+                                                 column(5))),
+                              tabPanel("CI")),
+                   navbarMenu('Trends',
+                              tabPanel('Population mean',
+                                       'Quintiles',
+                                       'CI')),
+                   navbarMenu('Quintile dotplots',
+                              tabPanel('Countries',
+                                       'Indicators')),
+                   navbarMenu('Data availability',
+                              tabPanel('By indicator',
+                                       'By country')),
                    tabPanel(title = "CSS test page",
+                            fluidRow(column(12,
+                                            # URL capture
+                                            shinyURL.ui())),
                             fluidRow(
                               shinydashboard::box(title = 'This is another box',
                                                   width = 6,
@@ -51,6 +58,8 @@ app_ui <- function() {
                                                   footer = 'This is a footer',
                                                   plotOutput('plot1')),
                               column(6,
+                                     textInput('text',
+                                               'Test'),
                                      h1('Big heading (h1)'),
                                      h2('Less big heading (h2)'),
                                      h3('Sort of big heading (h3)'),
