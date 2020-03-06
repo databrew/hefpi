@@ -1486,7 +1486,7 @@ a:active,a:focus,a:hover {
 /* ########## selectInput ######### */
 label {
     color: grey;
-    font-weight: 200;
+    font-weight: 300;
 }
 
 
@@ -1826,13 +1826,6 @@ table.text-center,table.text-center td,table.text-center th {
     text-align: left}
 .table.align td {
     text-align: right}
-
-/*label*/
-.label-default {
-    background-color: #d2d6de;
-    color: #444;
-    font-weight: 100;
-}
 
 .users-list>li {
     width: 25%;

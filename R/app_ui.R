@@ -64,7 +64,7 @@ app_ui <- function() {
                             fluidRow(
                               column(4,
                                      h4('A bunch of inputs'),
-                                       # tags$select('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
+                                       selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
                                        radioButtons('xyz', 'What do you like?', choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
                                        dateRangeInput('aslk', 'Date range', start = Sys.Date() - 20, end = Sys.Date() - 5),
                                        actionButton('action', 'This is a button', icon = icon('download')),
