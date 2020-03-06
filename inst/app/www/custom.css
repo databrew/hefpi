@@ -1484,8 +1484,13 @@ a:active,a:focus,a:hover {
 
 
 /* ########## selectInput ######### */
-.selectInput {
+.select {
+    padding: 15px;
     font-size: 14pt;
+    border-radius: 0;
+    outline: none;
+    border: 2px solid #3A506B;
+    color: #3A506B;
 }
 
 
@@ -1825,9 +1830,14 @@ table.text-center,table.text-center td,table.text-center th {
     text-align: left}
 .table.align td {
     text-align: right}
+
+/*label*/
 .label-default {
     background-color: #d2d6de;
-    color: #444}
+    color: #444;
+    font-weight: 100;
+}
+
 .users-list>li {
     width: 25%;
     float: left;
