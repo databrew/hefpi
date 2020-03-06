@@ -26,8 +26,8 @@ mod_leaflet_ui <- function(id){
              ns('leafy')
            )),
     column(4,
-           selectizeInput('indicator', 'Indicator',
-                       choices = hefpi::indicators_list),
+           selectInput('indicator', 'Indicator',
+                       choices = indicators_list),
            sliderInput('date_range',
                           'Date range',
                           min = 1982,
