@@ -1,7 +1,7 @@
 
-# Admin guide for setting up the Bohemia directory shiny application
+# Admin guide for setting up the HEFPI shiny application
 
-The below guide is a walk-through of setting up the Bohemia directory shiny web application. Note, this guide was influenced by some of the steps [here](https://abndistro.com/post/2019/07/06/deploying-a-shiny-app-with-shiny-server-on-an-aws-ec2-instance/).
+The below guide is a walk-through of setting up the HEFPI shiny web application. For the sake of example and reproducibility, this guide assumes you are deploying to AWS EC2 - if you using a different cloud service, or if deploying on a local physical server, the process will be slightly different (but much will be the same).
 
 ## Buy a domain
 
