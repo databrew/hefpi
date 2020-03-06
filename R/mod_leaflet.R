@@ -17,27 +17,48 @@
 mod_leaflet_ui <- function(id){
   ns <- NS(id)
   # tagList(
-  leafletOutput(
-    ns('leafy')
+  fluidPage(
+    column(8,
+           leafletOutput(
+             ns('leafy')
+           )),
+    column(4,
+           selectInput('indicator', 'Indicator',
+                       choices = letters),
+           sliderInput('date_range',
+                          'Date range',
+                          min = 1982,
+                          max = 2017,
+                       value = c(1982, 2017),
+                       step = 1,
+                       sep = ''))
   )
+  
 }
     
 # Module Server
-    
 #' @rdname mod_leaflet
 #' @export
 #' @import leaflet
 #' @keywords internal
     
-mod_leaflet_server <- function(input, output, session){
+mod_leaflet_server <- function(input, output, session,
+                               plot_year = 2015){
+  
+  # Get the data to be plotted
+  pd <- hefpi::df %>%
+    filter(year == plot_year)
+  
+  
+  
   output$leafy <- renderLeaflet({
     leaflet() %>% addProviderTiles('Stamen.Toner')
   })
 }
     
 ## To be copied in the UI
-# mod_leaflet_ui("example_module_ui_1")
-    
+mod_leaflet_ui("leaf1")
+
 ## To be copied in the server
-# callModule(mod_example_module_server, "example_module_ui_1")
- 
+# callModule(mod_leaflet_server, 'leaf1')
+

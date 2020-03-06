@@ -23,8 +23,8 @@ usethis::use_data(df, overwrite = T)
 
 
 # # Read in the raw data from the website
-# library(tidyverse)
-# country <- read_csv('from_website/HEFPICountry.csv')
-# dat <- read_csv('from_website/HEFPIData.csv')
-# series <- read_csv('from_website/HEFPISeries.csv')
+library(tidyverse)
+country <- read_csv('from_website/HEFPICountry.csv')
+dat <- read_csv('from_website/HEFPIData.csv')
+series <- read_csv('from_website/HEFPISeries.csv')
 
