@@ -2,6 +2,12 @@
 
 # usethis::use_data("raw_data")
 
+library(sp)
+library(rgdal)
+world <- readOGR('from_other/world/', 'TM_WORLD_BORDERS-0.3')
+usethis::use_data(world, overwrite = T)
+
+
 # Read in the indicators hierarchy data from WB
 indicators <- readxl::read_excel('from_wb/Indicator_description.xlsx')
 names(indicators) <- tolower(gsub(' ', '_', names(indicators)))

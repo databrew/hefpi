@@ -2,9 +2,12 @@
 % Please edit documentation in R/mod_social.R
 \name{mod_social_ui}
 \alias{mod_social_ui}
+\alias{mod_social_server}
 \title{mod_social_ui and mod_social_server}
 \usage{
 mod_social_ui(id)
+
+mod_social_server(input, output, session)
 }
 \arguments{
 \item{id}{shiny id}
@@ -17,5 +20,7 @@ mod_social_ui(id)
 }
 \description{
 Make the social section
+
+Mod social server
 }
 \keyword{internal}
