@@ -47,9 +47,6 @@ app_ui <- function() {
                               tabPanel('By indicator',
                                        'By country')),
                    tabPanel(title = "CSS test page",
-                            fluidRow(column(12,
-                                            # URL capture
-                                            shinyURL.ui())),
                             fluidRow(
                               shinydashboard::box(title = 'This is another box',
                                                   width = 6,
@@ -91,7 +88,41 @@ app_ui <- function() {
                             )
                    )
                    
-        )
+        ),
+        # Social media share buttons
+        column(12, align = 'center',
+               shinydashboard::box(
+          width = 12, 
+          # title = "Social Buttons",
+          shinydashboardPlus::socialButton(
+            url = "http://databrew.cc",
+            type = "twitter"
+          ),
+          
+          shinydashboardPlus::socialButton(
+            url = "http://databrew.cc",
+            type = "linkedin"
+          ),
+          
+          shinydashboardPlus::socialButton(
+            url = "http://databrew.cc",
+            type = "facebook"
+          ),
+          
+          shinydashboardPlus::socialButton(
+            url = "http://github.com",
+            type = "github"
+          ),
+          
+          shinydashboardPlus::socialButton(
+            url = "http://databrew.cc",
+            type = "email"
+          )
+        ),
+        shinydashboard::box(width = 12,
+                            # URL capture
+                            shinyURL.ui(width = '20%',
+                                        label = NULL)))
       ),
       tabItem(
         tabName = 'about',
