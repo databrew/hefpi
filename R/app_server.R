@@ -1,5 +1,22 @@
 #' @import shiny
+#' @import shinyURL
 app_server <- function(input, output,session) {
+  
+  # Capture URL parameters
+  shinyURL.server()
+  
+  
+  # # Capture the URL parameters
+  # observe({
+  #   query <- parseQueryString(session$clientData$url_search)
+  #   if (!is.null(query[['text']])) {
+  #     updateTextInput(session, "text", value = query[['text']])
+  #   }
+  #   # if (!is.null(query[['age']])) {
+  #   #   updateNumericInput(session, "age", value = query[['age']])
+  #   # }
+  # })
+  
   # List the first level callModules here
   callModule(mod_leaflet_server, 'leaf1')
 
