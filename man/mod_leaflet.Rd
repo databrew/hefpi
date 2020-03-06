@@ -7,7 +7,7 @@
 \usage{
 mod_leaflet_ui(id)
 
-mod_leaflet_server(input, output, session)
+mod_leaflet_server(input, output, session, plot_year = 2015)
 }
 \arguments{
 \item{id}{shiny id}
