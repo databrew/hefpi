@@ -21,6 +21,26 @@ You can install hefpi from github by running the following:
 devtools::install_github('databrew/hefpi')
 ```
 
+## Development
+
+To work on developing this package, you’ll likely want to focus on the
+following files:
+
+  - `R/app_server.R`: The server-side code
+  - `R/app_ui.R`: The user interface
+  - `dev/run_dev.R`: The code you’ll use to run the app locally after
+    making changes
+
+## Deploy
+
+To deploy on a shiny server, simply place an `app.R` file in a folder as
+one normally would do, and populate that file with the following lines:
+
+``` r
+library(hefpi)
+run_app()
+```
+
 ## Reproducing this package
 
 In order to build this package and run the application correctly, one
