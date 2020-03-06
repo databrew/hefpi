@@ -5,6 +5,8 @@ app_server <- function(input, output,session) {
   # Capture URL parameters
   shinyURL.server()
   
+  ## Social
+  callModule(mod_social_server, "social_module_1")
   
   # # Capture the URL parameters
   # observe({

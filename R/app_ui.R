@@ -86,43 +86,11 @@ app_ui <- function() {
                                                   leaflet::leafletOutput('l1')
                               )
                             )
+                            
                    )
                    
         ),
-        # Social media share buttons
-        column(12, align = 'center',
-               shinydashboard::box(
-          width = 12, 
-          # title = "Social Buttons",
-          shinydashboardPlus::socialButton(
-            url = "http://databrew.cc",
-            type = "twitter"
-          ),
-          
-          shinydashboardPlus::socialButton(
-            url = "http://databrew.cc",
-            type = "linkedin"
-          ),
-          
-          shinydashboardPlus::socialButton(
-            url = "http://databrew.cc",
-            type = "facebook"
-          ),
-          
-          shinydashboardPlus::socialButton(
-            url = "http://github.com",
-            type = "github"
-          ),
-          
-          shinydashboardPlus::socialButton(
-            url = "http://databrew.cc",
-            type = "email"
-          )
-        ),
-        shinydashboard::box(width = 12,
-                            # URL capture
-                            shinyURL.ui(width = '20%',
-                                        label = NULL)))
+        mod_social_ui("social_module_1")
       ),
       tabItem(
         tabName = 'about',
