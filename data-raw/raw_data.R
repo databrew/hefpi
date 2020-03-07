@@ -42,7 +42,7 @@ out_list <- list()
 for(i in 1:length(indicator_groups)){
   this_group <- indicator_groups[i]
   these_elements <- indicators_list %>% filter(bin == this_group)
-  these_elements <- as.list(these_elements$indicator_name)
+  these_elements <- as.list(sort(unique(these_elements$indicator_name)))
   out_list[[this_group]] <- these_elements
 }  
 indicators_list <- out_list

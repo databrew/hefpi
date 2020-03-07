@@ -32,6 +32,10 @@ mod_social_ui <- function(id){
                type = "linkedin"
              ),
              
+             a(actionButton(inputId = "email", label = "", 
+                            icon = icon("envelope", lib = "font-awesome")),
+               href="mailto:?subject=https%3A%2F%2Fwww.bohemia.team/hefpi/&body=https%3A%2F%2Fwww.bohemia.team/hefpi/"),
+             
              shinydashboardPlus::socialButton(
                url = "http://www.facebook.com/sharer.php?u=https%3A%2F%2Fwww.bohemia.team/hefpi/",
                type = "facebook"
@@ -41,11 +45,8 @@ mod_social_ui <- function(id){
                url = "https://github.com/databrew/hefpi",
                type = "github"
              ),
-             a(actionButton(inputId = "email", label = "", 
-                            icon = icon("envelope", lib = "font-awesome")),
-               href="mailto:?subject=https%3A%2F%2Fwww.bohemia.team/hefpi/&body=https%3A%2F%2Fwww.bohemia.team/hefpi/")#,
-            #   shinyURL.ui(width = '20%',
-              #           label = NULL)
+              shinyURL.ui(width = '20%',
+                      label = 'Link for app in current state:')
            )
     )
   )
