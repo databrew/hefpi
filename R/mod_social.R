@@ -20,6 +20,7 @@ mod_social_ui <- function(id){
     column(12, align = 'center',
            shinydashboard::box(
              width = 12, 
+             status = 'success',
              # title = "Social Buttons",
              shinydashboardPlus::socialButton(
                url = "https://twitter.com/intent/tweet?text=The%20World%20Bank%20HEFPI%20app&url=https://bohemia.team/hefpi/",
@@ -42,13 +43,11 @@ mod_social_ui <- function(id){
              ),
              a(actionButton(inputId = "email", label = "", 
                             icon = icon("envelope", lib = "font-awesome")),
-               href="mailto:?subject=https%3A%2F%2Fwww.bohemia.team/hefpi/&body=https%3A%2F%2Fwww.bohemia.team/hefpi/")
-           ),
-           shinydashboard::box(width = 12,
-                               # URL capture
-                               shinyURL.ui(width = '20%',
-                                           label = NULL)))
-    
+               href="mailto:?subject=https%3A%2F%2Fwww.bohemia.team/hefpi/&body=https%3A%2F%2Fwww.bohemia.team/hefpi/")#,
+            #   shinyURL.ui(width = '20%',
+              #           label = NULL)
+           )
+    )
   )
 }
 
@@ -68,8 +67,6 @@ mod_social_ui <- function(id){
 
 mod_social_server <- function(input, output, session){
   ns <- session$ns
-  
-  
   # Right now, no functionality to detect the hostname, etc.
   # And pass the parameters appropriately to the UI
   # (rather than hard-coding them into the UI, as is currently written)
@@ -81,4 +78,3 @@ mod_social_server <- function(input, output, session){
 
 ## To be copied in the server
 # callModule(mod_social_server, "social_module_1")
-
