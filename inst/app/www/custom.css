@@ -1450,7 +1450,7 @@ label {
 }
 
 .selectize-control.single .selectize-dropdown { 
-    font-size: 10pt;
+    font-size: 9pt;
 }
 
 .option, .optgroup-header {
@@ -1466,7 +1466,7 @@ label {
 	.optgroup .optgroup-header {
 		border-top: 0 none;
         color: #fff;
-        font-size: 10pt;
+        font-size: 14pt;
         font-weight: 400;
         background-color: darkgrey;
 	}
