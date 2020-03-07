@@ -47,7 +47,7 @@ app_ui <- function() {
                             fluidRow(
                               shinydashboard::box(title = 'This is another box',
                                                   width = 6,
-                                                  status = 'warning',
+                                                  status = 'info',
                                                   collapsible = TRUE,
                                                   footer = 'This is a footer',
                                                   plotOutput('plot1')),
@@ -81,12 +81,7 @@ app_ui <- function() {
                                                   collapsible = TRUE,
                                                   footer = 'This is a footer',
                                                   leaflet::leafletOutput('l1')
-                              )
-                            )
-                            
-                   )
-                   
-        ),
+                              )))),
         mod_social_ui("social_module_1")
       ),
       tabItem(
@@ -118,7 +113,6 @@ app_ui <- function() {
       sidebar = sidebar,
       body = body, 
       skin="blue", title = 'databrew')
-    
   )
 }
 
