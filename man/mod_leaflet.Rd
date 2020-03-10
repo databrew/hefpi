@@ -7,14 +7,7 @@
 \usage{
 mod_leaflet_ui(id)
 
-mod_leaflet_server(
-  input,
-  output,
-  session,
-  plot_years = 1982:2015,
- 
-    indicator = "Proportion of population spending more than 10\% of household consumption or income on out-of-pocket health care expenditure (\%)"
-)
+mod_leaflet_server(input, output, session)
 }
 \arguments{
 \item{id}{shiny id}
@@ -24,8 +17,6 @@ mod_leaflet_server(
 \item{output}{internal}
 
 \item{session}{internal}
-
-\item{plot_years}{Years to plot}
 }
 \description{
 A shiny Module.
