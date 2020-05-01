@@ -55,3 +55,29 @@ country <- read_csv('from_website/HEFPICountry.csv')
 dat <- read_csv('from_website/HEFPIData.csv')
 series <- read_csv('from_website/HEFPISeries.csv')
 
+# recode columna names
+names(country) <- tolower(gsub(' ', '_', names(country)))
+names(dat) <- tolower(gsub(' ', '_', names(dat)))
+names(series) <- tolower(gsub(' ', '_', names(series)))
+
+# join country and dat to get region and country data together
+df_series <- inner_join(dat,country, by = c('country_name' = 'short_name'))
+
+
+
+usethis::use_data(country, overwrite = T)
+usethis::use_data(dat, overwrite = T)
+usethis::use_data(series, overwrite = T)
+usethis::use_data(df_series, overwrite = T)
+
+
+# create lists
+region_list <- unique(country$region)
+country_list <- unique(country$short_name)
+yn_list <- c('Yes', 'No')
+
+# save data
+usethis::use_data(region_list, overwrite = T)
+usethis::use_data(country_list, overwrite = T)
+usethis::use_data(yn_list, overwrite = T)
+
