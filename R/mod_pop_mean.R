@@ -44,6 +44,8 @@ mod_pop_mean_ui <- function(id){
 #' @import tidyverse
 #' @import RColorBrewer
 #' @import ggplot2
+#' @import ggthemes
+#' @import scales
 #' @import reshape2
 #' @import htmltools
 #' @keywords internal
@@ -73,6 +75,10 @@ mod_pop_mean_server <- function(input, output, session){
     })
     
     output$pop_mean <- renderPlot({
+      # indicator <-  "Change in poverty gap due to out-of-pocket health spending ($ 2011 PPP), $1.90 poverty line"
+      # region <- 'Latin America & Caribbean'
+      # country_names <- c('Argentina, Bolivia', 'Brazil', 'Colombia', 'Costa Rica', 'Dominican Republic', 'Ecuador', 'Haiti',
+      #                    'Honduras', 'Jamaica', 'Mexico')
         indicator <- input$indicator
         region <- input$region
         yn <- input$interpolate
@@ -97,7 +103,21 @@ mod_pop_mean_server <- function(input, output, session){
         pd <- reshape2::melt(as.data.frame(pd), id.vars = c('country_name', 'indicator_name'))
         pd$variable <- as.character(pd$variable)
         # save(pd, file = 'pd.rda')
-        p <- ggplot(pd, aes(variable, value, color = country_name)) + geom_point()
+        if(yn == 'Yes'){
+          p <- ggplot(pd, aes(variable, value, color = country_name)) + geom_point(size = 2, alpha = 0.8) +
+            geom_line(aes(group = country_name), size = 1.5, alpha = 0.8) +
+            labs(x = 'Year',
+                 y = 'Population mean') +
+            scale_color_gdocs(name = 'Country') +
+            theme_gdocs()
+        } else {
+          p <- ggplot(pd, aes(variable, value, color = country_name)) + geom_point(size = 2, alpha = 0.8) +
+            labs(x = 'Year',
+                 y = 'Population mean') +
+            scale_color_gdocs(name = 'Country') +
+            theme_gdocs()
+        }
+       
         
         p
     })
