@@ -18,7 +18,7 @@
 #' @importFrom shiny NS tagList 
 mod_pop_mean_ui <- function(id){
   ns <- NS(id)
-  # tagList(
+  tagList(
   
   fluidPage(
     column(8,
@@ -35,7 +35,7 @@ mod_pop_mean_ui <- function(id){
                        selected = region_list[[1]]),
            uiOutput(ns('country_ui')))
   )
-  
+  )
 }
 
 # Module Server
@@ -49,40 +49,7 @@ mod_pop_mean_ui <- function(id){
 #' @keywords internal
 
 mod_pop_mean_server <- function(input, output, session){
-  # selected_country <- reactiveVal(value = NULL)
-  
-  # Observe changes to inputs in order to generate changes to the map
-  # observeEvent({
-  #   input$interpolate
-  #   input$indicator
-  #   input$region
-  #   input$country
-  #   1
-  # }, {
-    # message('event observed')
-    # the_country <- input$country
-    # selected_country(the_country)
-    # Capture the interpolate input
-    # interpolate <- input$interpolate
-    # if(is.null(interpolate)){
-    #   interpolate <- 'Yes'
-    # }
-    # 
-    # # Capture the indicator input
-    # indicator <- input$indicator
-    # if(is.null(indicator)){
-    #   indicator <- 'Change in poverty gap due to out-of-pocket health spending ($ 2011 PPP), $1.90 poverty line'
-    # }
-    # 
-    # 
-    # # Capture the region input
-    # region <- input$region
-    # if(is.null(region)){
-    #   region <- 'Latin America & Caribbean'
-    # }
-    
-  # })
-    # uioutput for country based on region
+ 
     output$country_ui <- renderUI({
       indicator <- input$indicator
       region <- input$region
@@ -98,14 +65,13 @@ mod_pop_mean_server <- function(input, output, session){
         good_index <- which(rowSums(is.na(df[, start_index:end_index])) != ncol(df[, start_index:end_index]))
         df <- df[good_index,]
         countries <- unique(df$country_name)
-        selectInput(inputId = 'country', 
+        selectInput(session$ns("country"), 
                     label = 'Country', 
                     choices = countries,
                     multiple = TRUE, selected = countries)
       
     })
     
-  
     output$pop_mean <- renderPlot({
         indicator <- input$indicator
         region <- input$region
@@ -134,10 +100,7 @@ mod_pop_mean_server <- function(input, output, session){
         p <- ggplot(pd, aes(variable, value, color = country_name)) + geom_point()
         
         p
-      
     })
- 
-  
 }
 
 
