@@ -31,8 +31,8 @@ mod_pop_mean_ui <- function(id){
            selectInput(ns('interpolate'), 'Interpolate missing values',
                        choices = yn_list),
            selectInput(ns('region'), 'Region',
-                       choices = region_list,
-                       selected = region_list[[1]]),
+                       choices = as.character(region_list$region),
+                       selected = as.character(region_list$region[1])),
            uiOutput(ns('country_ui')))
   )
   )
@@ -53,20 +53,32 @@ mod_pop_mean_ui <- function(id){
 mod_pop_mean_server <- function(input, output, session){
  
     output$country_ui <- renderUI({
+      
+      # get inputs
       indicator <- input$indicator
       region <- input$region
       yn <- input$interpolate
+      
+      # get region code
+      region_list <- hefpi::region_list
+      region_code <- as.character(region_list$region_code[region_list$region == region])
         
-        df <- hefpi::df_series
-        df <- df[df$indicator_name == indicator,]
-        df <- df[df$region == region,]
-        #remove countries with all NA in year columns
-        start_index <- which(names(df) == 2001)
-        end_index <- which(names(df) == 2015)
-        
-        good_index <- which(rowSums(is.na(df[, start_index:end_index])) != ncol(df[, start_index:end_index]))
-        df <- df[good_index,]
-        countries <- unique(df$country_name)
+      # Get the variable
+      variable <- indicators %>%
+        filter(indicator_short_name == indicator) %>%
+        .$variable_name
+      
+      # subset data by variable and region code
+        df <- hefpi::df
+        df <- df[df$indic == variable,]
+        df <- df[df$regioncode == region_code,]
+        # For now, below is not needed, but will keep it in comments
+        # start_index <- which(names(df) == 2001)
+        # end_index <- which(names(df) == 2015)
+        # good_index <- which(rowSums(is.na(df[, start_index:end_index])) != ncol(df[, start_index:end_index]))
+        # df <- df[good_index,]
+        # create select input
+        countries <- unique(df$country)
         selectInput(session$ns("country"), 
                     label = 'Country', 
                     choices = countries,
@@ -75,51 +87,51 @@ mod_pop_mean_server <- function(input, output, session){
     })
     
     output$pop_mean <- renderPlot({
-      # indicator <-  "Change in poverty gap due to out-of-pocket health spending ($ 2011 PPP), $1.90 poverty line"
-      # region <- 'Latin America & Caribbean'
-      # country_names <- c('Argentina, Bolivia', 'Brazil', 'Colombia', 'Costa Rica', 'Dominican Republic', 'Ecuador', 'Haiti',
-      #                    'Honduras', 'Jamaica', 'Mexico')
-        indicator <- input$indicator
-        region <- input$region
-        yn <- input$interpolate
-        country_names <- input$country
-        message('the country_names are', country_names)
-        # save(country_names, file = 'cnames2.rda')
-        # Get the data to be plotted
-        df <- hefpi::df_series
-        pd <- df[df$indicator_name == indicator,]
-        pd <- pd[pd$region == region,]
-        pd <- pd[pd$country_name %in% country_names,]
-        #remove countries with all NA in year columns
-        start_index <- which(names(pd) == 2001)
-        end_index <- which(names(pd) == 2015)
+      # get inputs
+      indicator <- input$indicator
+      region <- input$region
+      yn <- input$interpolate
+      country_names <- input$country
+      
+      # get region code 
+      region_list <- hefpi::region_list
+      region_code <- as.character(region_list$region_code[region_list$region == region])
+     
+      # get variable
+      variable <- indicators %>%
+        filter(indicator_short_name == indicator) %>%
+        .$variable_name
+      
+      # subet by variable, region code and a list of countries
+      df <- hefpi::df
+      df <- df[df$indic == variable,]
+      df <- df[df$regioncode == region_code,]
+      pd <- df[df$country %in% country_names,]
         
-        good_index <- which(rowSums(is.na(pd[, start_index:end_index])) != ncol(pd[, start_index:end_index]))
-        pd <- pd[good_index,]
-        
-        # put in long format for plotting
-        pd <- pd %>% select(country_name, indicator_name, `2001`:`2015`)
-        # pd[,3:ncol(pd)] <- apply(pd[, 3:ncol(pd)], 2, function(x) as.numeric(as.character(x)))
-        pd <- reshape2::melt(as.data.frame(pd), id.vars = c('country_name', 'indicator_name'))
-        pd$variable <- as.character(pd$variable)
-        # save(pd, file = 'pd.rda')
-        if(yn == 'Yes'){
-          p <- ggplot(pd, aes(variable, value, color = country_name)) + geom_point(size = 2, alpha = 0.8) +
-            geom_line(aes(group = country_name), size = 1.5, alpha = 0.8) +
-            labs(x = 'Year',
-                 y = 'Population mean') +
-            scale_color_gdocs(name = 'Country') +
-            theme_gdocs()
-        } else {
-          p <- ggplot(pd, aes(variable, value, color = country_name)) + geom_point(size = 2, alpha = 0.8) +
-            labs(x = 'Year',
-                 y = 'Population mean') +
-            scale_color_gdocs(name = 'Country') +
-            theme_gdocs()
-        }
-       
-        
-        p
+      # get title and subtitle
+      plot_title <- paste0('Trend - population mean')
+      sub_title <- indicator
+      
+      # condition if we connect the dots
+      if(yn == 'Yes'){
+        p <- ggplot(pd, aes(year, pop, color = country)) + geom_point(size = 2, alpha = 0.8) +
+          geom_line(aes(group = country), size = 1.5, alpha = 0.8) +
+          labs(x = 'Year',
+               y = 'Population mean',
+               title = plot_title,
+               subtitle= indicator) +
+          scale_color_gdocs(name = 'Country') +
+          theme_gdocs()
+      } else {
+        p <- ggplot(pd, aes(year, pop, color = country)) + geom_point(size = 2, alpha = 0.8) +
+          labs(x = 'Year',
+               y = 'Population mean',
+               title = plot_title,
+               subtitle = indicator) +
+          scale_color_gdocs(name = 'Country') +
+          theme_gdocs()
+      }
+      p
     })
 }
 
