@@ -21,7 +21,7 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
                                     size = rel(30 / 12),
                                     hjust = 0, colour = dkgray),
           # No subtitle or captions, so treat like other text
-          plot.subtitle = element_text(hjust = 0, size = rel(30/12),
+          plot.subtitle = element_text(hjust = 0, size = rel(20/15),
                                        face = "plain", colour = dkgray),
           plot.caption = element_text(hjust = 0, size = rel(1),
                                       face = "plain", colour = dkgray),
