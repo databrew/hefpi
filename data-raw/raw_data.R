@@ -35,14 +35,14 @@ indicators_list <-
   dplyr::distinct(bin, indic) %>%
   filter(!is.na(bin)) %>%
   arrange(bin, indic) %>%
-  left_join(indicators %>% dplyr::select(variable_name, indicator_name, indicator_description, unit_of_measure),
+  left_join(indicators %>% dplyr::select(variable_name, indicator_short_name, indicator_description, unit_of_measure),
             by = c('indic' = 'variable_name'))
 indicator_groups <- unique(indicators_list$bin)
 out_list <- list()
 for(i in 1:length(indicator_groups)){
   this_group <- indicator_groups[i]
   these_elements <- indicators_list %>% filter(bin == this_group)
-  these_elements <- as.list(sort(unique(these_elements$indicator_name)))
+  these_elements <- as.list(sort(unique(these_elements$indicator_short_name)))
   out_list[[this_group]] <- these_elements
 }  
 indicators_list <- out_list
@@ -54,4 +54,39 @@ library(tidyverse)
 country <- read_csv('from_website/HEFPICountry.csv')
 dat <- read_csv('from_website/HEFPIData.csv')
 series <- read_csv('from_website/HEFPISeries.csv')
+
+# recode columna names
+names(country) <- tolower(gsub(' ', '_', names(country)))
+names(dat) <- tolower(gsub(' ', '_', names(dat)))
+names(series) <- tolower(gsub(' ', '_', names(series)))
+
+# get region code for region
+country$region_code <- ifelse(country$region == 'Latin America & Caribbean', 'LCN',
+                              ifelse(country$region == 'South Asia', 'SAS',
+                                     ifelse(country$region == 'Sub-Saharan Africa', 'SSF',
+                                            ifelse(country$region == '"Europe & Central Asia', 'ECS',
+                                                   ifelse(country$region == 'Middle East & North Africa', 'MEA', 
+                                                          ifelse(country$region == 'East Asia & Pacific', 'EAS', 'NAC'))))))
+
+# join country and dat to get region and country data together
+df_series <- inner_join(dat,country, by = c('country_name' = 'short_name'))
+
+# save data: NOTE: explore these later - Not sure these are actually needed. The database data seems to be a function of a combination of this data
+usethis::use_data(country, overwrite = T)
+usethis::use_data(dat, overwrite = T)
+usethis::use_data(series, overwrite = T)
+usethis::use_data(df_series, overwrite = T)
+
+
+# create lists
+# get region code because that is how we subset database data (df, above).
+# May need to preprocess data differently to make it more efficient
+region_list <- as.data.frame(unique(cbind(region = country$region, region_code = country$region_code)))
+country_list <- unique(country$short_name)
+yn_list <- c('Yes', 'No')
+
+# save data
+usethis::use_data(region_list, overwrite = T)
+usethis::use_data(country_list, overwrite = T)
+usethis::use_data(yn_list, overwrite = T)
 
