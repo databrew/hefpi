@@ -81,6 +81,15 @@ library(hefpi)
 run_app()
 ```
 
+When re-deploying, you won't need to re-do the above. But you will need to remove the previous iteration of the app, reinstall, and restart the shiny server.
+
+```
+sudo su - -c "R -e \"remove.packages('hefpi')\""
+sudo su - -c "R -e \"devtools::install_github('databrew/hefpi', dependencies = TRUE, force = TRUE)\""
+sudo systemctl restart shiny-server
+
+```
+
 ## Reproducing this package
 
 In order to build this package and run the application correctly, one should:
