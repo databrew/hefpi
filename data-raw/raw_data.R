@@ -22,6 +22,9 @@ df$bin <-
          ifelse(df$level2 == 'h_cov', 'Healthcare Coverage',
                 ifelse(df$level2 == 'h_out', 'Health Outcomes', NA)))
 
+year_list <- sort(unique(df$year))
+usethis::use_data(year_list, overwrite = T)
+
 # Get nicer indicator names in full database
 df <- df %>%
   left_join(right %>%
