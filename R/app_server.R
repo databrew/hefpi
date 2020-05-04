@@ -9,9 +9,28 @@ app_server <- function(input, output,session) {
   callModule(mod_social_server, "social_module_1")
   
   # List the first level callModules here
-  callModule(mod_leaflet_mean_server, 'leaf1')
-  callModule(mod_leaflet_con_server, 'con1')
-  callModule(mod_pop_mean_server, 'pop_mean1')
+  
+  # recent tab
+  callModule(mod_recent_mean_server, 'recent_mean_leaf1')
+  callModule(mod_recent_con_server, 'recent_con_leaf1')
+  
+  # trends tab
+  callModule(mod_trends_mean_server, 'trends_mean1')
+  callModule(mod_trends_quin_server, 'trends_quin1')
+  callModule(mod_trends_con_server, 'trends_con1')
+  
+  # dotplot tab
+  callModule(mod_dots_country_server, 'dots_country1')
+  callModule(mod_dots_ind_server, 'dots_ind1')
+  
+  # data availability tab
+  callModule(mod_dat_country_server, 'dat_country1')
+  callModule(mod_dat_ind_server, 'dat_ind1')
+  
+  
+  
+  
+  
 
   output$plot1 <- renderPlot({
     barplot(1:10, col = grey(seq(0, 1, length = 10)),

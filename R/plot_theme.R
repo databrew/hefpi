@@ -33,7 +33,7 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
           strip.background = element_rect(colour = NA, fill = NA),
           # axis titles: Roboto 12pt, plain.
           axis.title = element_text(face = "plain", colour = dkgray2,
-                                    size = rel(30/12)),
+                                    size = rel(20/12)),
           # axis text: Roboto 12pt, plain
           axis.text = element_text(face = "plain", colour = dkgray,
                                    size = rel(18/12)),
@@ -68,7 +68,7 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
 #' @import RColorBrewer
 #' @export
 gdocs_pal <- function() {
-  values <- colorRampPalette(brewer.pal(8, "Set2"))(20)
+  values <- colorRampPalette(brewer.pal(8, "Set2"))(60)
   f <- manual_pal(values)
   attr(f, "max_n") <- length(values)
   f
