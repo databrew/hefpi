@@ -27,7 +27,7 @@ mod_trends_mean_ui <- function(id){
            )),
     column(4,
            selectInput(ns('indicator'), 'Indicator',
-                       choices = indicators_list[[1]]),
+                       choices = indicators_list),
           checkboxInput(ns('interpolate'), 'Interpolate missing values',
                        value = TRUE),
            selectInput(ns('region'), 'Region',
@@ -169,9 +169,10 @@ mod_trends_quin_ui <- function(id){
              )),
       column(4,
              selectInput(ns('country'), 'Country',
-                         choices = country_list[[1]]),
+                         choices = country_list,
+                         selected = 'United States'),
              selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list[[1]]),
+                         choices = indicators_list),
              selectInput(ns('first_date'), 'First available year after',
                          choices =year_list,
                          selected = year_list[1]),
@@ -200,7 +201,74 @@ mod_trends_quin_server <- function(input, output, session){
   
   
   output$trends_quin <- renderPlot({
-    ggplot() + labs(title = 'In progress')
+    country_names <- 'United States'
+    indicator <- 'Catastrophic health spending, 10%'
+    first_date <- 1990
+    last_date <- 2017
+    view_as <- 'Slope chart'
+    # 
+    country_names <- input$country
+    indicator <- input$indicator
+    first_date <- input$first_date
+    last_date <- input$last_date
+    view_as <- input$view_as
+    
+    # Get the variable
+    variable <- indicators %>%
+      filter(indicator_short_name == indicator) %>%
+      .$variable_name
+    
+    # subset by country and variable
+    df <- hefpi::df %>%
+      filter(country == country_names) %>%
+      filter(indic == variable) 
+    
+    # if the last_date is greater than the first date, print a message in the plot
+    if(first_date >= last_date){
+      p <- ggplot() + labs(title = paste0("The 'First Available Year After' input needs","\n" ,"to be later than the 'First Available Year Before' input"))
+    } else {
+      # get the first available year after first_date and first available year after last_date
+      df_years <- sort(unique(df$year))
+      first_index <- df_years > first_date
+      year_one <- df_years[first_index][which(first_index)][1]
+      last_index <- df_years < last_date
+      year_last <- df_years[last_index][length(which(last_index))]
+      
+      if(view_as == 'Slope chart'){
+        # filter to get year_one and year_last
+        df <- df %>%
+          filter(year == year_one | year == year_last) %>%
+          select(year, Q1:Q5) 
+        # save(df, file = 'df.rda')
+      } else {
+        df <- df %>%
+          filter(year >=year_one | year <= year_last) %>%
+          select(year, Q1:Q5) 
+      }
+     
+    
+    df <- melt(df, id.vars = 'year')
+    
+    # recode Quintiels
+    df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
+                          ifelse(df$variable == 'Q2', 'Q2: Poor',
+                                 ifelse(df$variable == 'Q3', 'Q3: Middle',
+                                        ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
+    
+    # get color graident 
+    col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+    col_vec <- col_vec[-1]
+      
+      # plot
+    p<-   ggplot(df, aes(year, value, group = variable, color = variable)) + 
+      geom_point(size = 1.5, alpha = 0.8) +
+      geom_line(size = 1.5, alpha = 0.8) +
+        scale_color_manual(name = 'Quintiles',
+                           values = col_vec) +
+        hefpi::theme_gdocs()
+      
+    }
+   return(p)
   })
     
   
@@ -227,7 +295,7 @@ mod_trends_con_ui <- function(id){
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list[[1]]),
+                         choices = indicators_list),
              checkboxInput(ns('interpolate'), 'Interpolate missing values',
                            value = TRUE),
              selectInput(ns('region'), 'Region',
@@ -253,7 +321,10 @@ mod_trends_con_ui <- function(id){
 mod_trends_con_server <- function(input, output, session){
   output$country_ui <- renderUI({
     
-    
+    indicator <- "Catastrophic health spending, 10%"
+    region <- "Europe & Central Asia"
+    temp <- hefpi::df_series %>% filter(region == 'Europe & Central Asia')
+    country_names <- unique(temp$country_name)
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -287,7 +358,60 @@ mod_trends_con_server <- function(input, output, session){
   })
   
   output$trends_con <- renderPlot({
-    ggplot() + labs(title = 'In progress')
+   
+    # get inputs
+    indicator <- input$indicator
+    region <- input$region
+    yn <- input$interpolate
+    country_names <- input$country
+    # get region code 
+    region_list <- hefpi::region_list
+    indicators <- hefpi::indicators
+    df <- hefpi::df
+    
+    if(is.null(country_names)){
+      NULL
+    } else {
+      
+      region_code <- as.character(region_list$region_code[region_list$region == region])
+      
+      # get variable
+      variable <- indicators %>%
+        filter(indicator_short_name == indicator) %>%
+        .$variable_name
+      
+      # subet by variable, region code and a list of countries
+      
+      df <- df[df$indic == variable,]
+      df <- df[df$regioncode == region_code,]
+      pd <- df[df$country %in% country_names,]
+      
+      # get title and subtitle
+      plot_title <- paste0('Trend - Concentration index')
+      sub_title <- indicator
+      
+      # condition if we connect the dots
+      if(yn){
+        p <- ggplot(pd, aes(year, CI, color = country)) + geom_point(size = 2, alpha = 0.8) +
+          geom_line(aes(group = country), size = 1.5, alpha = 0.8) +
+          labs(x = 'Year',
+               y = 'Concentration Index',
+               title = plot_title,
+               subtitle= indicator) +
+          scale_color_gdocs(name = 'Country') +
+          theme_gdocs()
+      } else {
+        p <- ggplot(pd, aes(year, CI, color = country)) + geom_point(size = 2, alpha = 0.8) +
+          labs(x = 'Year',
+               y = 'Concentration Index',
+               title = plot_title,
+               subtitle = indicator) +
+          scale_color_gdocs(name = 'Country') +
+          theme_gdocs()
+      }
+      p
+    }
+    
   })
   
   
