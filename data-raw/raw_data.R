@@ -67,7 +67,7 @@ names(series) <- tolower(gsub(' ', '_', names(series)))
 country$region_code <- ifelse(country$region == 'Latin America & Caribbean', 'LCN',
                               ifelse(country$region == 'South Asia', 'SAS',
                                      ifelse(country$region == 'Sub-Saharan Africa', 'SSF',
-                                            ifelse(country$region == '"Europe & Central Asia', 'ECS',
+                                            ifelse(country$region == 'Europe & Central Asia', 'ECS',
                                                    ifelse(country$region == 'Middle East & North Africa', 'MEA', 
                                                           ifelse(country$region == 'East Asia & Pacific', 'EAS', 'NAC'))))))
 
