@@ -8,13 +8,13 @@
 #' @param output internal
 #' @param session internal
 #'
-#' @rdname mod_leaflet_mean_ui
+#' @rdname mod_recent_mean_ui
 #' @title mod_leaflet_mean_ui
 #' @keywords internal
 #' @export 
 #' @import leaflet
 #' @importFrom shiny NS tagList 
-mod_leaflet_mean_ui <- function(id){
+mod_recent_mean_ui <- function(id){
   ns <- NS(id)
   # tagList(
 
@@ -22,7 +22,7 @@ mod_leaflet_mean_ui <- function(id){
     fluidRow(
       column(8,
              leafletOutput(
-               ns('leafy')
+               ns('recent_mean_leaf')
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
@@ -38,7 +38,7 @@ mod_leaflet_mean_ui <- function(id){
     fluidRow(
       column(8,
              plotlyOutput(
-               ns('ploty')
+               ns('recent_mean_plot')
              ))
     )
     
@@ -47,8 +47,7 @@ mod_leaflet_mean_ui <- function(id){
 }
     
 # Module Server
-#' @rdname mod_leaflet_mean_server
-#' @title mod_leaflet_mean_server
+#' @rdname mod_recent_mean_server
 #' @export
 #' @import leaflet
 #' @import RColorBrewer
@@ -56,7 +55,7 @@ mod_leaflet_mean_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
     
-mod_leaflet_mean_server <- function(input, output, session){
+mod_recent_mean_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
   observeEvent({
@@ -108,7 +107,7 @@ mod_leaflet_mean_server <- function(input, output, session){
       sep="") %>%
       lapply(htmltools::HTML)
     
-    output$leafy <- renderLeaflet({
+    output$recent_mean_leaf <- renderLeaflet({
       leaflet(shp) %>% 
         addProviderTiles('Stamen.Toner') %>%
         setView( lat=10, lng=0 , zoom=2) %>%
@@ -128,7 +127,7 @@ mod_leaflet_mean_server <- function(input, output, session){
         addLegend( pal=mypalette, values=~value, opacity=0.9, title = "", position = "bottomleft" )
     })
     
-    output$ploty <- renderPlotly({
+    output$recent_mean_plot <- renderPlotly({
       
       # get data from shp and remove NA
       temp <- shp@data
@@ -148,7 +147,7 @@ mod_leaflet_mean_server <- function(input, output, session){
       # plotly plot
      p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar', text = mytext, hoverinfo = 'text', color = 'red') %>%
         layout(xaxis= list(title = 'Country', showticklabels = FALSE),
-               xaxis= list(title = 'Value'))
+               yaxis= list(title = 'Value'))
      return(p)
     })
     
@@ -159,13 +158,12 @@ mod_leaflet_mean_server <- function(input, output, session){
 # -------------------------------------------------------------------------------------
 
 
-#' @rdname mod_leaflet_con_ui
-#' @title mod_leaflet_con_ui
+#' @rdname mod_recent_con_ui
 #' @keywords internal
 #' @export 
 #' @import leaflet
 #' @importFrom shiny NS tagList 
-mod_leaflet_con_ui <- function(id){
+mod_recent_con_ui <- function(id){
   ns <- NS(id)
   # tagList(
   
@@ -173,7 +171,7 @@ mod_leaflet_con_ui <- function(id){
     fluidRow(
       column(8,
              leafletOutput(
-               ns('leafy'), 
+               ns('recent_con_leaf'), 
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
@@ -189,7 +187,7 @@ mod_leaflet_con_ui <- function(id){
     fluidRow(
       column(8,
              plotlyOutput(
-               ns('ploty'), width = '1000px'
+               ns('recent_con_plot'), width = '1000px'
              ))
     )
     
@@ -197,8 +195,7 @@ mod_leaflet_con_ui <- function(id){
   
 }
 # Module Server
-#' @rdname mod_leaflet_con_server
-#' @title mod_leaflet_mean_server
+#' @rdname mod_recent_con_server
 #' @export
 #' @import leaflet
 #' @import RColorBrewer
@@ -206,7 +203,7 @@ mod_leaflet_con_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
 
-mod_leaflet_con_server <- function(input, output, session){
+mod_recent_con_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
   observeEvent({
@@ -258,7 +255,7 @@ mod_leaflet_con_server <- function(input, output, session){
       sep="") %>%
       lapply(htmltools::HTML)
     
-    output$leafy <- renderLeaflet({
+    output$recent_con_leaf <- renderLeaflet({
       leaflet(shp) %>% 
         addProviderTiles('Stamen.Toner') %>%
         setView( lat=10, lng=0 , zoom=2) %>%
@@ -278,7 +275,7 @@ mod_leaflet_con_server <- function(input, output, session){
         addLegend( pal=mypalette, values=~value, opacity=0.9, title = "", position = "bottomleft" )
     })
     
-    output$ploty <- renderPlotly({
+    output$recent_con_plot <- renderPlotly({
      
       # get data from shp
       temp <- shp@data
@@ -296,7 +293,7 @@ mod_leaflet_con_server <- function(input, output, session){
       # plotly plot
       p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar',text = mytext, hoverinfo = 'text', color = 'red') %>%
         layout(xaxis= list(title = 'Country', showticklabels = FALSE),
-               xaxis= list(title = 'Value'))
+               yaxis= list(title = 'Value'))
       
       return(p)
     })
@@ -308,11 +305,11 @@ mod_leaflet_con_server <- function(input, output, session){
 
 
 ## To be copied in the UI
-# mod_leaflet_mean_ui("leaf1")
-# mod_leaflet_con_ui("con1")
+# mod_recent_mean_ui("leaf1")
+# mod_recent_con_ui("con1")
 
 
 ## To be copied in the server
-# callModule(mod_leaflet_mean_server, 'leaf1')
-# callModule(mod_leaflet_con_server, 'con1')
+# callModule(mod_recent_mean_server, 'leaf1')
+# callModule(mod_recent_con_server, 'con1')
 
