@@ -88,7 +88,69 @@ mod_dots_country_server <- function(input, output, session){
   })
   
   output$dots_country <- renderPlot({
-    ggplot() + labs(title = 'In progress')
+    last_date <- '2017'
+    indicator <- "Catastrophic health spending, 10%"
+    region <- "Latin America & Caribbean"
+    temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
+    country_names <- unique(temp$country_name)
+    last_date <- input$last_date
+    region <- input$region
+    indicator <- input$indicator
+    country_names <- input$country
+    if(is.null(country_names)){
+      NULL
+    } else {
+      # Get the variable
+      variable <- indicators %>%
+        filter(indicator_short_name == indicator) %>%
+        .$variable_name
+      
+      # subset by country and variable
+      df <- hefpi::df %>%
+        filter(country %in% country_names) %>%
+        filter(indic == variable) 
+      
+      # get last available year before last_date
+      year_last <- as.character(as.numeric(last_date) - 1)
+      
+      # get year and keep only necessary columns
+      df <- df %>%
+        filter(year <= year_last) %>%
+        select(year, country, Q1:Q5) 
+      
+      # made data long form
+      df <- melt(df, id.vars = c('year', 'country'))
+      # recode Quintiels
+      df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
+                            ifelse(df$variable == 'Q2', 'Q2: Poor',
+                                   ifelse(df$variable == 'Q3', 'Q3: Middle',
+                                          ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
+      
+      # only keep data with no NAs
+      df <- df[complete.cases(df),]
+      
+      # get color graident 
+      col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+      col_vec <- col_vec[-1]
+      
+      # make plot title 
+      plot_title = paste0('Quintile Dot Plots for Economies', ' - ', indicator, ', ', year_last)
+      
+      # plot
+      p<-   ggplot(df, aes(value, country, group = country, color = variable)) + 
+        geom_point(size = 2.5, alpha = 0.8) +
+        geom_line(size = 2.5, alpha = 0.8) +
+        scale_color_manual(name = 'Quintiles',
+                           values = col_vec) +
+        labs(x = 'Most recent value (before selected year)',
+             y = '',
+             title = plot_title) +
+        hefpi::theme_gdocs()
+      
+      return(p)
+      
+    }
+   
   })
 }
 
@@ -113,10 +175,13 @@ mod_dots_ind_ui <- function(id){
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list[[1]]),
+                         choices = indicators_list,
+                         selected = c('BMI, adults', 'BMI', 'men', 'BMI, women', 'Catastrophic health spending, 10%', 
+                                      'Catastrophic health spending, 25%', 'Height, adults', 'Height', 'men', 'Height, women'),
+                         multiple = TRUE),
              selectInput(ns('country'), 'Country',
                          choices = as.character(country_list),
-                         selected = as.character(country_list[1])),
+                         selected = 'United States'),
              selectInput(ns('last_date'), 'First available year before',
                          choices =year_list,
                          selected = year_list[length(year_list)]))
@@ -141,7 +206,67 @@ mod_dots_ind_server <- function(input, output, session){
   
   
   output$dots_ind <- renderPlot({
-    ggplot() + labs(title = 'In progress')
+    last_date <- '2017'
+    indicator <- c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%', 
+                   'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women')
+    country_names <- 'United States'
+    last_date <- input$last_date
+    indicator <- input$indicator
+    country_names <- input$country
+   
+      # Get the variable
+      variable <- indicators %>%
+        filter(indicator_short_name %in% indicator) %>%
+        .$variable_name
+      
+      # subset by country and variable
+      df <- hefpi::df %>%
+        filter(country == country_names) %>%
+        filter(indic %in% variable) %>%
+        left_join(indicators, by = c('indic' = 'variable_name'))
+      
+      # get last available year before last_date
+      year_last <- as.character(as.numeric(last_date) - 1)
+      
+      
+      # get year and keep only necessary columns
+      df <- df %>%
+        filter(year <= year_last) %>%
+        select(year,indicator_short_name, Q1:Q5) 
+      
+      # made data long form
+      df <- melt(df, id.vars = c('year', 'indicator_short_name'))
+      # recode Quintiels
+      df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
+                            ifelse(df$variable == 'Q2', 'Q2: Poor',
+                                   ifelse(df$variable == 'Q3', 'Q3: Middle',
+                                          ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
+      
+      # only keep data with no NAs
+      df <- df[complete.cases(df),]
+      
+      # get color graident 
+      col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+      col_vec <- col_vec[-1]
+      
+      # make plot title 
+      plot_title = paste0('Quintile Dot Plots for Indicators', ' - ', country_names, ', ', year_last)
+      
+      # plot
+      p<-   ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable)) + 
+        geom_point(size = 2.5, alpha = 0.8) +
+        geom_line(size = 1.5, alpha = 1) +
+        scale_color_manual(name = 'Quintiles',
+                           values = col_vec) +
+        labs(x = 'Most recent value (before selected year)',
+             y = '',
+             title = plot_title) +
+        hefpi::theme_gdocs()
+      
+      return(p)
+      
+    
+    
   })
 }
 

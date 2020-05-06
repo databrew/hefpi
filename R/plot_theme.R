@@ -18,7 +18,7 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
           text = element_text(colour = dkgray),
           # title is aligned left, 20 point Roboto Font, plain
           plot.title = element_text(face = "plain",
-                                    size = rel(30 / 12),
+                                    size = rel(20/ 12),
                                     hjust = 0, colour = dkgray),
           # No subtitle or captions, so treat like other text
           plot.subtitle = element_text(hjust = 0, size = rel(20/15),
