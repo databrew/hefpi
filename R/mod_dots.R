@@ -23,11 +23,12 @@ mod_dots_country_ui <- function(id){
     fluidPage(
       column(8,
              plotOutput(
-               ns('dots_country')
+               ns('dots_country'), height = '800px'
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list[[1]]),
+                         choices = indicators_list,
+                         selected = 'Inpatient care use, adults'),
              selectInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region[1])),
@@ -89,7 +90,7 @@ mod_dots_country_server <- function(input, output, session){
   
   output$dots_country <- renderPlot({
     last_date <- '2017'
-    indicator <- "Catastrophic health spending, 10%"
+    indicator <- "Inpatient care use, adults"
     region <- "Latin America & Caribbean"
     temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
     country_names <- unique(temp$country_name)
@@ -115,8 +116,11 @@ mod_dots_country_server <- function(input, output, session){
       
       # get year and keep only necessary columns
       df <- df %>%
+        group_by(country) %>%
         filter(year <= year_last) %>%
-        select(year, country, Q1:Q5) 
+        arrange(desc(year)) %>%
+        dplyr::filter(year == dplyr::first(year)) %>%
+        select(year, country, Q1:Q5)
       
       # made data long form
       df <- melt(df, id.vars = c('year', 'country'))
@@ -128,7 +132,7 @@ mod_dots_country_server <- function(input, output, session){
       
       # only keep data with no NAs
       df <- df[complete.cases(df),]
-      
+
       # get color graident 
       col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
       col_vec <- col_vec[-1]
@@ -139,7 +143,7 @@ mod_dots_country_server <- function(input, output, session){
       # plot
       p<-   ggplot(df, aes(value, country, group = country, color = variable)) + 
         geom_point(size = 2.5, alpha = 0.8) +
-        geom_line(size = 2.5, alpha = 0.8) +
+        geom_line(size = 1, alpha = 0.7, color = 'grey') +
         scale_color_manual(name = 'Quintiles',
                            values = col_vec) +
         labs(x = 'Most recent value (before selected year)',
@@ -171,13 +175,13 @@ mod_dots_ind_ui <- function(id){
     fluidPage(
       column(8,
              plotOutput(
-               ns('dots_ind')
+               ns('dots_ind'), height = '800px'
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected = c('BMI, adults', 'BMI', 'men', 'BMI, women', 'Catastrophic health spending, 10%', 
-                                      'Catastrophic health spending, 25%', 'Height, adults', 'Height', 'men', 'Height, women'),
+                         selected = c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%', 
+                                      'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women'),
                          multiple = TRUE),
              selectInput(ns('country'), 'Country',
                          choices = as.character(country_list),
@@ -206,10 +210,10 @@ mod_dots_ind_server <- function(input, output, session){
   
   
   output$dots_ind <- renderPlot({
-    last_date <- '2017'
-    indicator <- c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%', 
-                   'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women')
-    country_names <- 'United States'
+    # last_date <- '2017'
+    # indicator <- c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%', 
+    #                'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women')
+    # country_names <- 'United States'
     last_date <- input$last_date
     indicator <- input$indicator
     country_names <- input$country
@@ -231,7 +235,10 @@ mod_dots_ind_server <- function(input, output, session){
       
       # get year and keep only necessary columns
       df <- df %>%
+        group_by(indicator_short_name) %>%
         filter(year <= year_last) %>%
+        arrange(desc(year)) %>%
+        dplyr::filter(year == dplyr::first(year)) %>%
         select(year,indicator_short_name, Q1:Q5) 
       
       # made data long form
@@ -255,7 +262,7 @@ mod_dots_ind_server <- function(input, output, session){
       # plot
       p<-   ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable)) + 
         geom_point(size = 2.5, alpha = 0.8) +
-        geom_line(size = 1.5, alpha = 1) +
+        geom_line(size = 1.5, alpha = 1, color = 'grey') +
         scale_color_manual(name = 'Quintiles',
                            values = col_vec) +
         labs(x = 'Most recent value (before selected year)',

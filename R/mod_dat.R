@@ -23,7 +23,7 @@ mod_dat_country_ui <- function(id){
     fluidPage(
       column(8,
              plotOutput(
-               ns('dat_country'), height = '1200px', width = '1200px',
+               ns('dat_country'), height = '900px', width = '1000px',
              )),
       column(4,
              selectInput(ns('country'), 'Country',
@@ -79,22 +79,23 @@ mod_dat_country_server <- function(input, output, session){
     df$indicator_short_name <- factor(df$indicator_short_name, levels = sort(unique(df$indicator_short_name), decreasing = TRUE))
     
     # get color graident 
-    col_vec <- brewer.pal(name = 'Accent', n = length(unique(df$level_2)) + 1)
-    col_vec <- col_vec[-1]
+    col_vec <- brewer.pal(name = 'Accent', n = length(unique(df$level_2)))
+    col_vec[1] <- 'white'
+
     
     # make plot title 
     plot_title = paste0('Missing data profile', ' - ', country_name)
     
     # plot
-    p<-   ggplot(df, aes(year, indicator_short_name,group = level_2, color = level_2)) + 
-      geom_point(size = 2.5, alpha = 0.8, shape = 15) +
-      scale_color_manual(name = 'Indicator class',
+    p<-   ggplot(df, aes(year, indicator_short_name, fill = level_2)) + 
+      geom_tile(size = 2.5, alpha = 0.8) +
+      scale_fill_manual(name = 'Indicator class',
                          values = col_vec) +
       labs(x = 'Year',
            y = '',
            title = plot_title) +
       hefpi::theme_gdocs() +
-      theme(axis.text.y = element_text(face = "plain", size = rel(10/12)),
+      theme(axis.text.y = element_text(face = "plain", size = rel(8/12)),
             axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1))
     
     
@@ -121,12 +122,13 @@ mod_dat_ind_ui <- function(id){
     fluidPage(
       column(8,
              plotOutput(
-               ns('dat_ind')
+               ns('dat_ind'), height = '900px'
              )),
       column(4,
              selectInput(ns('region'), 'Region',
-                         choices = region_list$region,
-                         multiple = TRUE),
+                         choices = as.character(region_list$region),
+                         multiple = TRUE, 
+                         selected = as.character(region_list$region)),
              selectInput(ns('indicator'), 'Indicator',
                          choices = indicators_list))
     )
@@ -154,9 +156,9 @@ mod_dat_ind_server <- function(input, output, session){
     indicator <- input$indicator
     region <- input$region
     
-    region <- region_list$region
-    indicator <- 'Inpatient care use, adults'
-    
+    # region <- region_list$region
+    # indicator <- 'Inpatient care use, adults'
+    # 
     # create a region year country data
     country_data <- hefpi::df %>% select(year, country, regioncode) 
     all_years <- sort(unique(country_data$year))
@@ -209,6 +211,7 @@ mod_dat_ind_server <- function(input, output, session){
    
     # get color graident 
     col_vec <- brewer.pal(name = 'Accent', n = length(unique(df$region_name)))
+    col_vec[1] <- 'lightgrey'
 
     # make plot title 
     plot_title = paste0('Missing data profile', ' - ', indicator)
@@ -217,30 +220,30 @@ mod_dat_ind_server <- function(input, output, session){
     p<-   ggplot(df, aes(year, country, fill =region_name)) + 
       geom_tile(size = 2.5, alpha = 0.8) +
       scale_fill_manual(name = 'Region',
-                         values = col_vec,
-                         breaks = c('East Asia & Pacific',
+                         values = sort(col_vec),
+                         breaks = c(NA,
+                                    'East Asia & Pacific',
                                    'Europe & Central Asia',
                                    'Latin America & Caribbean',
                                    'Middle East & North Africa',
                                    'North America',
                                    'South Asia',
-                                   'Sub-Saharan Africa',
-                                   NA),
-                         labels = c('East Asia & Pacific',
+                                   'Sub-Saharan Africa'),
+                         labels = c('Missing Data',
+                                    'East Asia & Pacific',
                                     'Europe & Central Asia',
                                     'Latin America & Caribbean',
                                     'Middle East & North Africa',
                                     'North America',
                                     'South Asia',
-                                    'Sub-Saharan Africa',
-                                    'Missing Data')) +
+                                    'Sub-Saharan Africa')) +
       labs(x = 'Year',
            y = '',
            title = plot_title) +
-      # hefpi::theme_gdocs() +
       scale_y_discrete(breaks = y_df$country,
                        labels = y_df$region_name,
                        limits = rev(levels(df$country))) +
+      hefpi::theme_gdocs() +
       theme(axis.text.y = element_text(face = "plain", size = rel(10/12)),
             axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1))
     

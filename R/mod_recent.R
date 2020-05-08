@@ -26,7 +26,8 @@ mod_recent_mean_ui <- function(id){
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list),
+                         choices = indicators_list,
+                         selected = 'Inpatient care use, adults'),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -35,6 +36,7 @@ mod_recent_mean_ui <- function(id){
                          step = 1,
                          sep = ''))
     ),
+    br(), br(),
     fluidRow(
       column(8,
              plotlyOutput(
@@ -144,9 +146,11 @@ mod_recent_mean_server <- function(input, output, session){
         "Data source :", as.character(temp$data_source), "\n",
         sep="") %>%
         lapply(htmltools::HTML)
+      plot_title = paste0('Most recent value - population mean - ', indicator)
       # plotly plot
      p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar', text = mytext, hoverinfo = 'text', color = 'red') %>%
-        layout(xaxis= list(title = 'Country', showticklabels = FALSE),
+        layout(title = plot_title,
+              xaxis= list(title = 'Country', showticklabels = FALSE),
                yaxis= list(title = 'Value'))
      return(p)
     })
@@ -175,7 +179,8 @@ mod_recent_con_ui <- function(id){
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list),
+                         choices = indicators_list,
+                         selected = 'Inpatient care use, adults'),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -184,6 +189,8 @@ mod_recent_con_ui <- function(id){
                          step = 1,
                          sep = ''))
     ),
+    br(), br(),
+    
     fluidRow(
       column(8,
              plotlyOutput(
@@ -290,9 +297,12 @@ mod_recent_con_server <- function(input, output, session){
         sep="") %>%
         lapply(htmltools::HTML)
       temp$NAME <- as.character(temp$NAME)
+      plot_title = paste0('Most recent value - concentration index - ', indicator)
+      
       # plotly plot
       p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar',text = mytext, hoverinfo = 'text', color = 'red') %>%
-        layout(xaxis= list(title = 'Country', showticklabels = FALSE),
+        layout(title = plot_title,
+               xaxis= list(title = 'Country', showticklabels = FALSE),
                yaxis= list(title = 'Value'))
       
       return(p)

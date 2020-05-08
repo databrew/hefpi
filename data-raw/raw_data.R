@@ -28,7 +28,7 @@ usethis::use_data(year_list, overwrite = T)
 # Get nicer indicator names in full database
 df <- df %>%
   left_join(right %>%
-              dplyr::select(variable_name:unit_of_measure),
+            dplyr::select(variable_name:unit_of_measure),
             by = c('indic' = 'variable_name'))
 usethis::use_data(df, overwrite = T)
 
