@@ -23,16 +23,17 @@ mod_trends_mean_ui <- function(id){
   fluidPage(
     column(8,
            plotOutput(
-             ns('trends_mean')
+             ns('trends_mean'), height = '800px'
            )),
     column(4,
            selectInput(ns('indicator'), 'Indicator',
-                       choices = indicators_list),
+                       choices = indicators_list,
+                       selected = '4+ antenatal care visits'),
           checkboxInput(ns('interpolate'), 'Interpolate missing values',
                        value = TRUE),
            selectInput(ns('region'), 'Region',
                        choices = as.character(region_list$region),
-                       selected = as.character(region_list$region[1])),
+                       selected = 'East Asia & Pacific'),
            uiOutput(ns('country_ui')))
   )
   )
@@ -165,14 +166,15 @@ mod_trends_quin_ui <- function(id){
     fluidPage(
       column(8,
              plotOutput(
-               ns('trends_quin')
+               ns('trends_quin'),  height = '800px'
              )),
       column(4,
              selectInput(ns('country'), 'Country',
                          choices = country_list,
                          selected = 'United States'),
              selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list),
+                         choices = indicators_list,
+                         selected = 'Inpatient care use, adults'),
              selectInput(ns('first_date'), 'First available year after',
                          choices =year_list,
                          selected = year_list[1]),
@@ -201,11 +203,11 @@ mod_trends_quin_server <- function(input, output, session){
   
   
   output$trends_quin <- renderPlot({
-    country_names <- 'United States'
-    indicator <- 'Catastrophic health spending, 10%'
-    first_date <- 1990
-    last_date <- 2017
-    view_as <- 'Slope chart'
+    # country_names <- 'United States'
+    # indicator <- 'Catastrophic health spending, 10%'
+    # first_date <- 1990
+    # last_date <- 2017
+    # view_as <- 'Slope chart'
     # 
     country_names <- input$country
     indicator <- input$indicator
@@ -258,13 +260,19 @@ mod_trends_quin_server <- function(input, output, session){
     # get color graident 
     col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
     col_vec <- col_vec[-1]
+    
+    # make plot title
+    plot_title = paste0('Quintile Trends - ', country_names, ' , ', indicator)
       
       # plot
     p<-   ggplot(df, aes(year, value, group = variable, color = variable)) + 
-      geom_point(size = 1.5, alpha = 0.8) +
+      geom_point(size = 2.5, alpha = 0.8) +
       geom_line(size = 1.5, alpha = 0.8) +
         scale_color_manual(name = 'Quintiles',
                            values = col_vec) +
+      labs(x = 'Year',
+           y = 'Value',
+           title = plot_title) +
         hefpi::theme_gdocs()
       
     }
@@ -291,16 +299,17 @@ mod_trends_con_ui <- function(id){
     fluidPage(
       column(8,
              plotOutput(
-               ns('trends_con')
+               ns('trends_con'),  height = '800px'
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list),
+                         choices = indicators_list,
+                         selected = '4+ antenatal care visits'),
              checkboxInput(ns('interpolate'), 'Interpolate missing values',
                            value = TRUE),
              selectInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
-                         selected = as.character(region_list$region[1])),
+                         selected = 'East Asia and Pacific'),
              uiOutput(ns('country_ui')))
     )
   )
@@ -321,10 +330,10 @@ mod_trends_con_ui <- function(id){
 mod_trends_con_server <- function(input, output, session){
   output$country_ui <- renderUI({
     
-    indicator <- "Catastrophic health spending, 10%"
-    region <- "Europe & Central Asia"
-    temp <- hefpi::df_series %>% filter(region == 'Europe & Central Asia')
-    country_names <- unique(temp$country_name)
+    # indicator <- "Catastrophic health spending, 10%"
+    # region <- "Europe & Central Asia"
+    # temp <- hefpi::df_series %>% filter(region == 'Europe & Central Asia')
+    # country_names <- unique(temp$country_name)
     # get inputs
     indicator <- input$indicator
     region <- input$region
