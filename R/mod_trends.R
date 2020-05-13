@@ -22,7 +22,7 @@ mod_trends_mean_ui <- function(id){
   
   fluidPage(
     column(8,
-           plotOutput(
+           plotlyOutput(
              ns('trends_mean'), height = '800px'
            )),
     column(4,
@@ -43,6 +43,7 @@ mod_trends_mean_ui <- function(id){
 #' @rdname mod_trends_mean_server
 #' @export
 #' @import tidyverse
+#' @import plotly
 #' @import RColorBrewer
 #' @import ggplot2
 #' @import ggthemes
@@ -88,7 +89,7 @@ mod_trends_mean_server <- function(input, output, session){
       
     })
     
-    output$trends_mean <- renderPlot({
+    output$trends_mean <- renderPlotly({
       # indicator <- "Catastrophic health spending, 10%"
       # region <- "Latin America & Caribbean"
       # temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
@@ -124,25 +125,30 @@ mod_trends_mean_server <- function(input, output, session){
         plot_title <- paste0('Trend - population mean')
         sub_title <- indicator
         
+        # text for plot
+        mytext <- paste(
+          "Country: ", as.character(pd$country),"\n", 
+          "Population: ", round(pd$pop, digits = 3), "\n",
+          "Year: ", as.character(pd$year),"\n",
+          "Data source: ", as.character(pd$referenceid_list), "\n",
+          sep="") %>%
+          lapply(htmltools::HTML)
         # condition if we connect the dots
         if(yn){
-          p <- ggplot(pd, aes(year, pop, color = country)) + geom_point(size = 2, alpha = 0.8) +
-            geom_line(aes(group = country), size = 1.5, alpha = 0.8) +
-            labs(x = 'Year',
-                 y = 'Population mean',
-                 title = plot_title,
-                 subtitle= indicator) +
-            scale_color_gdocs(name = 'Country') +
-            theme_gdocs()
+          p <- plot_ly(data = pd, x = ~year, y = ~pop, color = ~country, 
+                       text = mytext, hoverinfo = 'text') %>%
+            add_trace(x = ~year, y = ~pop, color = ~country, mode = 'lines+markers') 
+          
+         
         } else {
-          p <- ggplot(pd, aes(year, pop, color = country)) + geom_point(size = 2, alpha = 0.8) +
-            labs(x = 'Year',
-                 y = 'Population mean',
-                 title = plot_title,
-                 subtitle = indicator) +
-            scale_color_gdocs(name = 'Country') +
-            theme_gdocs()
+          p <- plot_ly(data = pd, x = ~year, y = ~pop, color = ~country,
+                       text = mytext, hoverinfo = 'text')
+          
         }
+       p <- p %>%
+         layout(title = plot_title,
+                xaxis= list(title = 'Year', showticklabels = FALSE),
+                yaxis= list(title = 'Value'))
        p
       }
       
@@ -165,7 +171,7 @@ mod_trends_quin_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotOutput(
+             plotlyOutput(
                ns('trends_quin'),  height = '800px'
              )),
       column(4,
@@ -202,7 +208,7 @@ mod_trends_quin_ui <- function(id){
 mod_trends_quin_server <- function(input, output, session){
   
   
-  output$trends_quin <- renderPlot({
+  output$trends_quin <- renderPlotly({
     # country_names <- 'United States'
     # indicator <- 'Catastrophic health spending, 10%'
     # first_date <- 1990
@@ -257,23 +263,28 @@ mod_trends_quin_server <- function(input, output, session){
                                  ifelse(df$variable == 'Q3', 'Q3: Middle',
                                         ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
     
-    # get color graident 
+    # # get color graident 
     col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
     col_vec <- col_vec[-1]
     
     # make plot title
     plot_title = paste0('Quintile Trends - ', country_names, ' , ', indicator)
       
-      # plot
-    p<-   ggplot(df, aes(year, value, group = variable, color = variable)) + 
-      geom_point(size = 2.5, alpha = 0.8) +
-      geom_line(size = 1.5, alpha = 0.8) +
-        scale_color_manual(name = 'Quintiles',
-                           values = col_vec) +
-      labs(x = 'Year',
-           y = 'Value',
-           title = plot_title) +
-        hefpi::theme_gdocs()
+    # text for plot
+    mytext <- paste(
+      "Value: ", round(df$value, digits = 3), "\n",
+      "Year: ", as.character(df$year),"\n",
+      sep="") %>%
+      lapply(htmltools::HTML)
+    # condition if we connect the dots
+    p <- plot_ly(data = df, x = ~year, y = ~value, color = ~variable, colors = col_vec,
+                 text = mytext, hoverinfo = 'text') %>%
+      add_trace(x = ~year, y = ~value, color = ~variable, colors = col_vec, mode = 'lines+markers') %>%
+      layout(title = plot_title,
+             xaxis= list(title = 'Year', showticklabels = FALSE),
+             yaxis= list(title = 'Value'))
+    
+    
       
     }
    return(p)
@@ -298,7 +309,7 @@ mod_trends_con_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotOutput(
+             plotlyOutput(
                ns('trends_con'),  height = '800px'
              )),
       column(4,
@@ -330,10 +341,7 @@ mod_trends_con_ui <- function(id){
 mod_trends_con_server <- function(input, output, session){
   output$country_ui <- renderUI({
     
-    # indicator <- "Catastrophic health spending, 10%"
-    # region <- "Europe & Central Asia"
-    # temp <- hefpi::df_series %>% filter(region == 'Europe & Central Asia')
-    # country_names <- unique(temp$country_name)
+
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -366,8 +374,11 @@ mod_trends_con_server <- function(input, output, session){
     
   })
   
-  output$trends_con <- renderPlot({
-   
+  output$trends_con <- renderPlotly({
+    # indicator <- "Catastrophic health spending, 10%"
+    # region <- "Europe & Central Asia"
+    # temp <- hefpi::df_series %>% filter(region == 'Europe & Central Asia')
+    # country_names <- unique(temp$country_name)
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -399,27 +410,33 @@ mod_trends_con_server <- function(input, output, session){
       plot_title <- paste0('Trend - Concentration index')
       sub_title <- indicator
       
+      # text for plot
+      mytext <- paste(
+        "Country: ", as.character(pd$country),"\n", 
+        "Concentration Index: ", round(pd$CI, digits = 3), "\n",
+        "Year: ", as.character(pd$year),"\n",
+        "Data source: ", as.character(pd$referenceid_list), "\n",
+        sep="") %>%
+        lapply(htmltools::HTML)
       # condition if we connect the dots
       if(yn){
-        p <- ggplot(pd, aes(year, CI, color = country)) + geom_point(size = 2, alpha = 0.8) +
-          geom_line(aes(group = country), size = 1.5, alpha = 0.8) +
-          labs(x = 'Year',
-               y = 'Concentration Index',
-               title = plot_title,
-               subtitle= indicator) +
-          scale_color_gdocs(name = 'Country') +
-          theme_gdocs()
+        p <- plot_ly(data = pd, x = ~year, y = ~CI, color = ~country, 
+                     text = mytext, hoverinfo = 'text') %>%
+          add_trace(x = ~year, y = ~CI, color = ~country, mode = 'lines+markers') 
+        
+        
       } else {
-        p <- ggplot(pd, aes(year, CI, color = country)) + geom_point(size = 2, alpha = 0.8) +
-          labs(x = 'Year',
-               y = 'Concentration Index',
-               title = plot_title,
-               subtitle = indicator) +
-          scale_color_gdocs(name = 'Country') +
-          theme_gdocs()
+        p <- plot_ly(data = pd, x = ~year, y = ~CI, color = ~country,
+                     text = mytext, hoverinfo = 'text')
+        
       }
+      p <- p %>%
+        layout(title = plot_title,
+               xaxis= list(title = 'Year', showticklabels = FALSE),
+               yaxis= list(title = 'Value'))
       p
     }
+      
     
   })
   
