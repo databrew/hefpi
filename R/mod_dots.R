@@ -22,7 +22,7 @@ mod_dots_country_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotOutput(
+             plotlyOutput(
                ns('dots_country'), height = '800px'
              )),
       column(4,
@@ -56,7 +56,11 @@ mod_dots_country_server <- function(input, output, session){
   
   output$country_ui <- renderUI({
     
-    
+    # last_date <- '2017'
+    # indicator <- "BMI, adults"
+    # region <- "North America"
+    # temp <- hefpi::df_series %>% filter(region == 'North America')
+    # country_names <- unique(temp$country_name)
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -74,6 +78,7 @@ mod_dots_country_server <- function(input, output, session){
     df <- hefpi::df
     df <- df[df$indic == variable,]
     df <- df[df$regioncode == region_code,]
+    df <- df %>% filter(!is.na(Q1) & !is.na(Q2) & !is.na(Q3) & !is.na(Q4) & !is.na(Q5))
     # For now, below is not needed, but will keep it in comments
     # start_index <- which(names(df) == 2001)
     # end_index <- which(names(df) == 2015)
@@ -88,12 +93,8 @@ mod_dots_country_server <- function(input, output, session){
     
   })
   
-  output$dots_country <- renderPlot({
-    last_date <- '2017'
-    indicator <- "Inpatient care use, adults"
-    region <- "Latin America & Caribbean"
-    temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
-    country_names <- unique(temp$country_name)
+  output$dots_country <- renderPlotly({
+    
     last_date <- input$last_date
     region <- input$region
     indicator <- input$indicator
@@ -120,10 +121,10 @@ mod_dots_country_server <- function(input, output, session){
         filter(year <= year_last) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) %>%
-        select(year, country, Q1:Q5)
+        select(year, country, referenceid_list, Q1:Q5)
       
       # made data long form
-      df <- melt(df, id.vars = c('year', 'country'))
+      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list'))
       # recode Quintiels
       df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
@@ -139,20 +140,68 @@ mod_dots_country_server <- function(input, output, session){
       
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Economies', ' - ', indicator, ', ', year_last)
+      # # # text for plot
+      mytext <- paste(
+        "Value: ", round(df$value, digits = 3), "\n",
+        "Year: ", as.character(df$year),"\n",
+        "Indicator: ", as.character(indicator),"\n",
+        "Data source: ", as.character(df$referenceid_list),
+        sep="") %>%
+        lapply(htmltools::HTML)
       
-      # plot
-      p<-   ggplot(df, aes(value, country, group = country, color = variable)) + 
-        geom_point(size = 2.5, alpha = 0.8) +
-        geom_line(size = 1, alpha = 0.7, color = 'grey') +
-        scale_color_manual(name = 'Quintiles',
-                           values = col_vec) +
-        labs(x = 'Most recent value (before selected year)',
-             y = '',
-             title = plot_title) +
-        hefpi::theme_gdocs()
+      # if the dataframe is null of empty make plot null
+      if(is.null(df) | nrow(df) == 0){
+        NULL
+      } else {
+        
+        p <- plot_ly(data = df, 
+                     x = ~value, 
+                     y = ~country, 
+                     color = ~variable, 
+                     colors = col_vec, text = mytext, 
+                     hoverinfo = 'text') %>%
+          layout(title = plot_title,
+                 xaxis= list(title = 'Value', showticklabels = TRUE),
+                 yaxis= list(title = '', showticklabels = TRUE))
+        
+        p
+        
+        # print(ggplotly(ggplot(df, aes(x=country, 
+        #                           y=value,
+        #                           text = mytext)) + 
+        #   geom_point(size=5, aes(color = variable)) + 
+        #   geom_segment(aes(x=country, 
+        #                    xend=country, 
+        #                    y=0, 
+        #                    yend=value)) + 
+        #   scale_color_manual(name = '', 
+        #                      values = col_vec) +
+        #   labs(title=plot_title, x = '', y = ' ') +
+        #   coord_flip() +
+        #     geom_text(aes(label = place_holder, group = variable), position = position_identity(), just= -0.5) +
+        #   hefpi::theme_gdocs() +
+        #     theme(axis.title.y=element_blank(),
+        #           axis.text.y=element_blank(),
+        #           axis.ticks.y=element_blank()), tooltip = 'text'))
+        # 
+        # library(devtools)
+        # install_github("mages/googleVis")
+        # # plot
+        # print(ggplotly(ggplot(df, aes(x =value, country, group = country, color = variable)) + 
+        #                  geom_point(size = 2.5, alpha = 0.8) +
+        #                  geom_line(size = 1, alpha = 0.7, color = 'grey') +
+        #                  scale_color_manual(name = 'Quintiles',
+        #                                     values = col_vec) +
+        #                  labs(x = 'Most recent value (before selected year)',
+        #                       y = '',
+        #                       title = plot_title) + scale_y_discrete(breaks = df$country,
+        #                                                              labels = as.character(df$country)) +
+        #                  hefpi::theme_gdocs()))
+        
+      }
+     
       
-      return(p)
-      
+
     }
    
   })
@@ -174,7 +223,7 @@ mod_dots_ind_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotOutput(
+             plotlyOutput(
                ns('dots_ind'), height = '800px'
              )),
       column(4,
@@ -202,6 +251,7 @@ mod_dots_ind_ui <- function(id){
 #' @import ggthemes
 #' @import scales
 #' @import reshape2
+#' @plotly
 #' @import htmltools
 #' @keywords internal
 
@@ -209,11 +259,11 @@ mod_dots_ind_server <- function(input, output, session){
   
   
   
-  output$dots_ind <- renderPlot({
-    # last_date <- '2017'
-    # indicator <- c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%', 
-    #                'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women')
-    # country_names <- 'United States'
+  output$dots_ind <- renderPlotly({
+    last_date <- '2017'
+    indicator <- c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%',
+                   'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women')
+    country_names <- 'United States'
     last_date <- input$last_date
     indicator <- input$indicator
     country_names <- input$country
@@ -239,10 +289,10 @@ mod_dots_ind_server <- function(input, output, session){
         filter(year <= year_last) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) %>%
-        select(year,indicator_short_name, Q1:Q5) 
+        select(year, country, referenceid_list,indicator_short_name, Q1:Q5) 
       
       # made data long form
-      df <- melt(df, id.vars = c('year', 'indicator_short_name'))
+      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name'))
       # recode Quintiels
       df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
@@ -259,20 +309,44 @@ mod_dots_ind_server <- function(input, output, session){
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Indicators', ' - ', country_names, ', ', year_last)
       
-      # plot
-      p<-   ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable)) + 
-        geom_point(size = 2.5, alpha = 0.8) +
-        geom_line(size = 1.5, alpha = 1, color = 'grey') +
-        scale_color_manual(name = 'Quintiles',
-                           values = col_vec) +
-        labs(x = 'Most recent value (before selected year)',
-             y = '',
-             title = plot_title) +
-        hefpi::theme_gdocs()
+      # # # text for plot
+      mytext <- paste(
+        "Value: ", round(df$value, digits = 3), "\n",
+        "Year: ", as.character(df$year),"\n",
+        "Country: ", as.character(df$country),"\n",
+        "Data source: ", as.character(df$referenceid_list),
+        sep="") %>%
+        lapply(htmltools::HTML)
       
-      return(p)
+      # if the dataframe is null of empty make plot null
+      if(is.null(df) | nrow(df) == 0){
+        NULL
+      } else {
+        
+        p <- plot_ly(data = df, 
+                     x = ~value, 
+                     y = ~indicator_short_name, 
+                     color = ~variable, 
+                     colors = col_vec, text = mytext, 
+                     hoverinfo = 'text') %>%
+          layout(title = plot_title,
+                 xaxis= list(title = 'Value', showticklabels = TRUE),
+                 yaxis= list(title = '', showticklabels = TRUE))
+        
+      # # plot
+      # p<-   ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable)) + 
+      #   geom_point(size = 2.5, alpha = 0.8) +
+      #   geom_line(size = 1.5, alpha = 1, color = 'grey') +
+      #   scale_color_manual(name = 'Quintiles',
+      #                      values = col_vec) +
+      #   labs(x = 'Most recent value (before selected year)',
+      #        y = '',
+      #        title = plot_title) +
+      #   hefpi::theme_gdocs()
+      # 
+      # return(p)
       
-    
+      }
     
   })
 }
