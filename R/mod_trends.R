@@ -147,8 +147,8 @@ mod_trends_mean_server <- function(input, output, session){
         }
        p <- p %>%
          layout(title = plot_title,
-                xaxis= list(title = 'Year', showticklabels = FALSE),
-                yaxis= list(title = 'Value'))
+                xaxis= list(title = 'Year', showticklabels = TRUE),
+                yaxis= list(title = 'Value', showticklabels = TRUE))
        p
       }
       
@@ -281,8 +281,8 @@ mod_trends_quin_server <- function(input, output, session){
                  text = mytext, hoverinfo = 'text') %>%
       add_trace(x = ~year, y = ~value, color = ~variable, colors = col_vec, mode = 'lines+markers') %>%
       layout(title = plot_title,
-             xaxis= list(title = 'Year', showticklabels = FALSE),
-             yaxis= list(title = 'Value'))
+             xaxis= list(title = 'Year', showticklabels = TRUE),
+             yaxis= list(title = 'Value', showticklabels = TRUE))
     
     
       
@@ -432,8 +432,8 @@ mod_trends_con_server <- function(input, output, session){
       }
       p <- p %>%
         layout(title = plot_title,
-               xaxis= list(title = 'Year', showticklabels = FALSE),
-               yaxis= list(title = 'Value'))
+               xaxis= list(title = 'Year', showticklabels = TRUE),
+               yaxis= list(title = 'Value', showticklabels = TRUE))
       p
     }
       
