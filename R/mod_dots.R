@@ -94,7 +94,12 @@ mod_dots_country_server <- function(input, output, session){
   })
   
   output$dots_country <- renderPlotly({
-    
+
+    last_date <- '2017'
+    indicator <- "BMI, adults"
+    region <- "North America"
+    temp <- hefpi::df_series %>% filter(region == 'North America')
+    country_names <- unique(temp$country_name)
     last_date <- input$last_date
     region <- input$region
     indicator <- input$indicator
@@ -154,49 +159,31 @@ mod_dots_country_server <- function(input, output, session){
         NULL
       } else {
         
-        p <- plot_ly(data = df, 
-                     x = ~value, 
-                     y = ~country, 
-                     color = ~variable, 
-                     colors = col_vec, text = mytext, 
-                     hoverinfo = 'text') %>%
-          layout(title = plot_title,
-                 xaxis= list(title = 'Value', showticklabels = TRUE),
-                 yaxis= list(title = '', showticklabels = TRUE))
-        
-        p
-        
-        # print(ggplotly(ggplot(df, aes(x=country, 
-        #                           y=value,
-        #                           text = mytext)) + 
-        #   geom_point(size=5, aes(color = variable)) + 
-        #   geom_segment(aes(x=country, 
-        #                    xend=country, 
-        #                    y=0, 
-        #                    yend=value)) + 
-        #   scale_color_manual(name = '', 
-        #                      values = col_vec) +
-        #   labs(title=plot_title, x = '', y = ' ') +
-        #   coord_flip() +
-        #     geom_text(aes(label = place_holder, group = variable), position = position_identity(), just= -0.5) +
-        #   hefpi::theme_gdocs() +
-        #     theme(axis.title.y=element_blank(),
-        #           axis.text.y=element_blank(),
-        #           axis.ticks.y=element_blank()), tooltip = 'text'))
+        # p <- plot_ly(data = df, 
+        #              x = ~value, 
+        #              y = ~country, 
+        #              color = ~variable, 
+        #              colors = col_vec, text = mytext, 
+        #              hoverinfo = 'text') %>%
+        #   layout(title = plot_title,
+        #          xaxis= list(title = 'Value', showticklabels = TRUE),
+        #          yaxis= list(title = '', showticklabels = TRUE))
         # 
-        # library(devtools)
-        # install_github("mages/googleVis")
-        # # plot
-        # print(ggplotly(ggplot(df, aes(x =value, country, group = country, color = variable)) + 
-        #                  geom_point(size = 2.5, alpha = 0.8) +
-        #                  geom_line(size = 1, alpha = 0.7, color = 'grey') +
-        #                  scale_color_manual(name = 'Quintiles',
-        #                                     values = col_vec) +
-        #                  labs(x = 'Most recent value (before selected year)',
-        #                       y = '',
-        #                       title = plot_title) + scale_y_discrete(breaks = df$country,
-        #                                                              labels = as.character(df$country)) +
-        #                  hefpi::theme_gdocs()))
+        # p
+        
+        print(ggplotly(ggplot(df, aes(x=country,
+                                  y=value,
+                                  text = mytext)) +
+          geom_point(size=5, aes(color = variable)) +
+          geom_segment(aes(x=country,
+                           xend=country,
+                           y=0,
+                           yend=value)) +
+          scale_color_manual(name = '',
+                             values = col_vec) +
+          labs(title=plot_title, x = '', y = ' ') +
+          coord_flip() +
+          hefpi::theme_gdocs(), tooltip = 'text'))
         
       }
      
@@ -323,28 +310,28 @@ mod_dots_ind_server <- function(input, output, session){
         NULL
       } else {
         
-        p <- plot_ly(data = df, 
-                     x = ~value, 
-                     y = ~indicator_short_name, 
-                     color = ~variable, 
-                     colors = col_vec, text = mytext, 
-                     hoverinfo = 'text') %>%
-          layout(title = plot_title,
-                 xaxis= list(title = 'Value', showticklabels = TRUE),
-                 yaxis= list(title = '', showticklabels = TRUE))
+        # p <- plot_ly(data = df, 
+        #              x = ~value, 
+        #              y = ~indicator_short_name, 
+        #              color = ~variable, 
+        #              colors = col_vec, text = mytext, 
+        #              hoverinfo = 'text') %>%
+        #   layout(title = plot_title,
+        #          xaxis= list(title = 'Value', showticklabels = TRUE),
+        #          yaxis= list(title = '', showticklabels = TRUE))
         
       # # plot
-      # p<-   ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable)) + 
-      #   geom_point(size = 2.5, alpha = 0.8) +
-      #   geom_line(size = 1.5, alpha = 1, color = 'grey') +
-      #   scale_color_manual(name = 'Quintiles',
-      #                      values = col_vec) +
-      #   labs(x = 'Most recent value (before selected year)',
-      #        y = '',
-      #        title = plot_title) +
-      #   hefpi::theme_gdocs()
-      # 
-      # return(p)
+      print(ggplotly(ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable, text = mytext)) +
+        geom_point(size = 2.5, alpha = 0.8) +
+        geom_line(size = 1.5, alpha = 1, color = 'grey') +
+        scale_color_manual(name = 'Quintiles',
+                           values = col_vec) +
+        labs(x = 'Most recent value (before selected year)',
+             y = '',
+             title = plot_title) +
+        hefpi::theme_gdocs(), tooltip = 'text'))
+
+      
       
       }
     

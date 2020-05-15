@@ -150,8 +150,8 @@ mod_recent_mean_server <- function(input, output, session){
       # plotly plot
      p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar', text = mytext, hoverinfo = 'text', color = 'red') %>%
         layout(title = plot_title,
-              xaxis= list(title = 'Country', showticklabels = FALSE),
-               yaxis= list(title = 'Value'))
+              xaxis= list(title = 'Country', showticklabels = TRUE),
+               yaxis= list(title = 'Value', showticklabels = TRUE))
      return(p)
     })
     
@@ -302,8 +302,8 @@ mod_recent_con_server <- function(input, output, session){
       # plotly plot
       p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar',text = mytext, hoverinfo = 'text', color = 'red') %>%
         layout(title = plot_title,
-               xaxis= list(title = 'Country', showticklabels = FALSE),
-               yaxis= list(title = 'Value'))
+               xaxis= list(title = 'Country', showticklabels = TRUE),
+               yaxis= list(title = 'Value', showticklabels = TRUE))
       
       return(p)
     })
