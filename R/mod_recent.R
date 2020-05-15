@@ -13,6 +13,7 @@
 #' @keywords internal
 #' @export 
 #' @import leaflet
+#' @import shinyalert
 #' @importFrom shiny NS tagList 
 mod_recent_mean_ui <- function(id){
   ns <- NS(id)
@@ -22,7 +23,7 @@ mod_recent_mean_ui <- function(id){
     fluidRow(
       column(8,
              leafletOutput(
-               ns('recent_mean_leaf')
+               ns('recent_mean_leaf'),
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
@@ -34,9 +35,12 @@ mod_recent_mean_ui <- function(id){
                          max = 2017,
                          value = c(1982, 2017),
                          step = 1,
-                         sep = ''))
+                         sep = ''),
+             useShinyalert(),  # Set up shinyalert
+             actionButton(ns("plot_info"), "Plot Info"))
     ),
     br(), br(),
+    
     fluidRow(
       column(8,
              plotlyOutput(
@@ -59,12 +63,22 @@ mod_recent_mean_ui <- function(id){
     
 mod_recent_mean_server <- function(input, output, session){
   
-  # Observe changes to inputs in order to generate changes to the map
+ 
   observeEvent({
     input$date_range
     input$indicator
     1
   }, {
+    # Observe changes to inputs in order to generate changes to the map
+    observeEvent(input$plot_info, {
+      # Show a modal when the button is pressed
+      shinyalert(title = "Recent value- Population mean", 
+                 text = "charts display a world map in which countries are color-coded according to the most recent value of an indicator’s population level mean. To give users a better idea of a country’s relative positioning, the map is complemented by a bar chart that ranks countries by indicator value. By default, the map and bar chart use the latest available HEFPI data point, but users can choose the time period from which this latest data point is chosen.", 
+                 type = "info", 
+                 closeOnClickOutside = TRUE, 
+                 showCancelButton = FALSE, 
+                 showConfirmButton = FALSE)
+    })
     # Capture the plot_years
     plot_years <- input$date_range
     if(is.null(plot_years)){
