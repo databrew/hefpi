@@ -186,7 +186,7 @@ mod_dots_country_server <- function(input, output, session){
         print(ggplotly(ggplot(df, aes(x=country,
                                   y=value,
                                   text = mytext)) +
-          geom_point(size=5, aes(color = variable)) +
+          geom_point(size=5, aes(color = variable), alpha = 0.7) +
           geom_segment(aes(x=country,
                            xend=country,
                            y=0,
@@ -344,17 +344,29 @@ mod_dots_ind_server <- function(input, output, session){
         #          yaxis= list(title = '', showticklabels = TRUE))
         
       # # plot
-      print(ggplotly(ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable, text = mytext)) +
-        geom_point(size = 2.5, alpha = 0.8) +
-        geom_line(size = 1.5, alpha = 1, color = 'grey') +
-        scale_color_manual(name = 'Quintiles',
-                           values = col_vec) +
-        labs(x = 'Most recent value (before selected year)',
-             y = '',
-             title = plot_title) +
-        hefpi::theme_gdocs(), tooltip = 'text'))
+      # print(ggplotly(ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable, text = mytext)) +
+      #   geom_point(size = 2.5, alpha = 0.8) +
+      #   geom_line(size = 1.5, alpha = 1, color = 'grey') +
+      #   scale_color_manual(name = 'Quintiles',
+      #                      values = col_vec) +
+      #   labs(x = 'Most recent value (before selected year)',
+      #        y = '',
+      #        title = plot_title) +
+      #   hefpi::theme_gdocs(), tooltip = 'text'))
 
-      
+        print(ggplotly(ggplot(df, aes(x=indicator_short_name,
+                                      y=value,
+                                      text = mytext)) +
+                         geom_point(size=5, aes(color = variable), alpha = 0.7) +
+                         geom_segment(aes(x=indicator_short_name,
+                                          xend=indicator_short_name,
+                                          y=0,
+                                          yend=value)) +
+                         scale_color_manual(name = '',
+                                            values = col_vec) +
+                         labs(title=plot_title, x = '', y = ' ') +
+                         coord_flip() +
+                         hefpi::theme_gdocs(), tooltip = 'text'))
       
       }
     
