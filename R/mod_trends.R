@@ -48,7 +48,9 @@ mod_trends_mean_ui <- function(id){
                       max = 1,
                       value = c(0, 1),
                       step = 0.05,
-                      sep = ''))
+                      sep = ''),
+          useShinyalert(),  # Set up shinyalert
+          actionButton(ns("plot_info"), "Plot Info"))
   )
   )
 }
@@ -70,6 +72,17 @@ mod_trends_mean_server <- function(input, output, session){
  
     output$country_ui <- renderUI({
       
+      
+      # Observe changes to inputs in order to generate changes to the map
+      observeEvent(input$plot_info, {
+        # Show a modal when the button is pressed
+        shinyalert(title = "Trends - Population mean", 
+                   text = "charts allow tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+                   type = "info", 
+                   closeOnClickOutside = TRUE, 
+                   showCancelButton = FALSE, 
+                   showConfirmButton = FALSE)
+      })
       
       # get inputs
       indicator <- input$indicator
@@ -102,12 +115,12 @@ mod_trends_mean_server <- function(input, output, session){
     })
     
     output$trends_mean <- renderPlotly({
-      indicator <- "Catastrophic health spending, 10%"
-      region <- "Latin America & Caribbean"
-      temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
-      country_names <- unique(temp$country_name)
-      date_range <- c(1982, 2017)
-      value_range <- c(0,1)
+      # indicator <- "Catastrophic health spending, 10%"
+      # region <- "Latin America & Caribbean"
+      # temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
+      # country_names <- unique(temp$country_name)
+      # date_range <- c(1982, 2017)
+      # value_range <- c(0,1)
       # get inputs
       indicator <- input$indicator
       region <- input$region
@@ -217,7 +230,9 @@ mod_trends_con_ui <- function(id){
                          max = 1,
                          value = c(-1, 1),
                          step = 0.05,
-                         sep = ''))
+                         sep = ''),
+             useShinyalert(),  # Set up shinyalert
+             actionButton(ns("plot_info"), "Plot Info"))
     )
   )
 }
@@ -235,9 +250,21 @@ mod_trends_con_ui <- function(id){
 #' @keywords internal
 
 mod_trends_con_server <- function(input, output, session){
+  
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Trends - Concentration Index", 
+               text = "charts allow users to track the over-time dynamics in an indicator’s concentration index. tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
+  
+  # country ui
   output$country_ui <- renderUI({
-    
- 
+   
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -376,7 +403,9 @@ mod_trends_quin_ui <- function(id){
                          choices =year_list,
                          selected = year_list[length(year_list)]),
              selectInput(ns('view_as'), 'View as',
-                         choices =c('Slope chart', 'Line chart')))
+                         choices =c('Slope chart', 'Line chart')),
+             useShinyalert(),  # Set up shinyalert
+             actionButton(ns("plot_info"), "Plot Info"))
     )
   )
 }
@@ -395,6 +424,16 @@ mod_trends_quin_ui <- function(id){
 
 mod_trends_quin_server <- function(input, output, session){
   
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Trends - Quintile", 
+               text = "charts show HEFPI health outcome and health service coverage indicator trends at the wealth quintile level, revealing if any inequalities have reduced, remained stable, or increased over time. Users can tailor the charts to their time period of interest.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   
   output$trends_quin <- renderPlotly({
     # country_names <- 'United States'
