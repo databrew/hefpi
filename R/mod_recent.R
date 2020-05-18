@@ -201,7 +201,9 @@ mod_recent_con_ui <- function(id){
                          max = 2017,
                          value = c(1982, 2017),
                          step = 1,
-                         sep = ''))
+                         sep = ''),
+             useShinyalert(),  # Set up shinyalert
+             actionButton(ns("plot_info"), "Plot Info"))
     ),
     br(), br(),
     
@@ -232,6 +234,16 @@ mod_recent_con_server <- function(input, output, session){
     input$indicator
     1
   }, {
+    # Observe changes to inputs in order to generate changes to the map
+    observeEvent(input$plot_info, {
+      # Show a modal when the button is pressed
+      shinyalert(title = "Recent value- Concentration Index", 
+                 text = "charts display a world map in which countries are color-coded according to the most recent value of an indicator’s concentration index. The concentration index is bounded between -1 and 1. Negative values indicate disproportionate concentration of a variable among the poor, and positive values disproportionate concentration among the rich. For instance, if the variable is “bad” such as infant mortality, a negative value means infant mortality is higher among the poor. The map is complemented by a bar chart that ranks countries by the concentration index. By default, the map and bar chart use an indicator’s latest available concentration index, but users can choose the time period from which this latest concentration index value is chosen.", 
+                 type = "info", 
+                 closeOnClickOutside = TRUE, 
+                 showCancelButton = FALSE, 
+                 showConfirmButton = FALSE)
+    })
     # Capture the plot_years
     plot_years <- input$date_range
     if(is.null(plot_years)){

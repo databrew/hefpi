@@ -35,7 +35,9 @@ mod_dots_country_ui <- function(id){
              uiOutput(ns('country_ui')),
              selectInput(ns('last_date'), 'First available year before',
                          choices =year_list,
-                         selected = year_list[length(year_list)]))
+                         selected = year_list[length(year_list)]),
+             useShinyalert(),  # Set up shinyalert
+             actionButton(ns("plot_info"), "Plot Info"))
     )
   )
 }
@@ -54,6 +56,16 @@ mod_dots_country_ui <- function(id){
 
 mod_dots_country_server <- function(input, output, session){
   
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Quintile Dotpot for countries", 
+               text = "charts enable users to compare inequalities in health and service coverage outcomes both within and across countries. For a set of countries and an indicator the user specifies, the dot plot shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   output$country_ui <- renderUI({
     
     # last_date <- '2017'
@@ -224,7 +236,9 @@ mod_dots_ind_ui <- function(id){
                          selected = 'United States'),
              selectInput(ns('last_date'), 'First available year before',
                          choices =year_list,
-                         selected = year_list[length(year_list)]))
+                         selected = year_list[length(year_list)]),
+             useShinyalert(),  # Set up shinyalert
+             actionButton(ns("plot_info"), "Plot Info"))
     )
   )
 }
@@ -244,7 +258,16 @@ mod_dots_ind_ui <- function(id){
 
 mod_dots_ind_server <- function(input, output, session){
   
-  
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Quintile Dotpot for indicators", 
+               text = "charts allow users to shed light on overall health and service coverage inequality in a country and to explore differences in inequalities across indicators. For instance, the chart reveals if a country achieves universal coverage of maternal and child health services while failing to enable equitable access to inpatient care. For every health and service coverage indicator in the HEFPI database and a country the user selects, the dot plot shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   
   output$dots_ind <- renderPlotly({
     last_date <- '2017'
