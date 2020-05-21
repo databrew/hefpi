@@ -51,6 +51,11 @@ app_ui <- function() {
                                        mod_dat_ind_ui('dat_ind1')),
                               tabPanel('By country',
                                        mod_dat_country_ui('dat_country1'))),
+                   navbarMenu('Data availability alternate',
+                              tabPanel('By indicator',
+                                       mod_dat_ind_alt_ui('dat_ind_alt1')),
+                              tabPanel('By country',
+                                       mod_dat_country_alt_ui('dat_country_alt1'))),
                    tabPanel(title = "CSS test page",
                             fluidRow(
                               shinydashboard::box(title = 'This is another box',

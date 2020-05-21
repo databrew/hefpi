@@ -1,6 +1,6 @@
-# Module data availability
+# Module data availability alternate
 
-#' @title   mod_dat.R
+#' @title   mod_dat_alt.R
 #' @description  A shiny Module.
 #'
 #' @param id shiny id
@@ -8,7 +8,7 @@
 #' @param output internal
 #' @param session internal
 #'
-#' @rdname mod_dat_country_ui
+#' @rdname mod_dat_country_alt_ui
 #'
 #' @keywords internal
 #' @export 
@@ -16,7 +16,7 @@
 #' @import ggplot2
 #' @import reshape2
 #' @importFrom shiny NS tagList 
-mod_dat_country_ui <- function(id){
+mod_dat_country_alt_ui <- function(id){
   ns <- NS(id)
   tagList(
     
@@ -36,7 +36,7 @@ mod_dat_country_ui <- function(id){
 }
 
 # Module Server
-#' @rdname mod_dat_country_server
+#' @rdname mod_dat_country_alt_server
 #' @export
 #' @import tidyverse
 #' @import RColorBrewer
@@ -48,7 +48,7 @@ mod_dat_country_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
 
-mod_dat_country_server <- function(input, output, session){
+mod_dat_country_alt_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
@@ -93,7 +93,7 @@ mod_dat_country_server <- function(input, output, session){
     # get color graident 
     col_vec <- brewer.pal(name = 'Accent', n = length(unique(df$level_2)))
     col_vec[1] <- 'white'
-
+    
     
     # make plot title 
     plot_title = paste0('Missing data profile', ' - ', country_name)
@@ -102,7 +102,7 @@ mod_dat_country_server <- function(input, output, session){
     p<-   ggplot(df, aes(year, indicator_short_name, fill = level_2)) + 
       geom_tile(size = 2.5, alpha = 0.8) +
       scale_fill_manual(name = 'Indicator class',
-                         values = col_vec) +
+                        values = col_vec) +
       labs(x = 'Year',
            y = '',
            title = plot_title) +
@@ -114,12 +114,12 @@ mod_dat_country_server <- function(input, output, session){
     return(p)
   })
   
- 
+  
 }
 
 #-------------------------------------------------------------------------------------------------------------
 
-#' @rdname mod_dat_ind_ui
+#' @rdname mod_dat_ind_alt_ui
 #'
 #' @keywords internal
 #' @export 
@@ -127,7 +127,7 @@ mod_dat_country_server <- function(input, output, session){
 #' @import ggplot2
 #' @import reshape2
 #' @importFrom shiny NS tagList 
-mod_dat_ind_ui <- function(id){
+mod_dat_ind_alt_ui <- function(id){
   ns <- NS(id)
   tagList(
     
@@ -150,7 +150,7 @@ mod_dat_ind_ui <- function(id){
 }
 
 # Module Server
-#' @rdname mod_dat_ind_server
+#' @rdname mod_dat_ind_alt_server
 #' @export
 #' @import tidyverse
 #' @import RColorBrewer
@@ -161,7 +161,7 @@ mod_dat_ind_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
 
-mod_dat_ind_server <- function(input, output, session){
+mod_dat_ind_alt_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
@@ -193,7 +193,7 @@ mod_dat_ind_server <- function(input, output, session){
     temp_data$region_code <- unlist(lapply(strsplit(temp_data$regions_country, '_'), function(x) x[1]))
     temp_data$country <- unlist(lapply(strsplit(temp_data$regions_country, '_'), function(x) x[2]))
     temp_data$regions_country <- NULL
-      
+    
     # get region code
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
@@ -210,14 +210,14 @@ mod_dat_ind_server <- function(input, output, session){
       select(year,country, regioncode) %>%
       right_join(temp_data) %>%
       mutate(region_name = recode_factor(regioncode, EAS = 'East Asia & Pacific',
-                                                    ECS = 'Europe & Central Asia',
-                                                    LCN = 'Latin America & Caribbean',
-                                                    MEA = 'Middle East & North Africa',
-                                                    NAC = 'North America',
-                                                    SAS = 'South Asia',
-                                                    SSF = 'Sub-Saharan Africa')) %>%
+                                         ECS = 'Europe & Central Asia',
+                                         LCN = 'Latin America & Caribbean',
+                                         MEA = 'Middle East & North Africa',
+                                         NAC = 'North America',
+                                         SAS = 'South Asia',
+                                         SSF = 'Sub-Saharan Africa')) %>%
       select(-regioncode)
-
+    
     # make characters
     df$year <- as.character(df$year)
     df$region_name <- as.character(df$region_name)
@@ -232,35 +232,35 @@ mod_dat_ind_server <- function(input, output, session){
       arrange(region_name, country) %>%
       group_by(region_name) %>%
       dplyr::filter(country == dplyr::first(country))
-   
+    
     # get color graident 
     col_vec <- brewer.pal(name = 'Accent', n = length(unique(df$region_name)))
     col_vec[1] <- 'lightgrey'
-
+    
     # make plot title 
     plot_title = paste0('Missing data profile', ' - ', indicator)
     
-  
+    
     p<-   ggplot(df, aes(year, country, fill =region_name)) + 
       geom_tile(size = 2.5, alpha = 0.8) +
       scale_fill_manual(name = 'Region',
-                         values = sort(col_vec),
-                         breaks = c(NA,
-                                    'East Asia & Pacific',
+                        values = sort(col_vec),
+                        breaks = c(NA,
+                                   'East Asia & Pacific',
                                    'Europe & Central Asia',
                                    'Latin America & Caribbean',
                                    'Middle East & North Africa',
                                    'North America',
                                    'South Asia',
                                    'Sub-Saharan Africa'),
-                         labels = c('Missing Data',
-                                    'East Asia & Pacific',
-                                    'Europe & Central Asia',
-                                    'Latin America & Caribbean',
-                                    'Middle East & North Africa',
-                                    'North America',
-                                    'South Asia',
-                                    'Sub-Saharan Africa')) +
+                        labels = c('Missing Data',
+                                   'East Asia & Pacific',
+                                   'Europe & Central Asia',
+                                   'Latin America & Caribbean',
+                                   'Middle East & North Africa',
+                                   'North America',
+                                   'South Asia',
+                                   'Sub-Saharan Africa')) +
       labs(x = 'Year',
            y = '',
            title = plot_title) +
@@ -271,18 +271,18 @@ mod_dat_ind_server <- function(input, output, session){
       theme(axis.text.y = element_text(face = "plain", size = rel(10/12)),
             axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1))
     
-  return(p)
+    return(p)
   })
 }
 
 ## To be copied in the UI
-# mod_dat_country_ui("dat_country1")
-# mod_dat_country_ui("dat_ind1")
+# mod_dat_country_alt_ui("dat_country1")
+# mod_dat_country_alt_ui("dat_ind1")
 
 
 ## To be copied in the server
-# callModule(mod_dat_country_server, 'dat_country1')
-# callModule(mod_dat_ind_server, 'dat_ind1')
+# callModule(mod_dat_country_alt_server, 'dat_country1')
+# callModule(mod_dat_ind_alt_server, 'dat_ind1')
 
 
 
