@@ -68,11 +68,11 @@ mod_dots_country_server <- function(input, output, session){
   })
   output$country_ui <- renderUI({
     
-    # last_date <- '2017'
-    # indicator <- "BMI, adults"
-    # region <- "North America"
-    # temp <- hefpi::df_series %>% filter(region == 'North America')
-    # country_names <- unique(temp$country_name)
+    last_date <- '2017'
+    indicator <- "BMI, adults"
+    region <- "North America"
+    temp <- hefpi::df_series %>% filter(region == 'North America')
+    country_names <- unique(temp$country_name)
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -109,8 +109,8 @@ mod_dots_country_server <- function(input, output, session){
 
     last_date <- '2017'
     indicator <- "BMI, adults"
-    region <- "North America"
-    temp <- hefpi::df_series %>% filter(region == 'North America')
+    region <- "Latin America & Caribbean"
+    temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
     country_names <- unique(temp$country_name)
     last_date <- input$last_date
     region <- input$region
@@ -184,18 +184,16 @@ mod_dots_country_server <- function(input, output, session){
         # p
         
         print(ggplotly(ggplot(df, aes(x=country,
-                                  y=value,
-                                  text = mytext)) +
-          geom_point(size=5, aes(color = variable), alpha = 0.7) +
-          geom_segment(aes(x=country,
-                           xend=country,
-                           y=0,
-                           yend=value)) +
-          scale_color_manual(name = '',
-                             values = col_vec) +
-          labs(title=plot_title, x = '', y = ' ') +
-          coord_flip() +
-          hefpi::theme_gdocs(), tooltip = 'text'))
+                                      y=value,
+                                      text = mytext)) +
+                         geom_point(size=5, alpha = 0.7, aes(color = variable)) +
+                         geom_line(aes(group = country)) +
+                         scale_color_manual(name = '',
+                                            values = col_vec) +
+                         labs(title=plot_title, x = '', y = ' ') +
+                         coord_flip() +
+                         hefpi::theme_gdocs(), tooltip = 'text'))
+
         
       }
      
@@ -358,10 +356,7 @@ mod_dots_ind_server <- function(input, output, session){
                                       y=value,
                                       text = mytext)) +
                          geom_point(size=5, aes(color = variable), alpha = 0.7) +
-                         geom_segment(aes(x=indicator_short_name,
-                                          xend=indicator_short_name,
-                                          y=0,
-                                          yend=value)) +
+                         geom_line(aes(group = indicator_short_name)) +
                          scale_color_manual(name = '',
                                             values = col_vec) +
                          labs(title=plot_title, x = '', y = ' ') +
