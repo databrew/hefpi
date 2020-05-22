@@ -12,6 +12,7 @@
 #'
 #' @keywords internal
 #' @export 
+#' @import plotly
 #' @import tidyverse
 #' @import ggplot2
 #' @import reshape2
@@ -22,13 +23,14 @@ mod_dat_country_alt_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotOutput(
+             plotlyOutput(
                ns('dat_country'), height = '900px', width = '1000px',
              )),
       column(4,
              selectInput(ns('country'), 'Country',
                          choices = country_list,
                          selected = 'United States'),
+             uiOutput(ns('indicator_ui')),
              useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info"), "Plot Info"))
     )
@@ -44,6 +46,7 @@ mod_dat_country_alt_ui <- function(id){
 #' @import tidyr
 #' @import ggthemes
 #' @import scales
+#' @import plotly
 #' @import reshape2
 #' @import htmltools
 #' @keywords internal
@@ -61,57 +64,78 @@ mod_dat_country_alt_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
-  
-  output$dat_country <- renderPlot({
+  output$indicator_ui <- renderUI({
+    # get country input default
+    # country_name = 'United States'
     country_name <- input$country
     
-    # get all unique years and indicators
-    temp <- hefpi::df
-    all_years <- sort(unique(temp$year))
-    all_ind <- sort(unname(unlist(indicators_list)))
-    
-    # subset data by country and join to get indicator short name 
+    # subset data by country to get available level2 indicators
     country_data<- hefpi::df %>%
-      left_join(indicators, by = c('indic' = 'variable_name')) %>%
-      filter(country == country_name) 
+      filter(country == country_name) %>%
+      inner_join(indicators, by = c('indic' = 'variable_name')) 
+      
+    class_names <- names(indicators_list)[names(indicators_list) %in% unique(country_data$bin)]
     
-    # create data frame with year and indicator combinations
-    df <- tidyr::expand_grid(year = all_years, indicator_short_name = all_ind) %>%
-      left_join(country_data) %>%
-      select(country, year, indicator_short_name, level_2) 
+   
+    selectInput(session$ns("ind_class"), 
+                label = 'Indicator class', 
+                choices = class_names,
+                selected = 'Healthcare Coverage')
     
-    # fill country NAs with United States and levle_2 NAs with "Missing Data"
-    df$country[is.na(df$country)] <- country_name
-    df$level_2[is.na(df$level_2)] <- 'Missing Data'
-    df$year <- as.character(df$year)
+  })
+  
+  output$dat_country <- renderPlotly({
     
-    # order level_2
-    df$level_2 <- factor(df$level_2, levels =c('Missing Data', 'Catastrophic OOP spending', 'Health Outcomes', 'Impoverishing OOP spending', 'OOP spending', 'Service Coverage') )
-    
-    df$indicator_short_name <- factor(df$indicator_short_name, levels = sort(unique(df$indicator_short_name), decreasing = TRUE))
-    
-    # get color graident 
-    col_vec <- brewer.pal(name = 'Accent', n = length(unique(df$level_2)))
-    col_vec[1] <- 'white'
-    
-    
-    # make plot title 
-    plot_title = paste0('Missing data profile', ' - ', country_name)
-    
-    # plot
-    p<-   ggplot(df, aes(year, indicator_short_name, fill = level_2)) + 
-      geom_tile(size = 2.5, alpha = 0.8) +
-      scale_fill_manual(name = 'Indicator class',
-                        values = col_vec) +
-      labs(x = 'Year',
-           y = '',
-           title = plot_title) +
-      hefpi::theme_gdocs() +
-      theme(axis.text.y = element_text(face = "plain", size = rel(8/12)),
-            axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1))
-    
-    
-    return(p)
+
+    ind_class <- input$ind_class
+    if(is.null(ind_class)){
+      NULL
+    } else {
+      # country_name = 'United States'
+      # ind_class <- 'Financial Protection'
+      country_name <- input$country
+      ind_class <- input$ind_class
+      
+      # subset data by country and join to get indicator short name 
+      df<- hefpi::df %>%
+        filter(country == country_name) %>%
+        filter(bin == ind_class) %>%
+        left_join(indicators, by = c('indic' = 'variable_name')) %>%
+        select(country, year, indicator_short_name, referenceid_list)
+      
+      # get color graident 
+      col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(df$indicator_short_name))),
+                   brewer.pal(name = 'Accent', n = length(unique(df$indicator_short_name))))
+
+      
+      # make plot title 
+      plot_title = paste0('Missing data profile', ' - ', country_name)
+      
+      mytext <- paste(
+        "Year: ", as.character(unique(df$year)),"\n",
+        "Indicator: ", as.character(unique(df$indicator_short_name)),"\n",
+        "Country: ", as.character(unique(df$country)), "\n",
+        "Data source: ", as.character(df$referenceid_list),
+        sep="") %>%
+        lapply(htmltools::HTML)
+      
+      p<-   ggplot(df, aes(as.character(year), indicator_short_name, fill = indicator_short_name, text = mytext)) + 
+        geom_tile(size = 2.5, alpha = 0.8) +
+        scale_fill_manual(name = 'Indicator class',
+                          values = col_vec) +
+        labs(x = 'Year',
+             y = '',
+             title = plot_title) +
+        hefpi::theme_gdocs() +
+        theme(legend.position = 'none',
+              axis.text.y = element_text(face = "plain", size = rel(8/12)),
+              axis.text.x = element_text(face = "plain", size = rel(5/12), angle = 45, hjust = 1)) +
+      
+        coord_flip()
+      ggplotly(p, tooltip = 'mytext')
+     
+    }
+   
   })
   
   
@@ -180,8 +204,8 @@ mod_dat_ind_alt_server <- function(input, output, session){
     indicator <- input$indicator
     region <- input$region
     
-    # region <- region_list$region
-    # indicator <- 'Inpatient care use, adults'
+    region <- region_list$region
+    indicator <- 'Inpatient care use, adults'
     # 
     # create a region year country data
     country_data <- hefpi::df %>% select(year, country, regioncode) 
