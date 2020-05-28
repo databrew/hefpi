@@ -115,12 +115,12 @@ mod_trends_mean_server <- function(input, output, session){
     })
     
     output$trends_mean <- renderPlotly({
-      # indicator <- "Catastrophic health spending, 10%"
-      # region <- "Latin America & Caribbean"
-      # temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
-      # country_names <- unique(temp$country_name)
-      # date_range <- c(1982, 2017)
-      # value_range <- c(0,1)
+      indicator <- "Catastrophic health spending, 10%"
+      region <- "Latin America & Caribbean"
+      temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
+      country_names <- unique(temp$country_name)
+      date_range <- c(1982, 2017)
+      value_range <- c(0,1)
       # get inputs
       indicator <- input$indicator
       region <- input$region
