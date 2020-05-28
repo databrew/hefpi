@@ -1,9 +1,7 @@
 #' @import shiny
 #' @import shinydashboard
 app_ui <- function() {
-  
 
-  
   
   # HEADER
   header <- dashboardHeader(title = tags$a(tags$img(src='www/wb_logo.png', alt = 'WBG')))
