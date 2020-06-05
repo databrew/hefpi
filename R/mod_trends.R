@@ -145,7 +145,6 @@ mod_trends_mean_server <- function(input, output, session){
           .$variable_name
         
         # subet by variable, region code and a list of countries
-        
         df <- df[df$indic == variable,]
         df <- df[df$regioncode == region_code,]
         pd <- df[df$country %in% country_names,]
