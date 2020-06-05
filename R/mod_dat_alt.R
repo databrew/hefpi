@@ -91,8 +91,8 @@ mod_dat_country_alt_server <- function(input, output, session){
     if(is.null(ind_class)){
       NULL
     } else {
-      # country_name = 'United States'
-      # ind_class <- 'Financial Protection'
+      country_name = 'United States'
+      ind_class <- 'Financial Protection'
       country_name <- input$country
       ind_class <- input$ind_class
       
@@ -103,6 +103,20 @@ mod_dat_country_alt_server <- function(input, output, session){
         left_join(indicators, by = c('indic' = 'variable_name')) %>%
         select(country, year, indicator_short_name, referenceid_list)
       
+      # create data frame with expanded grid of year and indicators for this class
+      # get all unique years and indicators
+      temp <- hefpi::df
+      all_years <- sort(unique(temp$year))
+      all_ind <- unname(unlist(indicators_list[names(indicators_list) == ind_class]))
+      df_ex <- tidyr::expand_grid(year = all_years, indicator_short_name = all_ind) %>%
+        left_join(df) %>%
+        select(country, year, indicator_short_name,referenceid_list ) 
+      
+      # change country column to missing or not column
+      df_ex$country <- ifelse(is.na(df_ex$country), NA, df_ex$indicator_short_name)
+      df_ex$indicator_short_name <- df_ex$country
+      df_ex$country <- country_name
+      
       # get color graident 
       col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(df$indicator_short_name))),
                    brewer.pal(name = 'Accent', n = length(unique(df$indicator_short_name))))
@@ -112,14 +126,14 @@ mod_dat_country_alt_server <- function(input, output, session){
       plot_title = paste0('Missing data profile', ' - ', country_name)
       
       mytext <- paste(
-        "Year: ", as.character(unique(df$year)),"\n",
-        "Indicator: ", as.character(unique(df$indicator_short_name)),"\n",
-        "Country: ", as.character(unique(df$country)), "\n",
-        "Data source: ", as.character(df$referenceid_list),
+        "Year: ", as.character(unique(df_ex$year)),"\n",
+        "Indicator: ", as.character(unique(df_ex$indicator_short_name)),"\n",
+        "Country: ", as.character(unique(df_ex$country)), "\n",
+        "Data source: ", as.character(df_ex$referenceid_list),
         sep="") %>%
         lapply(htmltools::HTML)
       
-      p<-   ggplot(df, aes(as.character(year), indicator_short_name, fill = indicator_short_name, text = mytext)) + 
+      p<-   ggplot(df_ex, aes(as.character(year), indicator_short_name, fill = indicator_short_name, text = mytext)) + 
         geom_tile(size = 2.5, alpha = 0.8) +
         scale_fill_manual(name = 'Indicator class',
                           values = col_vec) +
