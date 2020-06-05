@@ -1,3 +1,4 @@
+
 # Module data availability alternate
 
 #' @title   mod_dat_alt.R
@@ -7,156 +8,7 @@
 #' @param input internal
 #' @param output internal
 #' @param session internal
-#'
-#' @rdname mod_dat_country_alt_ui
-#'
-#' @keywords internal
-#' @export 
-#' @import plotly
-#' @import tidyverse
-#' @import ggplot2
-#' @import reshape2
-#' @importFrom shiny NS tagList 
-mod_dat_country_alt_ui <- function(id){
-  ns <- NS(id)
-  tagList(
-    
-    fluidPage(
-      column(8,
-             plotlyOutput(
-               ns('dat_country'), height = '900px', width = '1000px',
-             )),
-      column(4,
-             selectInput(ns('country'), 'Country',
-                         choices = country_list,
-                         selected = 'United States'),
-             uiOutput(ns('indicator_ui')),
-             useShinyalert(),  # Set up shinyalert
-             actionButton(ns("plot_info"), "Plot Info"))
-    )
-  )
-}
-
-# Module Server
-#' @rdname mod_dat_country_alt_server
-#' @export
-#' @import tidyverse
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import tidyr
-#' @import ggthemes
-#' @import scales
-#' @import plotly
-#' @import reshape2
-#' @import htmltools
-#' @keywords internal
-
-mod_dat_country_alt_server <- function(input, output, session){
-  
-  # Observe changes to inputs in order to generate changes to the map
-  observeEvent(input$plot_info, {
-    # Show a modal when the button is pressed
-    shinyalert(title = "Data availability by Country", 
-               text = "charts zoom in on the general data availability situation for a specific country. They allow users to explore, for instance, if data are frequently available for maternal and child health service coverage, while being largely missing for catastrophic healthcare spending. The charts’ vertical axis sorts all indicators in the database by the three HEFPI domains: health outcomes, service coverage, and financial protection. The horizontal axis represents time. Years for which data are available for an indicator are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s country of interest.", 
-               type = "info", 
-               closeOnClickOutside = TRUE, 
-               showCancelButton = FALSE, 
-               showConfirmButton = FALSE)
-  })
-  
-  output$indicator_ui <- renderUI({
-    # get country input default
-    # country_name = 'United States'
-    country_name <- input$country
-    
-    # subset data by country to get available level2 indicators
-    country_data<- hefpi::df %>%
-      filter(country == country_name) %>%
-      inner_join(indicators, by = c('indic' = 'variable_name')) 
-      
-    class_names <- names(indicators_list)[names(indicators_list) %in% unique(country_data$bin)]
-    
-   
-    selectInput(session$ns("ind_class"), 
-                label = 'Indicator class', 
-                choices = class_names,
-                selected = 'Healthcare Coverage')
-    
-  })
-  
-  output$dat_country <- renderPlotly({
-    
-
-    ind_class <- input$ind_class
-    if(is.null(ind_class)){
-      NULL
-    } else {
-      country_name = 'United States'
-      ind_class <- 'Financial Protection'
-      country_name <- input$country
-      ind_class <- input$ind_class
-      
-      # subset data by country and join to get indicator short name 
-      df<- hefpi::df %>%
-        filter(country == country_name) %>%
-        filter(bin == ind_class) %>%
-        left_join(indicators, by = c('indic' = 'variable_name')) %>%
-        select(country, year, indicator_short_name, referenceid_list)
-      
-      # create data frame with expanded grid of year and indicators for this class
-      # get all unique years and indicators
-      temp <- hefpi::df
-      all_years <- sort(unique(temp$year))
-      all_ind <- unname(unlist(indicators_list[names(indicators_list) == ind_class]))
-      df_ex <- tidyr::expand_grid(year = all_years, indicator_short_name = all_ind) %>%
-        left_join(df) %>%
-        select(country, year, indicator_short_name,referenceid_list ) 
-      
-      # change country column to missing or not column
-      df_ex$country <- ifelse(is.na(df_ex$country), NA, df_ex$indicator_short_name)
-      df_ex$indicator_short_name <- df_ex$country
-      df_ex$country <- country_name
-      
-      # get color graident 
-      col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(df$indicator_short_name))),
-                   brewer.pal(name = 'Accent', n = length(unique(df$indicator_short_name))))
-
-      
-      # make plot title 
-      plot_title = paste0('Missing data profile', ' - ', country_name)
-      
-      mytext <- paste(
-        "Year: ", as.character(unique(df_ex$year)),"\n",
-        "Indicator: ", as.character(unique(df_ex$indicator_short_name)),"\n",
-        "Country: ", as.character(unique(df_ex$country)), "\n",
-        "Data source: ", as.character(df_ex$referenceid_list),
-        sep="") %>%
-        lapply(htmltools::HTML)
-      
-      p<-   ggplot(df_ex, aes(as.character(year), indicator_short_name, fill = indicator_short_name, text = mytext)) + 
-        geom_tile(size = 2.5, alpha = 0.8) +
-        scale_fill_manual(name = 'Indicator class',
-                          values = col_vec) +
-        labs(x = 'Year',
-             y = '',
-             title = plot_title) +
-        hefpi::theme_gdocs() +
-        theme(legend.position = 'none',
-              axis.text.y = element_text(face = "plain", size = rel(8/12)),
-              axis.text.x = element_text(face = "plain", size = rel(5/12), angle = 45, hjust = 1)) +
-      
-        coord_flip()
-      ggplotly(p, tooltip = 'mytext')
-     
-    }
-   
-  })
-  
-  
-}
-
-#-------------------------------------------------------------------------------------------------------------
-
+#' 
 #' @rdname mod_dat_ind_alt_ui
 #'
 #' @keywords internal
@@ -171,16 +23,15 @@ mod_dat_ind_alt_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotOutput(
+             plotlyOutput(
                ns('dat_ind'), height = '900px'
              )),
       column(4,
-             selectInput(ns('region'), 'Region',
-                         choices = as.character(region_list$region),
-                         multiple = TRUE, 
-                         selected = as.character(region_list$region)),
              selectInput(ns('indicator'), 'Indicator',
                          choices = indicators_list),
+             selectInput(ns('region'), 'Region',
+                         choices = as.character(region_list$region),
+                         selected = 'Europe & Central Asia'),
              useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info"), "Plot Info"))
     )
@@ -212,29 +63,50 @@ mod_dat_ind_alt_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  # output$country_ui <- renderUI({
+  #   
+  #   region <- region_list$region[1]
+  #   indicator <- 'Inpatient care use, adults'
+  #   # 
+  #   indicator <- input$indicator
+  #   region <- input$region
+  #   
+  #   # get region code
+  #   region_list <- hefpi::region_list
+  #   region_code <- as.character(region_list$region_code[region_list$region == region])
+  #   
+  #   # Get the variable
+  #   variable <- indicators %>%
+  #     filter(indicator_short_name == indicator) %>%
+  #     .$variable_name
+  #   
+  #   # subset data by variable and region code
+  #   df <- hefpi::df
+  #   df <- df[df$regioncode == region_code,]
+  #   
+  #   df <- df[df$indic == variable,]
+  #  
+  #   countries <- unique(df$country)
+  #   selectInput(session$ns("country"), 
+  #               label = 'Country', 
+  #               choices = countries,
+  #               multiple = TRUE, 
+  #               selected = countries)
+  #   
+  # })
   
-  output$dat_ind <- renderPlot({
+  output$dat_ind <- renderPlotly({
+    region <- 'Europe & Central Asia'
+    indicator <- 'Inpatient care use, adults'
+    # country_name = c('Argentina', 'Brazil', 'Chile', 'Ecuador')
     
+    # country_name <- input$country
     indicator <- input$indicator
     region <- input$region
     
-    region <- region_list$region
-    indicator <- 'Inpatient care use, adults'
-    # 
-    # create a region year country data
-    country_data <- hefpi::df %>% select(year, country, regioncode) 
-    all_years <- sort(unique(country_data$year))
-    all_countries <- sort(unique(country_data$country))
-    regions_country <- sort(unique(paste0(country_data$regioncode, '_',country_data$country)))
-    
-    temp_data <- expand_grid(year = all_years, regions_country = regions_country) 
-    temp_data$region_code <- unlist(lapply(strsplit(temp_data$regions_country, '_'), function(x) x[1]))
-    temp_data$country <- unlist(lapply(strsplit(temp_data$regions_country, '_'), function(x) x[2]))
-    temp_data$regions_country <- NULL
-    
     # get region code
     region_list <- hefpi::region_list
-    region_code <- as.character(region_list$region_code[region_list$region %in% region])
+    region_code <- as.character(region_list$region_code[region_list$region == region])
     
     # Get the variable
     variable <- indicators %>%
@@ -245,71 +117,78 @@ mod_dat_ind_alt_server <- function(input, output, session){
     df<- hefpi::df %>%
       filter(indic == variable) %>%
       filter(regioncode %in% region_code) %>%
-      select(year,country, regioncode) %>%
-      right_join(temp_data) %>%
-      mutate(region_name = recode_factor(regioncode, EAS = 'East Asia & Pacific',
-                                         ECS = 'Europe & Central Asia',
-                                         LCN = 'Latin America & Caribbean',
-                                         MEA = 'Middle East & North Africa',
-                                         NAC = 'North America',
-                                         SAS = 'South Asia',
-                                         SSF = 'Sub-Saharan Africa')) %>%
-      select(-regioncode)
+      # filter(country %in% country_name) %>%
+      select(year,country, indic, regioncode, referenceid_list) 
     
-    # make characters
-    df$year <- as.character(df$year)
-    df$region_name <- as.character(df$region_name)
+    names(df)[names(df) == 'regioncode'] <- 'region'
     
-    df <- df %>% dplyr::arrange(desc(year), region_code, country)
-    df$country <- factor(df$country, levels = unique(df$country))
+    # HERE
+    # create a region year country data
+    country_data <- hefpi::df %>% 
+      filter(indic == variable) %>%
+      select(year, regioncode, indic) 
+    all_years <- sort(unique(country_data$year))
+    all_regions <- sort(unique(country_data$regioncode))
+    
+    temp_data <- expand_grid(year = all_years, region = all_regions) %>%
+      left_join(df)
+    
+    temp_data$country <- ifelse(is.na(temp_data$country), 'No data', temp_data$country)
+    temp_data$referenceid_list <- ifelse(is.na(temp_data$referenceid_list), 'No data', temp_data$referenceid_list)
+    temp_data$region <- ifelse(temp_data$region == region_code, temp_data$region,'No data')
+    
+    # do x axis - country, y = year, and color by region, specific region or No data
+    temp_data <- temp_data %>%  mutate(region_name = recode_factor(region, EAS = 'East Asia & Pacific',
+                                                                   ECS = 'Europe & Central Asia',
+                                                                   LCN = 'Latin America & Caribbean',
+                                                                   MEA = 'Middle East & North Africa',
+                                                                   NAC = 'North America',
+                                                                   SAS = 'South Asia',
+                                                                   SSF = 'Sub-Saharan Africa')) %>%
+      select(-region)
+    temp_data$indic <- indicator
     
     
-    y_df <- df %>% arrange(desc(year), region_name, country) %>%
-      dplyr::distinct(region_name, country) %>%
-      filter(!is.na(region_name)) %>% 
-      arrange(region_name, country) %>%
-      group_by(region_name) %>%
-      dplyr::filter(country == dplyr::first(country))
+    # temp_data$country <- country_name
+    # temp_data$regioncode <- NULL
     
-    # get color graident 
-    col_vec <- brewer.pal(name = 'Accent', n = length(unique(df$region_name)))
-    col_vec[1] <- 'lightgrey'
+    # find no data index
+    all_regions <- as.character(sort(unique(temp_data$region_name)))
+    no_data_index <- which(all_regions == 'No data')
+    
+    # colfunc <- colorRampPalette(c("red", "blue"))
+    # col_vec <- colfunc(length(unique(temp_data$country)))
+    # get color graident
+    col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(temp_data$region_name))))
+    col_vec[no_data_index] <- 'white'
+    
     
     # make plot title 
-    plot_title = paste0('Missing data profile', ' - ', indicator)
+    plot_title = paste0('Missing data profile', ' - ', indicator, ' for ', region)
     
+    mytext <- paste(
+      "Year: ", as.character(temp_data$year),"\n",
+      "Country: ", as.character(temp_data$country), "\n",
+      "Data source: ", as.character(temp_data$referenceid_list),
+      sep="") %>%
+      lapply(htmltools::HTML)
     
-    p<-   ggplot(df, aes(year, country, fill =region_name)) + 
+    p<-   ggplot(temp_data, aes(country, as.character(year), fill =region, text =mytext)) + 
       geom_tile(size = 2.5, alpha = 0.8) +
-      scale_fill_manual(name = 'Region',
-                        values = sort(col_vec),
-                        breaks = c(NA,
-                                   'East Asia & Pacific',
-                                   'Europe & Central Asia',
-                                   'Latin America & Caribbean',
-                                   'Middle East & North Africa',
-                                   'North America',
-                                   'South Asia',
-                                   'Sub-Saharan Africa'),
-                        labels = c('Missing Data',
-                                   'East Asia & Pacific',
-                                   'Europe & Central Asia',
-                                   'Latin America & Caribbean',
-                                   'Middle East & North Africa',
-                                   'North America',
-                                   'South Asia',
-                                   'Sub-Saharan Africa')) +
+      scale_fill_manual(name = 'Country',
+                        values = col_vec) +
       labs(x = 'Year',
            y = '',
            title = plot_title) +
-      scale_y_discrete(breaks = y_df$country,
-                       labels = y_df$region_name,
-                       limits = rev(levels(df$country))) +
       hefpi::theme_gdocs() +
-      theme(axis.text.y = element_text(face = "plain", size = rel(10/12)),
+      theme(legend.position = 'none',
+            axis.text.y = element_text(face = "plain", size = rel(10/12)),
             axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1))
     
-    return(p)
+    ggplotly(p, tooltip = 'text')
+    
+    
+    
   })
 }
 
@@ -321,7 +200,6 @@ mod_dat_ind_alt_server <- function(input, output, session){
 ## To be copied in the server
 # callModule(mod_dat_country_alt_server, 'dat_country1')
 # callModule(mod_dat_ind_alt_server, 'dat_ind1')
-
 
 
 
