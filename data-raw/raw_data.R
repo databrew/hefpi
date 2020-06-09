@@ -27,9 +27,10 @@ usethis::use_data(year_list, overwrite = T)
 
 # Get nicer indicator names in full database
 df <- df %>%
-  left_join(right %>%
+  left_join(indicators %>%
             dplyr::select(variable_name:unit_of_measure),
-            by = c('indic' = 'variable_name'))
+            by = c('indic' = 'variable_name')) %>% 
+  select(-c(indicator_short_name, indicator_name, indicator_description, unit_of_measure))
 usethis::use_data(df, overwrite = T)
 
 # Get indicators in a form usable for the selectInput function
