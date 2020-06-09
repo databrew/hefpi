@@ -83,7 +83,7 @@ mod_dots_country_server <- function(input, output, session){
     
     # Get the variable
     variable <- indicators %>%
-      filter(indicator_short_name == indicator) %>%
+      dplyr::filter(indicator_short_name == indicator) %>%
       .$variable_name
     
     # subset data by variable and region code
@@ -121,7 +121,7 @@ mod_dots_country_server <- function(input, output, session){
     } else {
       # Get the variable
       variable <- indicators %>%
-        filter(indicator_short_name == indicator) %>%
+        dplyr::filter(indicator_short_name == indicator) %>%
         .$variable_name
       
       # subset by country and variable
