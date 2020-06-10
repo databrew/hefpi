@@ -12,7 +12,7 @@ app_server <- function(input, output,session) {
   
   # recent tab
   callModule(mod_recent_mean_server, 'recent_mean_leaf1')
-  callModule(mod_recent_con_server, 'recent_con_leaf1')
+  # callModule(mod_recent_con_server, 'recent_con_leaf1')
   
   # trends tab
   callModule(mod_trends_mean_server, 'trends_mean1')
