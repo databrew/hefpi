@@ -134,6 +134,14 @@ mod_recent_mean_server <- function(input, output, session){
           fillOpacity = 0.9, 
           weight=1,
           label = mytext,
+          highlightOptions = highlightOptions(
+            weight = 1,
+            fillOpacity = 0,
+            color = "black",
+            opacity = 1.0,
+            bringToFront = TRUE,
+            sendToBack = TRUE
+          ),
           labelOptions = labelOptions( 
             style = list("font-weight" = "normal", padding = "3px 8px"), 
             textsize = "13px", 
