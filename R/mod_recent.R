@@ -112,7 +112,7 @@ mod_recent_mean_server <- function(input, output, session){
     shp@data <- shp@data %>% left_join(pd)
     
     # Make color palette
-    mypalette <- colorBin( palette="YlOrRd", domain=shp@data$pop, na.color="transparent")
+    mypalette <- colorNumeric(palette = brewer.pal(9, "Blues"), domain=shp@data$pop, na.color="transparent")
     
     # Make tooltip
     mytext <- paste(
@@ -170,10 +170,12 @@ mod_recent_mean_server <- function(input, output, session){
         lapply(htmltools::HTML)
       plot_title = paste0('Most recent value - population mean - ', indicator)
       # plotly plot
-     p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar', text = mytext, hoverinfo = 'text', color = 'red') %>%
+     p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar', text = mytext, hoverinfo = 'text', 
+                  marker = list(color='#469CD8')) %>%
         layout(title = plot_title,
               xaxis= list(title = 'Country', showticklabels = TRUE),
                yaxis= list(title = 'Value', showticklabels = TRUE))
+     
      return(p)
     })
     
@@ -285,7 +287,7 @@ mod_recent_con_server <- function(input, output, session){
     shp@data <- shp@data %>% left_join(pd)
     
     # Make color palette
-    mypalette <- colorBin( palette="YlOrRd", domain=shp@data$pop, na.color="transparent")
+    mypalette <- colorBin(palette = brewer.pal(9, "Blues"), domain=shp@data$pop, na.color="transparent")
     
     # Make tooltip
     mytext <- paste(
@@ -334,7 +336,8 @@ mod_recent_con_server <- function(input, output, session){
       plot_title = paste0('Most recent value - concentration index - ', indicator)
       
       # plotly plot
-      p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar',text = mytext, hoverinfo = 'text', color = 'red') %>%
+      p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar',text = mytext, hoverinfo = 'text',
+                   marker = list(color='#469CD8')) %>%
         layout(title = plot_title,
                xaxis= list(title = 'Country', showticklabels = TRUE),
                yaxis= list(title = 'Value', showticklabels = TRUE))
