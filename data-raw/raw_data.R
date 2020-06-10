@@ -13,7 +13,7 @@ indicators <- readxl::read_excel('from_wb/Indicator_description.xlsx')
 names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
 usethis::use_data(indicators, overwrite = T)
 
-
+temp <- haven::read_dta('~/Desktop/hefpi_full_database.dta')
 
 # Read in the full database
 df <- haven::read_dta('from_wb/hefpi_full_database.dta')
