@@ -394,14 +394,16 @@ mod_trends_quin_ui <- function(id){
              selectInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults'),
-             selectInput(ns('first_date'), 'First available year after',
-                         choices =year_list,
-                         selected = year_list[1]),
-             selectInput(ns('last_date'), 'First available year before',
-                         choices =year_list,
-                         selected = year_list[length(year_list)]),
              selectInput(ns('view_as'), 'View as',
                          choices =c('Slope chart', 'Line chart')),
+             sliderInput(ns('date_range'),
+                         'Date range',
+                         min = 1982,
+                         max = 2017,
+                         value = c(1982, 2017),
+                         step = 1,
+                         sep = ''),
+             uiOutput(ns('ui_value_range')),
              useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info"), "Plot Info"))
     )
@@ -433,19 +435,16 @@ mod_trends_quin_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
-  output$trends_quin <- renderPlotly({
-    # country_names <- 'United States'
-    # indicator <- 'Catastrophic health spending, 10%'
-    # first_date <- 1990
-    # last_date <- 2017
-    # view_as <- 'Slope chart'
+  output$ui_value_range <- renderUI({
+    country_names <- 'United States'
+    indicator <- 'Catastrophic health spending, 10%'
+    # value_range <- c(0.06,0.12)
+    date_range <- c(1982,2016)
     # 
     country_names <- input$country
     indicator <- input$indicator
-    first_date <- input$first_date
-    last_date <- input$last_date
-    view_as <- input$view_as
-    
+    date_range <- input$date_range
+
     # Get the variable
     variable <- indicators %>%
       filter(indicator_short_name == indicator) %>%
@@ -454,68 +453,102 @@ mod_trends_quin_server <- function(input, output, session){
     # subset by country and variable
     df <- hefpi::df %>%
       filter(country == country_names) %>%
-      filter(indic == variable) 
-    
-    # if the last_date is greater than the first date, print a message in the plot
-    if(first_date >= last_date){
-      p <- ggplot() + labs(title = paste0("The 'First Available Year After' input needs","\n" ,"to be later than the 'First Available Year Before' input"))
+      filter(indic == variable) %>%
+      filter(year >= min(date_range),
+             year <= max(date_range))  %>%
+      select(year, Q1:Q5) 
+    temp <- melt(df, id.vars = 'year')
+    max_value <- round(max(temp$value), 2)
+    min_value <- round(min(temp$value), 2)
+    if(max_value<1){
+      min_value=0
+      max_value = 1
     } else {
-      # get the first available year after first_date and first available year after last_date
-      df_years <- sort(unique(df$year))
-      first_index <- df_years > first_date
-      year_one <- df_years[first_index][which(first_index)][1]
-      last_index <- df_years < last_date
-      year_last <- df_years[last_index][length(which(last_index))]
+      min_value = floor(min_value)
+      max_value = ceiling(max_value)
+    }
+    sliderInput(session$ns('value_range'),
+                'Y axis range',
+                min = min_value,
+                max = max_value,
+                value = c(min_value, max_value),
+                sep = '')
+  })
+  
+  output$trends_quin <- renderPlotly({
+    # country_names <- 'United States'
+    # indicator <- 'Catastrophic health spending, 10%'
+    # value_range <- c(0.06,0.12)
+    # date_range <- c(1982,2016)
+    # view_as <- 'Slope chart'
+    # 
+    country_names <- input$country
+    indicator <- input$indicator
+    date_range <- input$date_range
+    view_as <- input$view_as
+    value_range <- input$value_range
+    
+    if(is.null(value_range)){
+      NULL
+    } else {
+      # Get the variable
+      variable <- indicators %>%
+        filter(indicator_short_name == indicator) %>%
+        .$variable_name
       
+      # subset by country and variable
+      df <- hefpi::df %>%
+        filter(country == country_names) %>%
+        filter(indic == variable) %>%
+        filter(year >= min(date_range),
+               year <= max(date_range))  %>%
+        select(year, Q1:Q5) 
       if(view_as == 'Slope chart'){
         # filter to get year_one and year_last
+        year_begin = min(df$year)
+        year_end = max(df$year)
         df <- df %>%
-          filter(year == year_one | year == year_last) %>%
-          select(year, Q1:Q5) 
+          filter(year == year_begin | year == year_end)
         # save(df, file = 'df.rda')
-      } else {
-        df <- df %>%
-          filter(year >=year_one | year <= year_last) %>%
-          select(year, Q1:Q5) 
       }
-     
-    
-    df <- melt(df, id.vars = 'year')
-    
-    # recode Quintiels
-    df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
-                          ifelse(df$variable == 'Q2', 'Q2: Poor',
-                                 ifelse(df$variable == 'Q3', 'Q3: Middle',
-                                        ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
-    
-    # # get color graident 
-    col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-    col_vec <- col_vec[-1]
-    
-    # make plot title
-    plot_title = paste0('Quintile Trends - ', country_names, ' , ', indicator)
       
-    # text for plot
-    mytext <- paste(
-      "Value: ", round(df$value, digits = 3), "\n",
-      "Year: ", as.character(df$year),"\n",
-      sep="") %>%
-      lapply(htmltools::HTML)
-    # condition if we connect the dots
-    p <- plot_ly(data = df, x = ~year, y = ~value, color = ~variable, colors = col_vec,
-                 text = mytext, hoverinfo = 'text') %>%
-      add_trace(x = ~year, y = ~value, color = ~variable, colors = col_vec, mode = 'lines+markers') %>%
-      layout(title = plot_title,
-             xaxis= list(showline = TRUE, title = 'Year', showticklabels = TRUE),
-             yaxis= list(showline = TRUE, title = 'Value', showticklabels = TRUE))
-    
-    
+      df <- melt(df, id.vars = 'year')
       
+      # recode Quintiels
+      df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
+                            ifelse(df$variable == 'Q2', 'Q2: Poor',
+                                   ifelse(df$variable == 'Q3', 'Q3: Middle',
+                                          ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
+      
+      # # get color graident 
+      col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+      col_vec <- col_vec[-1]
+      
+      # make plot title
+      plot_title = paste0('Quintile Trends - ', country_names, ' , ', indicator)
+      
+      # subset by y axis
+      df <- df %>% 
+        filter(value >= value_range[1],
+               value <= value_range[2])
+      # text for plot
+      mytext <- paste(
+        "Value: ", round(df$value, digits = 3), "\n",
+        "Year: ", as.character(df$year),"\n",
+        sep="") %>%
+        lapply(htmltools::HTML)
+      # condition if we connect the dots
+      p <- plot_ly(data = df, x = ~year, y = ~value, color = ~variable, colors = col_vec,
+                   text = mytext, hoverinfo = 'text') %>%
+        add_trace(x = ~year, y = ~value, color = ~variable, colors = col_vec, mode = 'lines+markers') %>%
+        layout(title = plot_title,
+               xaxis= list(showline = TRUE, title = 'Year', showticklabels = TRUE),
+               yaxis= list(showline = TRUE, title = 'Value', showticklabels = TRUE))
+      
+      return(p)
     }
-   return(p)
-  })
     
-  
+  })
 }
 
 
