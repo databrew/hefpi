@@ -7,6 +7,10 @@ library(rgdal)
 world <- readOGR('from_other/world_small/', 'TM_WORLD_BORDERS_SIMPL-0.3')
 usethis::use_data(world, overwrite = T)
 
+# Read in sub-national data (sent June 10 2020)
+sub_national <- haven::read_dta('from_wb/GAULdata.dta')
+usethis::use_data(sub_national, overwrite = T)
+
 
 # Read in the indicators hierarchy data from WB
 indicators <- readxl::read_excel('from_wb/Indicator_description.xlsx')
