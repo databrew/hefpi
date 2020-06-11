@@ -155,7 +155,7 @@ mod_trends_mean_server <- function(input, output, session){
         
         # get title and subtitle
         plot_title <- paste0('Trend - population mean')
-        sub_title <- indicator
+        y_axis_text <- indicator
         
         # text for plot
         mytext <- paste(
@@ -165,6 +165,7 @@ mod_trends_mean_server <- function(input, output, session){
           "Data source: ", as.character(pd$referenceid_list), "\n",
           sep="") %>%
           lapply(htmltools::HTML)
+        
         # condition if we connect the dots
         if(yn){
           p <- plot_ly(data = pd, x = ~year, y = ~pop, color = ~country, 
@@ -180,7 +181,7 @@ mod_trends_mean_server <- function(input, output, session){
        p <- p %>%
          layout(title = plot_title,
                 xaxis= list(showline = TRUE,title = 'Year', showticklabels = TRUE),
-                yaxis= list(showline = TRUE,title = 'Value', showticklabels = TRUE))
+                yaxis= list(showline = TRUE,title = y_axis_text, showticklabels = TRUE))
       }
       
       
@@ -334,7 +335,7 @@ mod_trends_con_server <- function(input, output, session){
       
       # get title and subtitle
       plot_title <- paste0('Trend - Concentration index')
-      sub_title <- indicator
+      y_axis_text <- indicator
       
       # text for plot
       mytext <- paste(
@@ -359,7 +360,7 @@ mod_trends_con_server <- function(input, output, session){
       p <- p %>%
         layout(title = plot_title,
                xaxis= list(showline = TRUE, title = 'Year', showticklabels = TRUE),
-               yaxis= list(showline = TRUE, title = 'Value', showticklabels = TRUE))
+               yaxis= list(showline = TRUE, title = y_axis_text, showticklabels = TRUE))
       p
     }
     
@@ -526,7 +527,7 @@ mod_trends_quin_server <- function(input, output, session){
       
       # make plot title
       plot_title = paste0('Quintile Trends - ', country_names, ' , ', indicator)
-      
+      y_axis_text = indicator
       # subset by y axis
       df <- df %>% 
         filter(value >= value_range[1],
@@ -543,7 +544,7 @@ mod_trends_quin_server <- function(input, output, session){
         add_trace(x = ~year, y = ~value, color = ~variable, colors = col_vec, mode = 'lines+markers') %>%
         layout(title = plot_title,
                xaxis= list(showline = TRUE, title = 'Year', showticklabels = TRUE),
-               yaxis= list(showline = TRUE, title = 'Value', showticklabels = TRUE))
+               yaxis= list(showline = TRUE, title = y_axis_text, showticklabels = TRUE))
       
       return(p)
     }

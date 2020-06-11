@@ -157,6 +157,7 @@ mod_dots_country_server <- function(input, output, session){
       
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Economies', ' - ', indicator, ', ', year_last)
+      y_axis_text = indicator
       # # # text for plot
       mytext <- paste(
         "Value: ", round(df$value, digits = 3), "\n",
@@ -190,7 +191,7 @@ mod_dots_country_server <- function(input, output, session){
                          geom_line(aes(group = country)) +
                          scale_color_manual(name = '',
                                             values = col_vec) +
-                         labs(title=plot_title, x = '', y = ' ') +
+                         labs(title=plot_title, x = '', y = y_axis_text) +
                          coord_flip() +
                          hefpi::theme_gdocs(), tooltip = 'text'))
 
@@ -316,7 +317,7 @@ mod_dots_ind_server <- function(input, output, session){
       
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Indicators', ' - ', country_names, ', ', year_last)
-      
+      y_axis_text = indicator
       # # # text for plot
       mytext <- paste(
         "Value: ", round(df$value, digits = 3), "\n",
@@ -359,7 +360,7 @@ mod_dots_ind_server <- function(input, output, session){
                          geom_line(aes(group = indicator_short_name)) +
                          scale_color_manual(name = '',
                                             values = col_vec) +
-                         labs(title=plot_title, x = '', y = ' ') +
+                         labs(title=plot_title, x = '', y = y_axis_text) +
                          coord_flip() +
                          hefpi::theme_gdocs(), tooltip = 'text'))
       
