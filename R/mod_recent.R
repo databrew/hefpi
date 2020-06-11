@@ -38,25 +38,25 @@ mod_recent_mean_ui <- function(id){
       column(6,
              useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info_mean"), "Population Mean"),
-             plotlyOutput(
-               ns('recent_mean_plot'), 
+             leafletOutput(
+               ns('recent_mean_leaf'), 
              )),
       column(6,
              useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info_con"), "Concentration Index"),
-             plotlyOutput(
-               ns('recent_con_plot'),
-             ))
-      ),
-    br(), br(), br(),
-    fluidRow(
-      column(6,
-             leafletOutput(
-               ns('recent_mean_leaf'),
-             )),
-      column(6,
              leafletOutput(
                ns('recent_con_leaf'),
+             ))
+      ),
+    br(), 
+    fluidRow(
+      column(6,
+             plotlyOutput(
+               ns('recent_mean_plot'), height = '800px'
+             )),
+      column(6,
+             plotlyOutput(
+               ns('recent_con_plot'), height = '800px'
              ))
     )
    
@@ -221,7 +221,7 @@ mod_recent_mean_server <- function(input, output, session){
         # plotly plot
         p <- plot_ly(temp, x = ~NAME, y = ~pop_value, type = 'bar', text = pop_bar_text, hoverinfo = 'text', 
                      marker = list(color='#469CD8')) %>%
-          layout(title = plot_title,
+          layout(title = '',
                  xaxis= list(title = '', showticklabels = TRUE),
                  yaxis= list(title = y_axis_text, showticklabels = TRUE)) %>% 
           toWebGL() %>%
@@ -319,7 +319,7 @@ mod_recent_mean_server <- function(input, output, session){
         # plotly plot
         p <- plot_ly(temp, x = ~NAME, y = ~ci_value, type = 'bar',text = ci_bar_text, hoverinfo = 'text',
                      marker = list(color='#469CD8')) %>%
-          layout(title = plot_title,
+          layout(title = '',
                  xaxis= list(title = '', showticklabels = TRUE),
                  yaxis= list(title = y_axis_text, showticklabels = TRUE)) %>%
         toWebGL() %>%
