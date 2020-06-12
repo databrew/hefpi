@@ -29,7 +29,7 @@ app_server <- function(input, output,session) {
   
   # data availability alternate tab
   # callModule(mod_dat_country_alt_server, 'dat_country_alt1')
-  callModule(mod_dat_ind_alt_server, 'dat_ind_alt1')
+  # callModule(mod_dat_ind_alt_server, 'dat_ind_alt1')
   
   
   
