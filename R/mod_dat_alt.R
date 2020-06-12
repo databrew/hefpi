@@ -196,6 +196,8 @@ mod_dat_ind_alt_server <- function(input, output, session){
   })
 }
 
+
+
 ## To be copied in the UI
 # mod_dat_country_alt_ui("dat_country1")
 # mod_dat_country_alt_ui("dat_ind1")

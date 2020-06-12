@@ -38,25 +38,25 @@ mod_recent_mean_ui <- function(id){
       column(6,
              useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info_mean"), "Population Mean"),
-             plotlyOutput(
-               ns('recent_mean_plot'), 
+             leafletOutput(
+               ns('recent_mean_leaf'), 
              )),
       column(6,
              useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info_con"), "Concentration Index"),
-             plotlyOutput(
-               ns('recent_con_plot'),
+             leafletOutput(
+               ns('recent_con_leaf'),
              ))
       ),
     br(), 
     fluidRow(
       column(6,
-             leafletOutput(
-               ns('recent_mean_leaf'),
+             plotlyOutput(
+               ns('recent_mean_plot'), height = '800px'
              )),
       column(6,
-             leafletOutput(
-               ns('recent_con_leaf'),
+             plotlyOutput(
+               ns('recent_con_plot'), height = '800px'
              ))
     )
    
@@ -216,13 +216,14 @@ mod_recent_mean_server <- function(input, output, session){
           sep="") %>%
           lapply(htmltools::HTML)
         plot_title = paste0('Most recent value - population mean - ', indicator)
+        y_axis_text = indicator
         temp <- highlight_key(temp, key=~NAME)
         # plotly plot
         p <- plot_ly(temp, x = ~NAME, y = ~pop_value, type = 'bar', text = pop_bar_text, hoverinfo = 'text', 
                      marker = list(color='#469CD8')) %>%
-          layout(title = plot_title,
+          layout(title = '',
                  xaxis= list(title = '', showticklabels = TRUE),
-                 yaxis= list(title = 'Value', showticklabels = TRUE)) %>% 
+                 yaxis= list(title = y_axis_text, showticklabels = TRUE)) %>% 
           toWebGL() %>%
           highlight(on='plotly_hover',
                     color = 'blue',
@@ -259,6 +260,14 @@ mod_recent_mean_server <- function(input, output, session){
           fillOpacity = 0.9, 
           weight=1,
           label = ci_text,
+          highlightOptions = highlightOptions(
+            weight = 1,
+            fillOpacity = 0,
+            color = "black",
+            opacity = 1.0,
+            bringToFront = TRUE,
+            sendToBack = TRUE
+          ),
           labelOptions = labelOptions( 
             style = list("font-weight" = "normal", padding = "3px 8px"), 
             textsize = "13px", 
@@ -304,14 +313,15 @@ mod_recent_mean_server <- function(input, output, session){
           sep="") %>%
           lapply(htmltools::HTML)
         plot_title = paste0('Most recent value - concentration index - ', indicator)
+        y_axis_text = indicator
         temp <- highlight_key(temp, key=~NAME)
         
         # plotly plot
         p <- plot_ly(temp, x = ~NAME, y = ~ci_value, type = 'bar',text = ci_bar_text, hoverinfo = 'text',
                      marker = list(color='#469CD8')) %>%
-          layout(title = plot_title,
+          layout(title = '',
                  xaxis= list(title = '', showticklabels = TRUE),
-                 yaxis= list(title = 'Value', showticklabels = TRUE)) %>%
+                 yaxis= list(title = y_axis_text, showticklabels = TRUE)) %>%
         toWebGL() %>%
           highlight(on='plotly_hover',
                     color = 'blue',
