@@ -9,7 +9,27 @@ usethis::use_data(world, overwrite = T)
 
 # Read in sub-national data (sent June 10 2020)
 sub_national <- haven::read_dta('from_wb/GAULdata.dta')
+# Restructure
+x <- sub_national %>% dplyr::select(year, indic, country, iso3c, iso2c, Rp1:Rc37)
+names(x) <- gsub('Rp', 'value_', names(x))
+names(x) <- gsub('Rc', 'key_', names(x))
+out_list <- list()
+for(i in 1:37){
+  sub_data <- x[,c('year', 'indic', 'country', 'iso3c', 'iso2c', paste0('value_', i), paste0('key_', i))]
+  names(sub_data)[6:7] <- c('value', 'gaul_code')
+  sub_data <- sub_data %>% filter(!is.na(gaul_code))
+  out_list[[i]] <- sub_data
+}
+out <- bind_rows(out_list)
+sub_national <- out
 usethis::use_data(sub_national, overwrite = T)
+
+# # Read in gaul codes (downloaded from https://blog.gdeltproject.org/global-second-order-administrative-divisions-now-available-from-gaul/)
+# gaul <- read.delim('from_other/gaul/GNS-GAUL-ADM2-CROSSWALK.TXT')
+
+# Gaul shapefile (downloaded from https://worldmap.harvard.edu/data/geonode:g2008_1)
+gaul <- readOGR('from_other/gaul/', 'g2008_1')
+usethis::use_data(gaul, overwrite = T)
 
 
 # Read in the indicators hierarchy data from WB
