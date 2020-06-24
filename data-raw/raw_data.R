@@ -7,28 +7,12 @@ library(rgdal)
 world <- readOGR('from_other/world_small/', 'TM_WORLD_BORDERS_SIMPL-0.3')
 usethis::use_data(world, overwrite = T)
 
-# Read in sub-national data (sent June 10 2020)
-sub_national <- haven::read_dta('from_wb/GAULdata.dta')
-# Restructure
-x <- sub_national %>% dplyr::select(year, indic, country, iso3c, iso2c, Rp1:Rc37)
-names(x) <- gsub('Rp', 'value_', names(x))
-names(x) <- gsub('Rc', 'key_', names(x))
-out_list <- list()
-for(i in 1:37){
-  sub_data <- x[,c('year', 'indic', 'country', 'iso3c', 'iso2c', paste0('value_', i), paste0('key_', i))]
-  names(sub_data)[6:7] <- c('value', 'gaul_code')
-  sub_data <- sub_data %>% filter(!is.na(gaul_code))
-  out_list[[i]] <- sub_data
-}
-out <- bind_rows(out_list)
-sub_national <- out
-usethis::use_data(sub_national, overwrite = T)
-
 # # Read in gaul codes (downloaded from https://blog.gdeltproject.org/global-second-order-administrative-divisions-now-available-from-gaul/)
 # gaul <- read.delim('from_other/gaul/GNS-GAUL-ADM2-CROSSWALK.TXT')
 
 # Gaul shapefile (downloaded from https://worldmap.harvard.edu/data/geonode:g2008_1)
-gaul <- readOGR('from_other/gaul/', 'g2008_1')
+gaul <- readOGR('from_other/gaul/g2008_1/')
+
 usethis::use_data(gaul, overwrite = T)
 
 
@@ -36,8 +20,6 @@ usethis::use_data(gaul, overwrite = T)
 indicators <- readxl::read_excel('from_wb/Indicator_description.xlsx')
 names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
 usethis::use_data(indicators, overwrite = T)
-
-temp <- haven::read_dta('~/Desktop/hefpi_full_database.dta')
 
 # Read in the full database
 df <- haven::read_dta('from_wb/hefpi_full_database.dta')
@@ -98,6 +80,33 @@ country$region_code <- ifelse(country$region == 'Latin America & Caribbean', 'LC
 
 # join country and dat to get region and country data together
 df_series <- inner_join(dat,country, by = c('country_name' = 'short_name'))
+
+# ----------------------------------------
+# Read in sub-national data (sent June 10 2020)
+x <- haven::read_dta('from_wb/GAULdata.dta')
+# Restructure
+# x <- sub_national %>% dplyr::select(year, indic, country, iso3c, iso2c, Rp1:Rc37)
+names(x) <- gsub('Rp', 'value_', names(x))
+names(x) <- gsub('Rc', 'key_', names(x))
+out_list <- list()
+for(i in 1:37){
+  sub_data <- x[,c('year', 'indic', 'country', 'iso3c', 'iso2c','pop','CI','Q1','Q2','Q3','Q4','Q5', 
+                   paste0('value_', i), paste0('key_', i))]
+  names(sub_data)[13:14] <- c('value', 'gaul_code')
+  sub_data <- sub_data %>% filter(!is.na(gaul_code))
+  out_list[[i]] <- sub_data
+}
+out <- bind_rows(out_list)
+sub_national <- out
+
+temp <- country %>% select(short_name, region, region_code)
+
+# join with country
+sub_national <- left_join(sub_national, temp, by = c('country'='short_name'))
+
+# join with df to get region data
+usethis::use_data(sub_national, overwrite = T)
+
 
 # save data: NOTE: explore these later - Not sure these are actually needed. The database data seems to be a function of a combination of this data
 usethis::use_data(country, overwrite = T)
