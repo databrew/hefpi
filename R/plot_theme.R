@@ -18,12 +18,12 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
           text = element_text(colour = dkgray),
           # title is aligned left, 20 point Roboto Font, plain
           plot.title = element_text(face = "plain",
-                                    size = rel(20/ 12),
+                                    size = 15,
                                     hjust = 0, colour = dkgray),
           # No subtitle or captions, so treat like other text
-          plot.subtitle = element_text(hjust = 0, size = rel(20/15),
+          plot.subtitle = element_text(hjust = 0, size = 9,
                                        face = "plain", colour = dkgray),
-          plot.caption = element_text(hjust = 0, size = rel(1),
+          plot.caption = element_text(hjust = 0, size = 5,
                                       face = "plain", colour = dkgray),
           panel.background = element_rect(fill = NA, colour = NA),
           panel.border = element_rect(fill = NA, colour = NA),
@@ -33,15 +33,15 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
           strip.background = element_rect(colour = NA, fill = NA),
           # axis titles: Roboto 12pt, plain.
           axis.title = element_text(face = "plain", colour = dkgray2,
-                                    size = rel(20/12)),
+                                    size = 14),
           # axis text: Roboto 12pt, plain
           axis.text = element_text(face = "plain", colour = dkgray,
-                                   size = rel(18/12)),
+                                   size = 12),
           # only axis line on the x-axis. black.
           axis.line = element_line(colour = "black"),
-          axis.line.y = element_blank(),
+          # axis.line.y = element_blank(),
           # no axis ticks
-          axis.ticks = element_blank(),
+          # axis.ticks = element_blank(),
           # grid lines on both x and y axes. light gray. no minor gridlines
           panel.grid.major = element_line(colour = ltgray),
           panel.grid.minor = element_blank(),

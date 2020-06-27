@@ -23,7 +23,7 @@ mod_dots_country_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('dots_country'), height = '800px'
+               ns('dots_country'), height = '800px', width = '1000px'
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
@@ -52,6 +52,7 @@ mod_dots_country_ui <- function(id){
 #' @import tidyverse
 #' @import RColorBrewer
 #' @import ggplot2
+#' @import shinyWidgets
 #' @import ggthemes
 #' @import scales
 #' @import reshape2
@@ -105,7 +106,7 @@ mod_dots_country_server <- function(input, output, session){
       min_value=0
       max_value = 1
     } else {
-      min_value = floor(min_value)
+      min_value = 0
       max_value = ceiling(max_value)
     }
     # create select input for country
@@ -113,33 +114,34 @@ mod_dots_country_server <- function(input, output, session){
     
     fluidPage(
       fluidRow(
-        selectInput(session$ns("country"), 
+        pickerInput(inputId = session$ns("country"),
                     label = 'Country', 
                     choices = countries,
-                    multiple = TRUE, selected = countries),
+                    selected = countries,
+                    width = '60%',
+                    options = list( `selected-text-format` = "count > 2",
+                                    `count-selected-text` = "{0}/{1} countries"),
+                    multiple = TRUE),
         sliderInput(session$ns('value_range'),
                     'X axis range',
                     min = min_value,
                     max = max_value,
+                    post = '%',
                     value = c(min_value, max_value),
                     sep = '')
       )
       
     )
     
-    
-    # 
-
-    
   })
   
   output$dots_country <- renderPlotly({
-    last_date <- '2018'
-    indicator <- "Inpatient care use, adults"
-    region <- "Latin America & Caribbean"
-    temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
+    # last_date <- '2018'
+    indicator <- "BMI, adults"
+    region <- "East Asia & Pacific"
+    temp <- hefpi::df_series %>% filter(region == 'East Asia & Pacific')
     country_names <- unique(temp$country_name)
-    value_range = c(0,1)
+     value_range = c(0,28)
     date_range = c(1982,2018)
     last_date <- input$last_date
     region <- input$region
@@ -154,8 +156,6 @@ mod_dots_country_server <- function(input, output, session){
       variable <- indicators %>%
         dplyr::filter(indicator_short_name == indicator) %>%
         .$variable_name
-      
-      
       
       # subset by country and variable
       df <- hefpi::df %>%
@@ -190,6 +190,7 @@ mod_dots_country_server <- function(input, output, session){
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Economies', ' - ', indicator)
       y_axis_text = indicator
+      x_axis_text = paste0('Most recent value for', '\n', 'time period: ', date_range[1], ' - ', date_range[2])
       df <- df %>%
         filter(value >= value_range[1],
                value <= value_range[2])
@@ -227,7 +228,8 @@ mod_dots_country_server <- function(input, output, session){
                          geom_line(aes(group = country)) +
                          scale_color_manual(name = '',
                                             values = col_vec) +
-                         labs(title=plot_title, x = '', y ='') +
+                         scale_y_continuous(labels = function(x) paste0(x, "%"), limits = c(value_range[1], value_range[2])) +
+                         labs(title=plot_title, x = x_axis_text, y ='') +
                          coord_flip() +
                          hefpi::theme_gdocs(), tooltip = 'text'))
         
@@ -258,7 +260,7 @@ mod_dots_ind_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('dots_ind'), height = '800px'
+               ns('dots_ind'), height = '800px', width = '1000px'
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
@@ -354,13 +356,14 @@ mod_dots_ind_server <- function(input, output, session){
       min_value=0
       max_value = 1
     } else {
-      min_value = floor(min_value)
+      min_value = 0
       max_value = ceiling(max_value)
     }
     sliderInput(session$ns('value_range'),
                 'X axis range',
                 min = min_value,
                 max = max_value,
+                post = '%',
                 value = c(min_value, max_value),
                 sep = '')
     
@@ -415,6 +418,8 @@ mod_dots_ind_server <- function(input, output, session){
       
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Indicators', ' - ', country_names)
+      x_axis_text = paste0('Most recent value for', '\n', 'time period: ', date_range[1], ' - ', date_range[2])
+      
       # subset by y axis
       df <- df %>% 
         filter(value >= value_range[1],
@@ -461,7 +466,8 @@ mod_dots_ind_server <- function(input, output, session){
                          geom_line(aes(group = indicator_short_name)) +
                          scale_color_manual(name = '',
                                             values = col_vec) +
-                         labs(title=plot_title, x = '', y = '') +
+                         scale_y_continuous(labels = function(x) paste0(x, "%"), limits = c(value_range[1], value_range[2])) +
+                         labs(title=plot_title, x = x_axis_text, y = '') +
                          coord_flip() +
                          hefpi::theme_gdocs() +
                          theme(axis.text = element_text(size=9, face = 'bold')), tooltip = 'text'))

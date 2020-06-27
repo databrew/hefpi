@@ -19,7 +19,14 @@ usethis::use_data(gaul, overwrite = T)
 # Read in the indicators hierarchy data from WB
 indicators <- readxl::read_excel('from_wb/Indicator_description.xlsx')
 names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
+indicators1 <- readxl::read_excel('~/Desktop/indicator_description.xlsx')
+names(indicators1) <- tolower(gsub(' ', '_', names(indicators1)))
+indicators1 <- indicators1[, c('variable_name', 'good_or_bad')]
+
+indicators <- inner_join(indicators, indicators1, by = 'variable_name')
+
 usethis::use_data(indicators, overwrite = T)
+
 
 # Read in the full database
 df <- haven::read_dta('from_wb/hefpi_full_database.dta')
