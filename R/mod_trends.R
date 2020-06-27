@@ -154,7 +154,7 @@ mod_trends_mean_server <- function(input, output, session){
                             pop <= max(value_range))
         
         # get title and subtitle
-        plot_title <- paste0('Trend - population mean')
+        plot_title <- paste0('Population mean - ', indicator)
         y_axis_text <- indicator
         
         # text for plot
@@ -181,7 +181,7 @@ mod_trends_mean_server <- function(input, output, session){
        p <- p %>%
          layout(title = plot_title,
                 xaxis= list(showline = TRUE,title = 'Year', showticklabels = TRUE),
-                yaxis= list(showline = TRUE,title = y_axis_text, showticklabels = TRUE))
+                yaxis= list(tickformat='%',showline = TRUE,title = y_axis_text, showticklabels = TRUE))
       }
       
       
@@ -334,7 +334,7 @@ mod_trends_con_server <- function(input, output, session){
                           CI <= max(value_range))
       
       # get title and subtitle
-      plot_title <- paste0('Trend - Concentration index')
+      plot_title <- paste0('Concentration index - ', indicator)
       y_axis_text <- indicator
       
       # text for plot
@@ -360,7 +360,7 @@ mod_trends_con_server <- function(input, output, session){
       p <- p %>%
         layout(title = plot_title,
                xaxis= list(showline = TRUE, title = 'Year', showticklabels = TRUE),
-               yaxis= list(showline = TRUE, title = y_axis_text, showticklabels = TRUE))
+               yaxis= list(tickformat='%',showline = TRUE, title = y_axis_text, showticklabels = TRUE))
       p
     }
     
@@ -544,7 +544,7 @@ mod_trends_quin_server <- function(input, output, session){
         add_trace(x = ~year, y = ~value, color = ~variable, colors = col_vec, mode = 'lines+markers') %>%
         layout(title = plot_title,
                xaxis= list(showline = TRUE, title = 'Year', showticklabels = TRUE),
-               yaxis= list(showline = TRUE, title = y_axis_text, showticklabels = TRUE))
+               yaxis= list(tickformat='%',showline = TRUE, title = y_axis_text, showticklabels = TRUE))
       
       return(p)
     }

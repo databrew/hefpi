@@ -215,13 +215,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
           "Year: ", as.character(shp@data$year),"<br/>",
           sep="") %>%
           lapply(htmltools::HTML)
-        plot_title = paste0('Most recent value - population mean - ', indicator)
+        plot_title = paste0('Population mean - ', indicator)
         y_axis_text = indicator
         temp <- highlight_key(temp, key=~ADM1_NAME)
         # plotly plot
         p <- plot_ly(temp, x = ~as.character(ADM1_NAME), y = ~value, type = 'bar', text = pop_text, hoverinfo = 'text', 
                      marker = list(color='#469CD8')) %>%
-          layout(title = '',
+          layout(title = plot_title,
                  xaxis= list(title = '', showticklabels = TRUE),
                  yaxis= list(title = y_axis_text, showticklabels = TRUE)) %>% 
           toWebGL() %>%
@@ -447,13 +447,13 @@ mod_recent_con_sub_server <- function(input, output, session){
           "Year: ", as.character(shp@data$year),"<br/>",
           sep="") %>%
           lapply(htmltools::HTML)
-        plot_title = paste0('Most recent value - population mean - ', indicator)
+        plot_title = paste0('Concentration index - ', indicator)
         y_axis_text = indicator
         temp <- highlight_key(temp, key=~ADM1_NAME)
         # plotly plot
         p <- plot_ly(temp, x = ~as.character(ADM1_NAME), y = ~value, type = 'bar', text = con_text, hoverinfo = 'text', 
                      marker = list(color='#469CD8')) %>%
-          layout(title = '',
+          layout(title = plot_title,
                  xaxis= list(title = '', showticklabels = TRUE),
                  yaxis= list(title = y_axis_text, showticklabels = TRUE)) %>% 
           toWebGL() %>%

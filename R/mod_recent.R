@@ -62,8 +62,6 @@ mod_recent_mean_ui <- function(id){
 #' @keywords internal
 
 mod_recent_mean_server <- function(input, output, session){
-  
-  
   observeEvent({
     input$date_range
     input$indicator
@@ -152,13 +150,11 @@ mod_recent_mean_server <- function(input, output, session){
     })
     
     output$recent_mean_plot <- renderPlotly({
-      
-      
       # get data from shp and remove NA
       temp <- shp@data
       temp <- temp %>% filter(!is.na(value))
       
-      if(all(is.na(temp$value))){
+      if(all(is.na(temp$value)) | is.null(temp)){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
             config(
@@ -185,26 +181,32 @@ mod_recent_mean_server <- function(input, output, session){
           "Data source :", as.character(temp$data_source), "\n",
           sep="") %>%
           lapply(htmltools::HTML)
-        plot_title = paste0('Most recent value - population mean - ', indicator)
-        y_axis_text = indicator
+        mypalette <- colorBin( palette="Blues", domain=temp$value, na.color="transparent")
+        y_axis_text = paste0('Population mean')
+        
+        plot_title = paste0('Population mean - ', indicator)
         temp <- highlight_key(temp, key=~NAME)
         # plotly plot
-        p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar', text = pop_bar_text, hoverinfo = 'text', 
-                     marker = list(color='#469CD8')) %>%
-          layout(title = '',
-                 xaxis= list(title = '', showticklabels = TRUE),
-                 yaxis= list(title = y_axis_text, showticklabels = TRUE)) %>% 
-          toWebGL() %>%
-          highlight(on='plotly_hover',
-                    color = 'blue',
-                    opacityDim = 0.6)
+       print(ggplotly(ggplot(temp, aes(NAME, value, text = pop_bar_text)) +
+          geom_bar(stat = 'identity', aes(fill = value)) +
+            scale_fill_gradient2(low='white',
+                                 high= 'blue') +
+            labs(x='Country',
+                 y = y_axis_text,
+                 title = plot_title) +
+            hefpi::theme_gdocs() +
+            theme(panel.grid.major.x = element_blank(),
+                  axis.text.x = element_blank(),
+                  axis.text.y = element_blank(),
+                  axis.ticks = element_blank()),
+          tooltip = 'text')   %>%
+         highlight(on='plotly_hover',
+                   color = 'blue',
+                   opacityDim = 0.6))
         
       }
-      
-      return(p)
+    
     })
-    
-    
   })
 }
 
@@ -384,23 +386,32 @@ mod_recent_con_server <- function(input, output, session){
           "Data source :", as.character(temp$data_source), "\n",
           sep="") %>%
           lapply(htmltools::HTML)
-        plot_title = paste0('Most recent value - concentration index - ', indicator)
-        y_axis_text = indicator
+        plot_title = paste0('Concentration index - ', indicator)
+        y_axis_text = paste0('Concentration index')
         temp <- highlight_key(temp, key=~NAME)
         
         # plotly plot
-        p <- plot_ly(temp, x = ~NAME, y = ~value, type = 'bar',text = ci_bar_text, hoverinfo = 'text',
-                     marker = list(color='#469CD8')) %>%
-          layout(title = '',
-                 xaxis= list(title = '', showticklabels = TRUE),
-                 yaxis= list(title = y_axis_text, showticklabels = TRUE)) %>%
-          toWebGL() %>%
-          highlight(on='plotly_hover',
-                    color = 'blue',
-                    opacityDim = 0.6)
+        print(ggplotly(ggplot(temp, aes(NAME, value, text = ci_bar_text)) +
+                         geom_bar(stat = 'identity', aes(fill = value)) +
+                         scale_fill_gradient2(low='white',
+                                              high= 'blue') +
+                         labs(x='Country',
+                              y = y_axis_text,
+                              title = plot_title) +
+                         hefpi::theme_gdocs() +
+                         theme(panel.grid.major.x = element_blank(),
+                               axis.text.x = element_blank(),
+                               axis.text.y = element_blank(),
+                               axis.ticks = element_blank()), 
+                       tooltip = 'text')   %>%
+                highlight(on='plotly_hover',
+                          color = 'blue',
+                          opacityDim = 0.6))
+        
         
       }
-      return(p)
+      
+      
     })
     
     
@@ -408,11 +419,9 @@ mod_recent_con_server <- function(input, output, session){
 }
 
 
-
 ## To be copied in the UI
 # mod_recent_mean_ui("leaf1")
 # mod_recent_con_ui("con1")
-
 
 ## To be copied in the server
 # callModule(mod_recent_mean_server, 'leaf1')
