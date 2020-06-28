@@ -13,6 +13,7 @@
 #' @keywords internal
 #' @export 
 #' @import leaflet
+#' @import webshot
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
 mod_recent_mean_ui <- function(id){
@@ -37,7 +38,8 @@ mod_recent_mean_ui <- function(id){
                          step = 1,
                          sep = ''),
              useShinyalert(),  # Set up shinyalert
-             actionButton(ns("plot_info"), "Plot Info"))
+             actionButton(ns("plot_info"), "Plot Info"),
+             downloadButton(ns("dl_plot")))
     ),
     br(), br(),
     
@@ -58,36 +60,30 @@ mod_recent_mean_ui <- function(id){
 #' @import leaflet
 #' @import RColorBrewer
 #' @import plotly
+#' @import webshot
 #' @import htmltools
 #' @keywords internal
 
 mod_recent_mean_server <- function(input, output, session){
-  observeEvent({
-    input$date_range
-    input$indicator
-    1
-  }, {
-    # Observe changes to inputs in order to generate changes to the map
-    observeEvent(input$plot_info, {
-      # Show a modal when the button is pressed
-      shinyalert(title = "Recent value- Population mean", 
-                 text = "charts display a world map in which countries are color-coded according to the most recent value of an indicator’s population level mean. To give users a better idea of a country’s relative positioning, the map is complemented by a bar chart that ranks countries by indicator value. By default, the map and bar chart use the latest available HEFPI data point, but users can choose the time period from which this latest data point is chosen.", 
-                 type = "info", 
-                 closeOnClickOutside = TRUE, 
-                 showCancelButton = FALSE, 
-                 showConfirmButton = FALSE)
-    })
-    # Capture the plot_years
-    plot_years <- input$date_range
-    if(is.null(plot_years)){
-      plot_years <- c(1982, 2017)
-    }
+  
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Recent value- Population mean", 
+               text = "charts display a world map in which countries are color-coded according to the most recent value of an indicator’s population level mean. To give users a better idea of a country’s relative positioning, the map is complemented by a bar chart that ranks countries by indicator value. By default, the map and bar chart use the latest available HEFPI data point, but users can choose the time period from which this latest data point is chosen.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
+  
+  get_pop_map <- reactive({
+    indicator <- 'BMI, adults'
+    plot_years <- c(1982, 2017)
     
-    # Capture the indicator
+    pop_map_list <- list()
+    plot_years <- input$date_range
     indicator <- input$indicator
-    if(is.null(indicator)){
-      indicator <- 'BMI, adults'
-    }
     
     # Get the variable
     variable <- indicators %>%
@@ -107,10 +103,11 @@ mod_recent_mean_server <- function(input, output, session){
                 data_source = referenceid_list) 
     
     shp <- world
+    # save(shp, file = 'shp.rda')
     shp@data <- shp@data %>% left_join(pd)
     
     # Make color palette
-    mypalette <- colorBin( palette="Blues", domain=shp@data$pop, na.color="transparent")
+    mypalette <- colorBin( palette="Greens", domain=shp@data$pop, na.color="transparent")
     
     # Make tooltip
     mytext <- paste(
@@ -121,93 +118,147 @@ mod_recent_mean_server <- function(input, output, session){
       sep="") %>%
       lapply(htmltools::HTML)
     
-    output$recent_mean_leaf <- renderLeaflet({
-      leaflet(shp) %>% 
-        addProviderTiles('Stamen.Toner') %>%
-        setView( lat=10, lng=0 , zoom=2) %>%
-        addPolygons( 
-          color = 'black',
-          fillColor = ~mypalette(value), 
-          stroke=TRUE, 
-          fillOpacity = 0.9, 
-          weight=1,
-          label = mytext,
-          highlightOptions = highlightOptions(
-            weight = 1,
-            fillOpacity = 0,
-            color = "black",
-            opacity = 1.0,
-            bringToFront = TRUE,
-            sendToBack = TRUE
-          ),
-          labelOptions = labelOptions( 
-            style = list("font-weight" = "normal", padding = "3px 8px"), 
-            textsize = "13px", 
-            direction = "auto"
-          )
-        ) %>%
-        addLegend( pal=mypalette, values=~value, opacity=0.9, title = "", position = "bottomleft" )
-    })
+    # get map
+    pop_map <- leaflet(shp) %>% 
+      addProviderTiles('OpenStreetMap.DE') %>%
+      setView( lat=10, lng=0 , zoom=2) %>%
+      addPolygons( 
+        color = 'black',
+        fillColor = ~mypalette(value), 
+        stroke=TRUE, 
+        fillOpacity = 0.9, 
+        weight=1,
+        label = mytext,
+        highlightOptions = highlightOptions(
+          weight = 1,
+          fillOpacity = 0,
+          color = "black",
+          opacity = 1.0,
+          bringToFront = TRUE,
+          sendToBack = TRUE
+        ),
+        labelOptions = labelOptions( 
+          style = list("font-weight" = "normal", padding = "3px 8px"), 
+          textsize = "13px", 
+          direction = "auto"
+        )
+      ) %>%
+      addLegend( pal=mypalette, values=~value, opacity=0.9, title = "", position = "bottomleft" )
     
-    output$recent_mean_plot <- renderPlotly({
-      # get data from shp and remove NA
-      temp <- shp@data
-      temp <- temp %>% filter(!is.na(value))
-      
-      if(all(is.na(temp$value)) | is.null(temp)){
-        empty_plot <- function(title = NULL){
-          p <- plotly_empty(type = "scatter", mode = "markers") %>%
-            config(
-              displayModeBar = FALSE
-            ) %>%
-            layout(
-              title = list(
-                text = title,
-                yref = "paper",
-                y = 0.5
-              )
-            )
-          return(p)
-        } 
-        p <- empty_plot("No data available for the selected inputs")
-      } else {
-        # order countries by value
-        temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
-        # get text for plotly 
-        pop_bar_text <- paste(
-          "Country: ", as.character(temp$NAME),"\n", 
-          "Value: ", round(temp$value, digits = 3), "\n",
-          "Year: ", as.character(temp$year),"\n",
-          "Data source :", as.character(temp$data_source), "\n",
-          sep="") %>%
-          lapply(htmltools::HTML)
-        mypalette <- colorBin( palette="Blues", domain=temp$value, na.color="transparent")
-        y_axis_text = paste0('Population mean')
-        
-        plot_title = paste0('Population mean - ', indicator)
-        temp <- highlight_key(temp, key=~NAME)
-        # plotly plot
-       print(ggplotly(ggplot(temp, aes(NAME, value, text = pop_bar_text)) +
-          geom_bar(stat = 'identity', aes(fill = value)) +
-            scale_fill_gradient2(low='white',
-                                 high= 'blue') +
-            labs(x='Country',
-                 y = y_axis_text,
-                 title = plot_title) +
-            hefpi::theme_gdocs() +
-            theme(panel.grid.major.x = element_blank(),
-                  axis.text.x = element_blank(),
-                  axis.text.y = element_blank(),
-                  axis.ticks = element_blank()),
-          tooltip = 'text')   %>%
-         highlight(on='plotly_hover',
-                   color = 'blue',
-                   opacityDim = 0.6))
-        
-      }
-    
-    })
+     pop_map_list[[1]] <- mypalette
+     pop_map_list[[2]] <- mytext
+     pop_map_list[[3]] <- pop_map
+     pop_map_list[[4]] <- shp
+    return(pop_map_list)
+   
   })
+  
+  
+  
+  output$recent_mean_leaf <- renderLeaflet({
+    pop_map <- get_pop_map()
+    if(is.null(pop_map)){
+      NULL
+    } else {
+     mytext <- pop_map[[1]]
+     mypalette <- pop_map[[2]]
+     this_map <- pop_map[[3]]
+     this_map
+    }
+    
+  })
+  
+  
+  
+  output$dl_plot <- downloadHandler(
+    filename = paste0( Sys.Date()
+                       , "_population_mean_map"
+                       , ".png"
+    )   
+    
+    , content = function(file) {
+      pop_map <- get_pop_map()
+      if(is.null(pop_map)){
+        NULL
+      } else {
+        # get map
+        this_map <- pop_map[[3]]
+        
+        mapview::mapshot( x = this_map,
+                 file = file,
+                 cliprect = "viewport",
+                 selfcontained = FALSE)
+      }
+     
+    })
+  
+  output$recent_mean_plot <- renderPlotly({
+    pop_map <- get_pop_map()
+    plot_years <- input$date_range
+    indicator <- input$indicator
+    if(is.null(pop_map)){
+      NULL
+    } else {
+      shp <- pop_map[[4]]
+    }
+    # get data from shp and remove NA
+    temp <- shp@data
+    temp <- temp %>% filter(!is.na(value))
+    
+    if(all(is.na(temp$value)) | is.null(temp)){
+      empty_plot <- function(title = NULL){
+        p <- plotly_empty(type = "scatter", mode = "markers") %>%
+          config(
+            displayModeBar = FALSE
+          ) %>%
+          layout(
+            title = list(
+              text = title,
+              yref = "paper",
+              y = 0.5
+            )
+          )
+        return(p)
+      } 
+      p <- empty_plot("No data available for the selected inputs")
+    } else {
+      # order countries by value
+      temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
+      # get text for plotly 
+      pop_bar_text <- paste(
+        "Country: ", as.character(temp$NAME),"\n", 
+        "Value: ", round(temp$value, digits = 3), "\n",
+        "Year: ", as.character(temp$year),"\n",
+        "Data source :", as.character(temp$data_source), "\n",
+        sep="") %>%
+        lapply(htmltools::HTML)
+      mypalette <- colorBin( palette="Blues", domain=temp$value, na.color="transparent")
+      y_axis_text = paste0('Population mean')
+      
+      plot_title = paste0('Population mean - ', indicator)
+      temp <- highlight_key(temp, key=~NAME)
+      # plotly plot
+      print(ggplotly(ggplot(temp, aes(NAME, value, text = pop_bar_text)) +
+                       geom_bar(stat = 'identity', aes(fill = value)) +
+                       scale_fill_gradient2(low='white',
+                                            high= 'blue') +
+                       labs(x='Country',
+                            y = y_axis_text,
+                            title = plot_title) +
+                       hefpi::theme_gdocs() +
+                       theme(panel.grid.major.x = element_blank(),
+                             axis.text.x = element_blank(),
+                             axis.text.y = element_blank(),
+                             axis.ticks = element_blank()),
+                     tooltip = 'text')   %>%
+              highlight(on='plotly_hover',
+                        color = 'blue',
+                        opacityDim = 0.6))
+      
+    }
+    
+  })
+  
 }
 
 # -------------------------------------------------------------------------------------
@@ -226,7 +277,7 @@ mod_recent_con_ui <- function(id){
     fluidRow(
       column(8,
              leafletOutput(
-               ns('recent_con_leaf'), 
+               ns('recent_con_leaf'),
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
@@ -240,14 +291,15 @@ mod_recent_con_ui <- function(id){
                          step = 1,
                          sep = ''),
              useShinyalert(),  # Set up shinyalert
-             actionButton(ns("plot_info"), "Plot Info"))
+             actionButton(ns("plot_info"), "Plot Info"),
+             downloadButton(ns("dl_plot")))
     ),
     br(), br(),
     
     fluidRow(
       column(8,
              plotlyOutput(
-               ns('recent_con_plot'), width = '1000px'
+               ns('recent_con_plot')
              ))
     )
     
@@ -265,12 +317,7 @@ mod_recent_con_ui <- function(id){
 
 mod_recent_con_server <- function(input, output, session){
   
-  # Observe changes to inputs in order to generate changes to the map
-  observeEvent({
-    input$date_range
-    input$indicator
-    1
-  }, {
+
     # Observe changes to inputs in order to generate changes to the map
     observeEvent(input$plot_info, {
       # Show a modal when the button is pressed
@@ -281,17 +328,14 @@ mod_recent_con_server <- function(input, output, session){
                  showCancelButton = FALSE, 
                  showConfirmButton = FALSE)
     })
-    # Capture the plot_years
-    plot_years <- input$date_range
-    if(is.null(plot_years)){
-      plot_years <- c(1982, 2017)
-    }
+  
+  get_con_map <- reactive({
+    indicator <- 'BMI, adults'
+    plot_years <- c(1982, 2017)
     
-    # Capture the indicator
+    con_map_list <- list()
+    plot_years <- input$date_range
     indicator <- input$indicator
-    if(is.null(indicator)){
-      indicator <- 'Catastrophic health spending, 10%'
-    }
     
     # Get the variable
     variable <- indicators %>%
@@ -304,17 +348,18 @@ mod_recent_con_server <- function(input, output, session){
              year <= max(plot_years)) %>%
       filter(indic == variable) %>%
       group_by(ISO3 = iso3c) %>%
-      filter(year == max(year)) %>%
+      filter(year == max(year, na.rm = TRUE)) %>%
       filter(referenceid_list == first(referenceid_list)) %>%
       summarise(value = first(CI),
                 year = year,
                 data_source = referenceid_list) 
     
     shp <- world
+    # save(shp, file = 'shp.rda')
     shp@data <- shp@data %>% left_join(pd)
     
     # Make color palette
-    mypalette <- colorBin( palette="Blues", domain=shp@data$pop, na.color="transparent")
+    mypalette <- colorBin( palette="Greens", domain=shp@data$pop, na.color="transparent")
     
     # Make tooltip
     mytext <- paste(
@@ -325,97 +370,149 @@ mod_recent_con_server <- function(input, output, session){
       sep="") %>%
       lapply(htmltools::HTML)
     
-    output$recent_con_leaf <- renderLeaflet({
-      leaflet(shp) %>% 
-        addProviderTiles('Stamen.Toner') %>%
-        setView( lat=10, lng=0 , zoom=2) %>%
-        addPolygons( 
-          color = 'black',
-          fillColor = ~mypalette(value), 
-          stroke=TRUE, 
-          fillOpacity = 0.9, 
-          weight=1,
-          label = mytext,
-          highlightOptions = highlightOptions(
-            weight = 1,
-            fillOpacity = 0,
-            color = "black",
-            opacity = 1.0,
-            bringToFront = TRUE,
-            sendToBack = TRUE
-          ),
-          labelOptions = labelOptions( 
-            style = list("font-weight" = "normal", padding = "3px 8px"), 
-            textsize = "13px", 
-            direction = "auto"
-          )
-        ) %>%
-        addLegend( pal=mypalette, values=~value, opacity=0.9, title = "", position = "bottomleft" )
-    })
+    # get map
+    con_map <- leaflet(shp) %>% 
+      addProviderTiles('OpenStreetMap.DE') %>%
+      setView( lat=10, lng=0 , zoom=2) %>%
+      addPolygons( 
+        color = 'black',
+        fillColor = ~mypalette(value), 
+        stroke=TRUE, 
+        fillOpacity = 0.9, 
+        weight=1,
+        label = mytext,
+        highlightOptions = highlightOptions(
+          weight = 1,
+          fillOpacity = 0,
+          color = "black",
+          opacity = 1.0,
+          bringToFront = TRUE,
+          sendToBack = TRUE
+        ),
+        labelOptions = labelOptions( 
+          style = list("font-weight" = "normal", padding = "3px 8px"), 
+          textsize = "13px", 
+          direction = "auto"
+        )
+      ) %>%
+      addLegend( pal=mypalette, values=~value, opacity=0.9, title = "", position = "bottomleft" )
     
-    output$recent_con_plot <- renderPlotly({
-      
-      
-      # get data from shp
-      temp <- shp@data
-      temp <- temp %>% filter(!is.na(value))
-      
-      if(all(is.na(temp$value))){
-        empty_plot <- function(title = NULL){
-          p <- plotly_empty(type = "scatter", mode = "markers") %>%
-            config(
-              displayModeBar = FALSE
-            ) %>%
-            layout(
-              title = list(
-                text = title,
-                yref = "paper",
-                y = 0.5
-              )
-            )
-          return(p)
-        } 
-        p <- empty_plot("No data available for the selected inputs")
-      } else {
-        
-        temp$NAME <- as.character(temp$NAME)
-        ci_bar_text <- paste(
-          "Country: ", as.character(temp$NAME),"\n", 
-          "Value: ", round(temp$value, digits = 3), "\n",
-          "Year: ", as.character(temp$year),"\n",
-          "Data source :", as.character(temp$data_source), "\n",
-          sep="") %>%
-          lapply(htmltools::HTML)
-        plot_title = paste0('Concentration index - ', indicator)
-        y_axis_text = paste0('Concentration index')
-        temp <- highlight_key(temp, key=~NAME)
-        
-        # plotly plot
-        print(ggplotly(ggplot(temp, aes(NAME, value, text = ci_bar_text)) +
-                         geom_bar(stat = 'identity', aes(fill = value)) +
-                         scale_fill_gradient2(low='white',
-                                              high= 'blue') +
-                         labs(x='Country',
-                              y = y_axis_text,
-                              title = plot_title) +
-                         hefpi::theme_gdocs() +
-                         theme(panel.grid.major.x = element_blank(),
-                               axis.text.x = element_blank(),
-                               axis.text.y = element_blank(),
-                               axis.ticks = element_blank()), 
-                       tooltip = 'text')   %>%
-                highlight(on='plotly_hover',
-                          color = 'blue',
-                          opacityDim = 0.6))
-        
-        
-      }
-      
-      
-    })
-    
+    con_map_list[[1]] <- mypalette
+    con_map_list[[2]] <- mytext
+    con_map_list[[3]] <- con_map
+    con_map_list[[4]] <- shp
+    return(con_map_list)
     
   })
+  
+  
+  
+  output$recent_con_leaf <- renderLeaflet({
+    con_map <- get_con_map()
+    if(is.null(con_map)){
+      NULL
+    } else {
+      save(con_map, file='con_map.rda')
+      mytext <- con_map[[1]]
+      mypalette <- con_map[[2]]
+      this_map <- con_map[[3]]
+      this_map
+    }
+    
+  })
+  
+  
+  
+  output$dl_plot <- downloadHandler(
+    filename = paste0( Sys.Date()
+                       , "_ci_map"
+                       , ".png"
+    )   
+    
+    , content = function(file) {
+      con_map <- get_con_map()
+      if(is.null(con_map)){
+        NULL
+      } else {
+        # get map
+        save(con_map, file = 'con_map_2.rda')
+        this_map <- con_map[[3]]
+        
+        mapview::mapshot( x = this_map,
+                          file = file,
+                          cliprect = "viewport",
+                          selfcontained = FALSE)
+      }
+      
+    })
+  
+  output$recent_con_plot <- renderPlotly({
+    con_map <- get_con_map()
+    plot_years <- input$date_range
+    indicator <- input$indicator
+    if(is.null(con_map)){
+      NULL
+    } else {
+      shp <- con_map[[4]]
+    }
+    # get data from shp and remove NA
+    temp <- shp@data
+    temp <- temp %>% filter(!is.na(value))
+    
+    if(all(is.na(temp$value)) | is.null(temp)){
+      empty_plot <- function(title = NULL){
+        p <- plotly_empty(type = "scatter", mode = "markers") %>%
+          config(
+            displayModeBar = FALSE
+          ) %>%
+          layout(
+            title = list(
+              text = title,
+              yref = "paper",
+              y = 0.5
+            )
+          )
+        return(p)
+      } 
+      p <- empty_plot("No data available for the selected inputs")
+    } else {
+      # order countries by value
+      temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
+      # get text for plotly 
+      con_bar_text <- paste(
+        "Country: ", as.character(temp$NAME),"\n", 
+        "Value: ", round(temp$value, digits = 3), "\n",
+        "Year: ", as.character(temp$year),"\n",
+        "Data source :", as.character(temp$data_source), "\n",
+        sep="") %>%
+        lapply(htmltools::HTML)
+      mypalette <- colorBin( palette="Blues", domain=temp$value, na.color="transparent")
+      y_axis_text = paste0('Population mean')
+      
+      plot_title = paste0('Population mean - ', indicator)
+      temp <- highlight_key(temp, key=~NAME)
+      # plotly plot
+      print(ggplotly(ggplot(temp, aes(NAME, value, text = con_bar_text)) +
+                       geom_bar(stat = 'identity', aes(fill = value)) +
+                       scale_fill_gradient2(low='white',
+                                            high= 'blue') +
+                       labs(x='Country',
+                            y = y_axis_text,
+                            title = plot_title) +
+                       hefpi::theme_gdocs() +
+                       theme(panel.grid.major.x = element_blank(),
+                             axis.text.x = element_blank(),
+                             axis.text.y = element_blank(),
+                             axis.ticks = element_blank()),
+                     tooltip = 'text')   %>%
+              highlight(on='plotly_hover',
+                        color = 'blue',
+                        opacityDim = 0.6))
+      
+    }
+    
+  })
+
 }
 
 
