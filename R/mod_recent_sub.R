@@ -139,7 +139,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     ## POPULATION MEAN
     
     # Make color palette
-    pop_palette <- colorNumeric(palette = brewer.pal(9, "Blues"), domain=shp@data$value, na.color="transparent")
+    pop_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="transparent")
     
     # Make tooltip
     pop_text <- paste(
