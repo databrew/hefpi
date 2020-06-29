@@ -19,7 +19,6 @@
 mod_recent_mean_ui <- function(id){
   ns <- NS(id)
   # tagList(
-  
   fluidPage(
     fluidRow(
       column(8,
@@ -45,25 +44,22 @@ mod_recent_mean_ui <- function(id){
                  actionButton(ns("plot_info"), label = "Plot Info"))
                )
              )
-            
-             
     ),
     br(), br(),
-    
     fluidRow(
       column(8,
              plotlyOutput(
                ns('recent_mean_plot')
              ))
     )
-    
   )
-  
 }
 
 # Module Server
 #' @rdname mod_recent_mean_server
-#' @export
+#' @title mod_recent_mean_server
+#' @keywords internal
+#' @export 
 #' @import leaflet
 #' @import RColorBrewer
 #' @import plotly
@@ -74,7 +70,7 @@ mod_recent_mean_ui <- function(id){
 
 mod_recent_mean_server <- function(input, output, session){
   
-  # Observe changes to inputs in order to generate changes to the map
+  # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
     shinyalert(title = "Recent value- Population mean", 
@@ -85,21 +81,22 @@ mod_recent_mean_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
-    indicator <- 'BMI, adults'
-    plot_years <- c(1982, 2017)
-    
+    # create list to store results from reactive object
     pop_map_list <- list()
+    
+    # get inputs
     plot_years <- input$date_range
     indicator <- input$indicator
     
-    # Get the variable
+    # Get the variable from indicator input
     variable <- indicators %>%
       filter(indicator_short_name == indicator) %>%
       .$variable_name
     
-    # Get the data to be plotted
-    pd<- hefpi::df %>%
+    # Get the data, subsetted by inputs
+    pd <- hefpi::df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       filter(indic == variable) %>%
@@ -110,16 +107,17 @@ mod_recent_mean_server <- function(input, output, session){
                 year = year,
                 data_source = referenceid_list) 
     
+    # get world map shape files
     shp <- world
-    # remove antartica
-    # save(shp, file = 'shp.rda')
+    
+    # join with data
     shp@data <- shp@data %>% left_join(pd)
     
     # Make color palette
-    mypalette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
+    map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
     
     # Make tooltip
-    mytext <- paste(
+    map_text <- paste(
       "Country: ", as.character(shp@data$NAME),"<br/>", 
       "Value: ", round(shp@data$value, digits = 3), "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
@@ -127,15 +125,19 @@ mod_recent_mean_server <- function(input, output, session){
       sep="") %>%
       lapply(htmltools::HTML)
     
-    pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
-      addProviderTiles('OpenStreetMap.DE', options=providerTileOptions(noWrap = TRUE)) %>%
+    # create map
+    pop_map <- leaflet(shp, 
+                       options = leafletOptions(minZoom = 1, 
+                                                maxZoom = 10)) %>% 
+      addProviderTiles('OpenStreetMap.DE', 
+                       options=providerTileOptions(noWrap = TRUE)) %>%
       addPolygons( 
         color = 'black',
-        fillColor = ~mypalette(value), 
+        fillColor = ~map_palette(value), 
         stroke=TRUE, 
         fillOpacity = 0.9, 
         weight=1,
-        label = mytext,
+        label = map_text,
         highlightOptions = highlightOptions(
           weight = 1,
           fillOpacity = 0,
@@ -151,29 +153,30 @@ mod_recent_mean_server <- function(input, output, session){
         )
       ) %>% 
       setView(lat=0, lng=0 , zoom=1.7) %>%
-      addLegend( pal=mypalette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
-     pop_map_list[[1]] <- mypalette
-     pop_map_list[[2]] <- mytext
-     pop_map_list[[3]] <- pop_map
-     pop_map_list[[4]] <- shp
+      addLegend( pal=map_palette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+    # store palette, text, map object, and data in list
+    pop_map_list[[1]] <- map_palette
+    pop_map_list[[2]] <- map_text
+    pop_map_list[[3]] <- pop_map
+    pop_map_list[[4]] <- shp
     return(pop_map_list)
-   
   })
   
-  
-  
+  # ---- RENDER MAP FROM REACTIVE LIST ---- #
   output$recent_mean_leaf <- renderLeaflet({
     pop_map <- get_pop_map()
     if(is.null(pop_map)){
       NULL
     } else {
-     mytext <- pop_map[[1]]
-     mypalette <- pop_map[[2]]
+     map_text <- pop_map[[1]]
+     map_palette <- pop_map[[2]]
      this_map <- pop_map[[3]]
      this_map 
     }
     
   })
+  
+  # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
       paste("data", Sys.Date(), ".csv", sep="")
@@ -187,40 +190,37 @@ mod_recent_mean_server <- function(input, output, session){
       } else {
         temp <- this_map@data
         temp <- temp %>% filter(!is.na(value))
-        
         write.csv(temp, file)
       }
-      
     }
   )
 
-
-  output$dl_plot <- downloadHandler(
-    filename = paste0( Sys.Date()
-                       , "_population_mean_map"
-                       , ".png"
-    )   
-    
-    , content = function(file) {
-      pop_map <- get_pop_map()
-      if(is.null(pop_map)){
-        NULL
-      } else {
-        # get map
-        this_map <- pop_map[[3]]
-        
-        mapview::mapshot( x = this_map,
-                 file = file,
-                 cliprect = "viewport",
-                 selfcontained = FALSE)
-      }
-     
-    })
-  
+  # ---- DOWNLOAD MAP IMAGE ---- #
+  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_population_mean_map", ".png"),
+                                    content = function(file) {
+                                      pop_map <- get_pop_map()
+                                      if(is.null(pop_map)){
+                                        NULL
+                                      } else {
+                                        # get map
+                                        this_map <- pop_map[[3]]
+                                        
+                                        mapview::mapshot( x = this_map,
+                                                          file = file,
+                                                          cliprect = "viewport",
+                                                          selfcontained = FALSE)
+                                      }
+                                    })
+  # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_mean_plot <- renderPlotly({
+    # get reactive list
     pop_map <- get_pop_map()
+    
+    # get inputs
     plot_years <- input$date_range
     indicator <- input$indicator
+    
+    # while map (generate from reactive object) is null, plot is null
     if(is.null(pop_map)){
       NULL
     } else {
@@ -228,8 +228,8 @@ mod_recent_mean_server <- function(input, output, session){
     }
     # get data from shp and remove NA
     temp <- shp@data
-    temp <- temp %>% filter(!is.na(value))
     
+    # if data is null or all values are NA, generate empty plot with message
     if(all(is.na(temp$value)) | is.null(temp)){
       empty_plot <- function(title = NULL){
         p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -249,21 +249,24 @@ mod_recent_mean_server <- function(input, output, session){
     } else {
       # order countries by value
       temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
-      # get text for plotly 
-      pop_bar_text <- paste(
+      # get text for plot
+      plot_text <- paste(
         "Country: ", as.character(temp$NAME),"\n", 
         "Value: ", round(temp$value, digits = 3), "\n",
         "Year: ", as.character(temp$year),"\n",
         "Data source :", as.character(temp$data_source), "\n",
         sep="") %>%
         lapply(htmltools::HTML)
+      
+      # create title and y axis label
       y_axis_text = paste0('Population mean')
       plot_title = paste0('Population mean - ', indicator)
-      # get values for gradient 
       
+      # add highlight functionality, so hovering highlights bar.
       temp <- highlight_key(temp, key=~NAME)
+      
       # plotly plot
-      print(ggplotly(ggplot(temp, aes(NAME, value, text = pop_bar_text)) +
+      print(ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                        geom_bar(stat = 'identity', aes(fill = value)) +
                        scale_fill_distiller(palette = "Greens", direction = 1) +
                        labs(x='Country',
@@ -277,21 +280,18 @@ mod_recent_mean_server <- function(input, output, session){
               highlight(on='plotly_hover',
                         color = 'darkgreen',
                         opacityDim = 0.6))
-      
     }
-    
   })
-  
 }
 
 # -------------------------------------------------------------------------------------
-
-
 #' @rdname mod_recent_con_ui
-#' @keywords internal
 #' @export 
+#' @import webshot
+#' @import shinyalert
 #' @import leaflet
 #' @importFrom shiny NS tagList 
+
 mod_recent_con_ui <- function(id){
   ns <- NS(id)
   # tagList(
@@ -334,9 +334,9 @@ mod_recent_con_ui <- function(id){
   )
   
 }
+
 # Module Server
 #' @rdname mod_recent_con_server
-#' @export
 #' @import leaflet
 #' @import RColorBrewer
 #' @import plotly
@@ -364,6 +364,7 @@ mod_recent_con_server <- function(input, output, session){
     con_map_list <- list()
     plot_years <- input$date_range
     indicator <- input$indicator
+    save(indicator, file = 'ind.rda')
     
     # Get the variable
     variable <- indicators %>%
@@ -387,10 +388,10 @@ mod_recent_con_server <- function(input, output, session){
     shp@data <- shp@data %>% left_join(pd)
     
     # Make color palette
-    mypalette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="white")
+    plot_palette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="white")
     
     # Make tooltip
-    mytext <- paste(
+    plot_text <- paste(
       "Country: ", as.character(shp@data$NAME),"<br/>", 
       "Value: ", round(shp@data$value, digits = 3), "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
@@ -404,11 +405,11 @@ mod_recent_con_server <- function(input, output, session){
       setView( lat=10, lng=0 , zoom=1.5) %>%
       addPolygons( 
         color = 'black',
-        fillColor = ~mypalette(value), 
+        fillColor = ~plot_palette(value), 
         stroke=TRUE, 
         fillOpacity = 0.9, 
         weight=1,
-        label = mytext,
+        label = plot_text,
         highlightOptions = highlightOptions(
           weight = 1,
           fillOpacity = 0,
@@ -423,9 +424,9 @@ mod_recent_con_server <- function(input, output, session){
           direction = "auto"
         )
       ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
-      addLegend( pal=mypalette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
-    con_map_list[[1]] <- mypalette
-    con_map_list[[2]] <- mytext
+      addLegend( pal=plot_palette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+    con_map_list[[1]] <- plot_palette
+    con_map_list[[2]] <- plot_text
     con_map_list[[3]] <- con_map
     con_map_list[[4]] <- shp
     return(con_map_list)
@@ -439,9 +440,8 @@ mod_recent_con_server <- function(input, output, session){
     if(is.null(con_map)){
       NULL
     } else {
-      save(con_map, file='con_map.rda')
-      mytext <- con_map[[1]]
-      mypalette <- con_map[[2]]
+      plot_text <- con_map[[1]]
+      plot_palette <- con_map[[2]]
       this_map <- con_map[[3]]
       this_map
     }
