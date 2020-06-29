@@ -173,7 +173,6 @@ mod_recent_mean_server <- function(input, output, session){
      this_map <- pop_map[[3]]
      this_map 
     }
-    
   })
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
