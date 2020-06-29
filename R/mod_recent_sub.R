@@ -283,12 +283,12 @@ mod_recent_mean_sub_server <- function(input, output, session){
 # -------------------------------------------------------------------------------------
 
 
-#' @rdname mod_recent_con_ui
+#' @rdname mod_recent_con_sub_ui
 #' @keywords internal
 #' @export 
 #' @import leaflet
 #' @importFrom shiny NS tagList 
-mod_recent_con_ui <- function(id){
+mod_recent_con_sub_ui <- function(id){
   ns <- NS(id)
   # tagList(
   
@@ -296,7 +296,7 @@ mod_recent_con_ui <- function(id){
     fluidRow(
       column(8,
              leafletOutput(
-               ns('recent_mean_sub_leaf'), height = '650px'),
+               ns('recent_con_sub_leaf'), height = '650px'),
       ),
       column(4,
              selectInput(ns('region'), 'Region',
@@ -328,7 +328,7 @@ mod_recent_con_ui <- function(id){
   
 }
 # Module Server
-#' @rdname mod_recent_con_server
+#' @rdname mod_recent_con_sub_server
 #' @export
 #' @import leaflet
 #' @import RColorBrewer
@@ -336,7 +336,7 @@ mod_recent_con_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
 
-mod_recent_con_server <- function(input, output, session){
+mod_recent_con_sub_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
