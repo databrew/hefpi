@@ -118,6 +118,14 @@ mod_recent_mean_sub_server <- function(input, output, session){
     shp <- shp[na_rows,]
     shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
     
+    # Define centroid
+    centroid <- coordinates(shp)
+    centroid <- data.frame(centroid)
+    names(centroid) <- c('x', 'y')
+    centroid <- centroid %>%
+      summarise(x = mean(x, na.rm = TRUE),
+                y = mean(y, na.rm = TRUE))
+    
     # Make color palette
     mypalette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="transparent")
     
@@ -153,7 +161,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
           direction = "auto"
         )
       ) %>% 
-      setView(lat=0, lng=0 , zoom=1.7) %>%
+      # setView(lat=0, lng=0 , zoom=1.7) %>%
+      setView(lat=centroid$y, lng=centroid$x , zoom=4) %>%
       addLegend( pal=mypalette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
     
     # store palette, text, map object, and data
@@ -390,6 +399,13 @@ mod_recent_con_sub_server <- function(input, output, session){
     shp <- shp[na_rows,]
     shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
     
+    # Define centroid
+    centroid <- coordinates(shp)
+    centroid <- data.frame(centroid)
+    names(centroid) <- c('x', 'y')
+    centroid <- centroid %>%
+      summarise(x = mean(x, na.rm = TRUE),
+                y = mean(y, na.rm = TRUE))
     
     ## POPULATION MEAN
     
@@ -427,7 +443,8 @@ mod_recent_con_sub_server <- function(input, output, session){
           direction = "auto"
         )
       ) %>% 
-      setView(lat=0, lng=0 , zoom=1.7) %>%
+      # setView(lat=0, lng=0 , zoom=1.7) %>%
+      setView(lat=centroid$y, lng=centroid$x , zoom=4) %>%
       addLegend( pal=mypalette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
     pop_map_list[[1]] <- mypalette
     pop_map_list[[2]] <- mytext
