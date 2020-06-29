@@ -66,7 +66,8 @@ mod_recent_mean_sub_ui <- function(id){
 #' @keywords internal
 
 mod_recent_mean_sub_server <- function(input, output, session){
-  # Observe changes to inputs in order to generate changes to the map
+  
+  # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
     shinyalert(title = "Recent value- Population mean", 
@@ -77,16 +78,22 @@ mod_recent_mean_sub_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
-    indicator <- 'c_anc'
-    region = 'Latin America & Caribbean'
-    plot_years <- c(1982, 2017)
+    # to be used for testing 
+    # indicator <- 'c_anc'
+    # region = 'Latin America & Caribbean'
+    # plot_years <- c(1982, 2017)
     
+    # get list to store map data
     pop_map_list <- list()
+    
+    # get input 
     plot_years <- input$date_range
     indicator <- input$indicator
     region  <- input$region
     
+    # get region code
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region == region])
     
@@ -100,15 +107,16 @@ mod_recent_mean_sub_server <- function(input, output, session){
       summarise(value = first(pop),
                 year = year) 
     
+    # get shape files
     shp <- hefpi::gaul
     
+    # joine with data
     shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code'))
+    
+    # remove polygons associated with NA - keeps only that region
     na_rows <- which(!is.na(shp@data$value))
     shp <- shp[na_rows,]
     shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
-    
-    
-    ## POPULATION MEAN
     
     # Make color palette
     mypalette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="transparent")
@@ -121,6 +129,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
       sep="") %>%
       lapply(htmltools::HTML)
     
+    # create map
     pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
       addProviderTiles('OpenStreetMap.DE', options=providerTileOptions(noWrap = TRUE)) %>%
       addPolygons( 
@@ -146,16 +155,16 @@ mod_recent_mean_sub_server <- function(input, output, session){
       ) %>% 
       setView(lat=0, lng=0 , zoom=1.7) %>%
       addLegend( pal=mypalette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+    
+    # store palette, text, map object, and data
     pop_map_list[[1]] <- mypalette
     pop_map_list[[2]] <- mytext
     pop_map_list[[3]] <- pop_map
     pop_map_list[[4]] <- shp
     return(pop_map_list)
-    
   })
   
-  
-  
+  # ---- RENDER MAP FROM REACTIVE LIST ---- #
   output$recent_mean_sub_leaf <- renderLeaflet({
     pop_map <- get_pop_map()
     if(is.null(pop_map)){
@@ -168,6 +177,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
     }
     
   })
+  
+  # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
       paste("data", Sys.Date(), ".csv", sep="")
@@ -184,17 +195,16 @@ mod_recent_mean_sub_server <- function(input, output, session){
         
         write.csv(temp, file)
       }
-      
     }
   )
   
-  
+  # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(
     filename = paste0( Sys.Date()
                        , "_population_mean_map"
                        , ".png"
     )
-
+    
     , content = function(file) {
       pop_map <- get_pop_map()
       if(is.null(pop_map)){
@@ -202,14 +212,16 @@ mod_recent_mean_sub_server <- function(input, output, session){
       } else {
         # get map
         this_map <- pop_map[[3]]
-
+        
         mapview::mapshot( x = this_map,
                           file = file,
                           cliprect = "viewport",
                           selfcontained = FALSE)
       }
-
+      
     })
+  
+  # STOP HERE
   # 
   # output$recent_mean_sub_plot <- renderPlotly({
   #   pop_map <- get_pop_map()
