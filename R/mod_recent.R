@@ -364,8 +364,7 @@ mod_recent_con_server <- function(input, output, session){
     con_map_list <- list()
     plot_years <- input$date_range
     indicator <- input$indicator
-    save(indicator, file = 'ind.rda')
-    
+
     # Get the variable
     variable <- indicators %>%
       filter(indicator_short_name == indicator) %>%
@@ -481,7 +480,6 @@ mod_recent_con_server <- function(input, output, session){
         NULL
       } else {
         # get map
-        save(con_map, file = 'con_map_2.rda')
         this_map <- con_map[[3]]
         
         mapview::mapshot( x = this_map,
