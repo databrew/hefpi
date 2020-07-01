@@ -87,21 +87,19 @@ mod_dat_country_server <- function(input, output, session){
     df$year <- as.character(df$year)
     
     # order level_2
-    df$level_2 <- factor(df$level_2, levels =c('Missing Data', 'Catastrophic OOP spending', 'Health Outcomes', 'Impoverishing OOP spending', 'OOP spending', 'Service Coverage') )
+    df$level_2 <- factor(df$level_2, levels =c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data') )
     
     df$indicator_short_name <- factor(df$indicator_short_name, levels = rev(all_ind))
     
-    # get color graident 
-    col_vec <- brewer.pal(name = 'Accent', n = length(unique(df$level_2)))
-    col_vec[1] <- 'white'
-
+    # get color vector (first 3 different shades of blue, 4th green, 5th orange, NA white)
+   col_vec =  c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'white')
     
     # make plot title 
     plot_title = paste0('Missing data profile', ' - ', country_name)
     
     # plot
     p<-   ggplot(df, aes(year, indicator_short_name, fill = level_2)) + 
-      geom_tile(size = 2.5, alpha = 0.8) +
+      geom_tile(alpha = 0.8, color = 'darkgrey') +
       scale_fill_manual(name = 'Indicator class',
                          values = col_vec) +
       labs(x = 'Year',
@@ -218,7 +216,7 @@ mod_dat_ind_server <- function(input, output, session){
   output$dat_ind <- renderPlotly({
     # region <- 'Europe & Central Asia'
     # indicator <- 'Catastrophic health spending, 10%'
-    # country_names <- country_names[1:3]
+    # country_names <- top_countries[1:3]
     # date_range <- c(2012, 2017)
     # country_name = c('Argentina', 'Brazil', 'Chile', 'Ecuador')
     # country_name <- input$country
@@ -302,7 +300,7 @@ mod_dat_ind_server <- function(input, output, session){
                          hefpi::theme_gdocs() +
                          theme(legend.position = 'none',
                                axis.text.y = element_text(face = "plain", size = rel(10/12)),
-                               axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1)), tooltip = 'text'))
+                               axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1)) + coord_flip(), tooltip = 'text'))
         
         
       }
