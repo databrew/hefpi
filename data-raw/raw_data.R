@@ -15,19 +15,6 @@ gaul <- readOGR('from_other/gaul/g2008_1/')
 
 usethis::use_data(gaul, overwrite = T)
 
-
-# Read in the indicators hierarchy data from WB
-indicators <- readxl::read_excel('from_wb/Indicator_description.xlsx')
-names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
-indicators1 <- readxl::read_excel('~/Desktop/indicator_description.xlsx')
-names(indicators1) <- tolower(gsub(' ', '_', names(indicators1)))
-indicators1 <- indicators1[, c('variable_name', 'good_or_bad')]
-
-indicators <- inner_join(indicators, indicators1, by = 'variable_name')
-
-usethis::use_data(indicators, overwrite = T)
-
-
 # Read in the full database
 df <- haven::read_dta('from_wb/hefpi_full_database.dta')
 df$bin <- 
@@ -111,8 +98,19 @@ temp <- country %>% select(short_name, region, region_code)
 # join with country
 sub_national <- left_join(sub_national, temp, by = c('country'='short_name'))
 
+# get list of indicators from sub_national that are not present in indicators, and remove them temporarily from subnation until sven gives us all the descriptions
+remove_indic <- unique(sub_national$indic)[!unique(sub_national$indic) %in% indicators$variable_name]
+sub_national <- sub_national[!sub_national$indic %in% remove_indic, ]
+
 # join with df to get region data
 usethis::use_data(sub_national, overwrite = T)
+
+# Read in the indicators hierarchy data from WB
+indicators <- readxl::read_excel('from_wb/indicator_description.xlsx')
+names(indicators)[1:2] <- c('level 1', 'level 2')
+names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
+
+usethis::use_data(indicators, overwrite = T)
 
 
 # save data: NOTE: explore these later - Not sure these are actually needed. The database data seems to be a function of a combination of this data
