@@ -140,12 +140,14 @@ mod_trends_mean_server <- function(input, output, session){
         region_code <- as.character(region_list$region_code[region_list$region == region])
         
         # get variable
-        variable <- indicators %>%
+        ind_info <- indicators %>%
           filter(indicator_short_name == indicator) %>%
-          .$variable_name
+          select(variable_name, unit_of_measure)
+        variable_name = ind_info$variable_name
+        unit_of_measure = ind_info$unit_of_measure
         
         # subet by variable, region code and a list of countries
-        df <- df[df$indic == variable,]
+        df <- df[df$indic == variable_name,]
         df <- df[df$regioncode == region_code,]
         pd <- df[df$country %in% country_names,]
         pd <- pd %>% filter(year >= min(date_range),
@@ -154,34 +156,57 @@ mod_trends_mean_server <- function(input, output, session){
                             pop <= max(value_range))
         
         # get title and subtitle
-        plot_title <- paste0('Population mean - ', indicator)
-        y_axis_text <- indicator
+        plot_title <- paste0('Trends - Population mean')
+        y_axis_text <- paste0(indicator, ' - ', ' (',unit_of_measure,')')
         
+        # condition on unit of measure
+        if(unit_of_measure == '%'){
+          pd$pop <- pd$pop*100
+        }
         # text for plot
         mytext <- paste(
-          "Country: ", as.character(pd$country),"\n", 
-          "Population: ", round(pd$pop, digits = 3), "\n",
-          "Year: ", as.character(pd$year),"\n",
-          "Data source: ", as.character(pd$referenceid_list), "\n",
+          "Indicator: ", indicator,"<br>", 
+          "Economy: ", as.character(pd$country),"<br>", 
+          "Value: ", round(pd$pop, digits = 2),' (',unit_of_measure,')', "<br>",
+          "Year: ", as.character(pd$year),"<br>",
+          "Data source: ", as.character(pd$referenceid_list), "<br>",
           sep="") %>%
           lapply(htmltools::HTML)
         
-        # condition if we connect the dots
+        trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
+        
         if(yn){
-          p <- plot_ly(data = pd, x = ~year, y = ~pop, color = ~country, 
-                       text = mytext, hoverinfo = 'text') %>%
-            add_trace(x = ~year, y = ~pop, color = ~country, mode = 'lines+markers') 
-          
          
+          # condition if we connect the dots
+          print(ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
+                                    geom_point() + 
+                                    geom_line(aes(group = country)) +
+                                    scale_color_manual(name = '',
+                                                       values = trend_palette) +
+                                    # guides(color = guide_legend(override.aes = list(shape = 15))) +
+                                    labs(x='Year',
+                                         y = y_axis_text,
+                                         title = plot_title) +
+                                    hefpi::theme_gdocs() +
+                                    theme(panel.grid.major.x = element_blank(),
+                                          axis.text.x = element_blank(),
+                                          axis.ticks = element_blank()), tooltip = 'text'))
         } else {
-          p <- plot_ly(data = pd, x = ~year, y = ~pop, color = ~country,
-                       text = mytext, hoverinfo = 'text')
-          
+          # condition if we connect the dots
+          print(ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
+                                    geom_point() +
+                                    scale_color_manual(name = '',
+                                                       values = trend_palette) +
+                                    # guides(color = guide_legend(override.aes = list(shape = 15))) +
+                                    labs(x='Year',
+                                         y = y_axis_text,
+                                         title = plot_title) +
+                                    hefpi::theme_gdocs() +
+                                    theme(panel.grid.major.x = element_blank(),
+                                          axis.text.x = element_blank(),
+                                          axis.ticks = element_blank()), tooltip = 'text'))
         }
-       p <- p %>%
-         layout(title = plot_title,
-                xaxis= list(showline = TRUE,title = 'Year', showticklabels = TRUE),
-                yaxis= list(tickformat='%',showline = TRUE,title = y_axis_text, showticklabels = TRUE))
+       
       }
       
       

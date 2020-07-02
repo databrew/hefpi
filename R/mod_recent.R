@@ -95,9 +95,10 @@ mod_recent_mean_server <- function(input, output, session){
     # Get the variable from indicator input
     ind_info <- indicators %>%
       filter(indicator_short_name == indicator) %>%
-      select(variable_name, good_or_bad)
+      select(variable_name, good_or_bad, unit_of_measure)
     variable_name = ind_info$variable_name
     good_or_bad = ind_info$good_or_bad
+    unit_of_measure = ind_info$unit_of_measure
     
     # Get the data, subsetted by inputs
     pd <- hefpi::df %>%
@@ -117,6 +118,13 @@ mod_recent_mean_server <- function(input, output, session){
     # join with data
     shp@data <- shp@data %>% left_join(pd)
     
+    # condition on unit of measure
+    if(unit_of_measure == '%'){
+      ind_value <- shp@data$value*100
+    } else {
+      ind_value <- shp@data$value
+    }
+    
     if(good_or_bad == 'Good'){
       # Make color palette
       map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
@@ -124,11 +132,12 @@ mod_recent_mean_server <- function(input, output, session){
       # Make color palette
       map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="white")
     }
-   
+  
     # Make tooltip
     map_text <- paste(
-      "Country: ", as.character(shp@data$NAME),"<br/>", 
-      "Value: ", round(shp@data$value, digits = 3), "<br/>",
+      "Indicator: ", as.character(indicator),"<br/>",
+      "Economy: ", as.character(shp@data$NAME),' (',unit_of_measure,')',"<br/>", 
+      'Value: ', round(ind_value, digits = 2),  "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
@@ -169,6 +178,7 @@ mod_recent_mean_server <- function(input, output, session){
     pop_map_list[[3]] <- pop_map
     pop_map_list[[4]] <- shp
     pop_map_list[[5]] <- good_or_bad
+    pop_map_list[[6]] <- unit_of_measure
     return(pop_map_list)
   })
   
@@ -235,6 +245,7 @@ mod_recent_mean_server <- function(input, output, session){
     } else {
       shp <- pop_map[[4]]
       good_or_bad = pop_map[[5]]
+      unit_of_measure <- pop_map[[6]]
     }
     # get data from shp and remove NA
     temp <- shp@data
@@ -257,21 +268,12 @@ mod_recent_mean_server <- function(input, output, session){
       } 
       p <- empty_plot("No data available for the selected inputs")
     } else {
-      # order countries by value
-      temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
-      # get text for plot
-      plot_text <- paste(
-        "Country: ", as.character(temp$NAME),"\n", 
-        "Value: ", round(temp$value, digits = 3), "\n",
-        "Year: ", as.character(temp$year),"\n",
-        "Data source :", as.character(temp$data_source), "\n",
-        sep="") %>%
-        lapply(htmltools::HTML)
-      
-      # create title and y axis label
-      y_axis_text = paste0('Population mean')
-      plot_title = paste0('Population mean - ', indicator)
-      
+      # condition on unit of measure
+      if(unit_of_measure == '%'){
+        ind_value <- temp$value*100
+      } else {
+        ind_value <- temp$value
+      }
       # get palette
       if(good_or_bad == 'Good'){
         bar_palette = 'Greens'
@@ -279,6 +281,23 @@ mod_recent_mean_server <- function(input, output, session){
         bar_palette = 'Reds'
       }
       
+      # order countries by value
+      temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
+      
+      plot_text <- paste(
+        "Indicator: ", as.character(indicator),"<br>",
+        "Economy: ", as.character(temp$NAME),"<br>", 
+        'Value: ', round(ind_value, digits = 2),' (',unit_of_measure,')',"<br>",
+        "Year: ", as.character(temp$year),"<br>",
+        "Data source :", as.character(temp$data_source), "<br>",
+        sep="") %>%
+        lapply(htmltools::HTML)
+      
+     
+      # create title and y axis label
+      y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
+      plot_title = 'Most recent value - population mean'
+  
       # add highlight functionality, so hovering highlights bar.
       temp <- highlight_key(temp, key=~NAME)
       
@@ -383,15 +402,17 @@ mod_recent_con_server <- function(input, output, session){
     indicator <- input$indicator
 
     # Get the variable
-    variable <- indicators %>%
+    ind_info <- indicators %>%
       filter(indicator_short_name == indicator) %>%
-      .$variable_name
+      select(variable_name, unit_of_measure)
+    variable_name <- ind_info$variable_name
+    unit_of_measure <- ind_info$unit_of_measure
     
     # Get the data to be plotted
     pd<- hefpi::df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
-      filter(indic == variable) %>%
+      filter(indic == variable_name) %>%
       group_by(ISO3 = iso3c) %>%
       filter(year == max(year, na.rm = TRUE)) %>%
       filter(referenceid_list == first(referenceid_list)) %>%
@@ -404,16 +425,18 @@ mod_recent_con_server <- function(input, output, session){
     shp@data <- shp@data %>% left_join(pd)
     
     # Make color palette
-    plot_palette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="white")
+    map_palette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="white")
     
     # Make tooltip
-    plot_text <- paste(
-      "Country: ", as.character(shp@data$NAME),"<br/>", 
-      "Value: ", round(shp@data$value, digits = 3), "<br/>",
+    map_text <- paste(
+      "Indicator: ", indicator,"<br/>",
+      "Economy: ", as.character(shp@data$NAME),"<br/>", 
+      'Value: ', round(shp@data$value, digits = 2), "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
       lapply(htmltools::HTML)
+    
     
     # get map
     con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
@@ -421,11 +444,11 @@ mod_recent_con_server <- function(input, output, session){
       setView( lat=10, lng=0 , zoom=1.5) %>%
       addPolygons( 
         color = 'black',
-        fillColor = ~plot_palette(value), 
+        fillColor = ~map_palette(value), 
         stroke=TRUE, 
         fillOpacity = 0.9, 
         weight=1,
-        label = plot_text,
+        label = map_text,
         highlightOptions = highlightOptions(
           weight = 1,
           fillOpacity = 0,
@@ -440,11 +463,12 @@ mod_recent_con_server <- function(input, output, session){
           direction = "auto"
         )
       ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
-      addLegend( pal=plot_palette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
-    con_map_list[[1]] <- plot_palette
-    con_map_list[[2]] <- plot_text
+      addLegend( pal=map_palette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+    con_map_list[[1]] <- map_palette
+    con_map_list[[2]] <- map_text
     con_map_list[[3]] <- con_map
     con_map_list[[4]] <- shp
+    con_map_list[[5]] <- unit_of_measure
     return(con_map_list)
     
   })
@@ -456,8 +480,8 @@ mod_recent_con_server <- function(input, output, session){
     if(is.null(con_map)){
       NULL
     } else {
-      plot_text <- con_map[[1]]
-      plot_palette <- con_map[[2]]
+      map_text <- con_map[[1]]
+      map_palette <- con_map[[2]]
       this_map <- con_map[[3]]
       this_map
     }
@@ -515,6 +539,7 @@ mod_recent_con_server <- function(input, output, session){
       NULL
     } else {
       shp <- con_map[[4]]
+      unit_of_measure <- con_map[[5]]
     }
     # get data from shp and remove NA
     temp <- shp@data
@@ -540,21 +565,24 @@ mod_recent_con_server <- function(input, output, session){
       # order countries by value
       # temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
       # get text for plotly 
-      con_bar_text <- paste(
-        "Country: ", as.character(temp$NAME),"\n", 
-        "Value: ", round(temp$value, digits = 3), "\n",
-        "Year: ", as.character(temp$year),"\n",
-        "Data source :", as.character(temp$data_source), "\n",
+      plot_text <- paste(
+        "Indicator: ", indicator,' (',unit_of_measure,')',"<br>",
+        "Economy: ", as.character(temp$NAME),"<br>", 
+        'Value: ', round(temp$value, digits = 2),  "<br>",
+        "Year: ", as.character(temp$year),"<br>",
+        "Data source :", as.character(temp$data_source), "<br>",
         sep="") %>%
         lapply(htmltools::HTML)
+      
+      
+      # create title and y axis label
+      y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
+      plot_title = 'Most recent value - concentration index'
+      
       plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
-      
-      y_axis_text = paste0('Population mean')
-      
-      plot_title = paste0('Population mean - ', indicator)
       temp <- highlight_key(temp, key=~NAME)
       # plotly plot
-      print(ggplotly(ggplot(temp, aes(NAME, value, text = con_bar_text)) +
+      print(ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                        geom_bar(stat = 'identity', aes(fill = value)) +
                        scale_fill_distiller(palette = "BrBG", limit = plot_limit) +
                        labs(x='Country',
