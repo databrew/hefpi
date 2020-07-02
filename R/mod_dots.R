@@ -23,7 +23,7 @@ mod_dots_country_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('dots_country'), height = '800px', width = '1000px'
+               ns('dots_country'),height = '100%',
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
@@ -137,9 +137,9 @@ mod_dots_country_server <- function(input, output, session){
   
   output$dots_country <- renderPlotly({
     # last_date <- '2018'
-    indicator <- "BMI, adults"
-    region <- "East Asia & Pacific"
-    temp <- hefpi::df_series %>% filter(region == 'East Asia & Pacific')
+    indicator <- "Inpatient care use, adults"
+    region <- "Latin America & Caribbean"
+    temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
     country_names <- unique(temp$country_name)
      value_range = c(0,28)
     date_range = c(1982,2018)
@@ -220,20 +220,47 @@ mod_dots_country_server <- function(input, output, session){
         #          yaxis= list(title = '', showticklabels = TRUE))
         # 
         # p
+        # df <- df[df$country != 'Japan',]
+        # df <- df[df$country != 'China',]
+        # df <- df[df$country != 'Lao PDR',]
+        # df <- df[df$country != 'Australia',]
+        # 
+        # 
+        # number of countries
+        num_country <- length(unique(df$country))
+        if(num_country <= 3){
+          plot_height <- ((num_country*100)/2)
+          missin_num =  200 - plot_height
+          plot_height <- ((num_country*100)/2)+ missin_num
+          
+        } else {
+          plot_height <- (num_country*100)/2
+          
+        }
         
-        print(ggplotly(ggplot(df, aes(x=country,
+        if(plot_height > 500){
+          plot_height <- 500
+        }
+        
+         
+            p <- ggplot(df, aes(x=country,
                                       y=value,
                                       text = mytext)) +
                          geom_point(size=5, alpha = 0.7, aes(color = variable)) +
                          geom_line(aes(group = country)) +
                          scale_color_manual(name = '',
                                             values = col_vec) +
-                         scale_y_continuous(labels = function(x) paste0(x, "%"), limits = c(value_range[1], value_range[2])) +
+                         scale_y_continuous(labels = function(x) paste0(x, "%"), 
+                                            limits = c(value_range[1], value_range[2])) +
                          labs(title=plot_title, x = x_axis_text, y ='') +
                          coord_flip() +
-                         hefpi::theme_gdocs(), tooltip = 'text'))
-        
-        
+                         theme_gdocs() 
+            fig <- ggplotly(p, 
+                            tooltip = 'text', 
+                            height = plot_height)
+            fig <- fig %>% layout(dragmode = "pan")
+               
+        fig
       }
       
       
@@ -260,7 +287,7 @@ mod_dots_ind_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('dots_ind'), height = '800px', width = '1000px'
+               ns('dots_ind'),
              )),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
