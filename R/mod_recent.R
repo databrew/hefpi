@@ -86,20 +86,24 @@ mod_recent_mean_server <- function(input, output, session){
     # create list to store results from reactive object
     pop_map_list <- list()
     
+    indicator = 'Condom use, women'
+    plot_years = c(1982, 2018)
     # get inputs
     plot_years <- input$date_range
     indicator <- input$indicator
     
     # Get the variable from indicator input
-    variable <- indicators %>%
+    ind_info <- indicators %>%
       filter(indicator_short_name == indicator) %>%
-      .$variable_name
+      select(variable_name, good_or_bad)
+    variable_name = ind_info$variable_name
+    good_or_bad = ind_info$good_or_bad
     
     # Get the data, subsetted by inputs
     pd <- hefpi::df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
-      filter(indic == variable) %>%
+      filter(indic == variable_name) %>%
       group_by(ISO3 = iso3c) %>%
       filter(year == max(year, na.rm = TRUE)) %>%
       filter(referenceid_list == first(referenceid_list)) %>%
@@ -113,9 +117,14 @@ mod_recent_mean_server <- function(input, output, session){
     # join with data
     shp@data <- shp@data %>% left_join(pd)
     
-    # Make color palette
-    map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
-    
+    if(good_or_bad == 'Good'){
+      # Make color palette
+      map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
+    } else {
+      # Make color palette
+      map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="white")
+    }
+   
     # Make tooltip
     map_text <- paste(
       "Country: ", as.character(shp@data$NAME),"<br/>", 
@@ -159,6 +168,7 @@ mod_recent_mean_server <- function(input, output, session){
     pop_map_list[[2]] <- map_text
     pop_map_list[[3]] <- pop_map
     pop_map_list[[4]] <- shp
+    pop_map_list[[5]] <- good_or_bad
     return(pop_map_list)
   })
   
@@ -224,6 +234,7 @@ mod_recent_mean_server <- function(input, output, session){
       NULL
     } else {
       shp <- pop_map[[4]]
+      good_or_bad = pop_map[[5]]
     }
     # get data from shp and remove NA
     temp <- shp@data
@@ -261,13 +272,20 @@ mod_recent_mean_server <- function(input, output, session){
       y_axis_text = paste0('Population mean')
       plot_title = paste0('Population mean - ', indicator)
       
+      # get palette
+      if(good_or_bad == 'Good'){
+        bar_palette = 'Greens'
+      } else {
+        bar_palette = 'Reds'
+      }
+      
       # add highlight functionality, so hovering highlights bar.
       temp <- highlight_key(temp, key=~NAME)
       
       # plotly plot
       print(ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                        geom_bar(stat = 'identity', aes(fill = value)) +
-                       scale_fill_distiller(palette = "Greens", direction = 1) +
+                       scale_fill_distiller(palette = bar_palette, direction = 1) +
                        labs(x='Country',
                             y = y_axis_text,
                             title = plot_title) +
