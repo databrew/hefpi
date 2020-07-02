@@ -231,74 +231,74 @@ mod_recent_mean_sub_server <- function(input, output, session){
     })
   
   # STOP HERE
-
-  output$recent_mean_sub_plot <- renderPlotly({
-    pop_map <- get_pop_map()
-    plot_years <- input$date_range
-    indicator <- input$indicator
-    if(is.null(pop_map)){
-      NULL
-    } else {
-      shp <- pop_map[[4]]
-    }
-
-    # get data from shp and remove NA
-    temp <- shp@data
-    # temp <- temp %>% filter(!is.na(value))
-    temp$ADM1_NAME <- as.character(temp$ADM1_NAME)
-
-    if(all(is.na(temp$value))){
-      empty_plot <- function(title = NULL){
-        p <- plotly_empty(type = "scatter", mode = "markers") %>%
-          config(
-            displayModeBar = FALSE
-          ) %>%
-          layout(
-            title = list(
-              text = title,
-              yref = "paper",
-              y = 0.5
-            )
-          )
-        return(p)
-      }
-      p <- empty_plot("No data available for the selected inputs")
-    } else {
-      # order countries by value
-      temp$ADM1_NAME <- factor(temp$ADM1_NAME, levels = unique(temp$ADM1_NAME)[order(temp$value, decreasing = TRUE)])
-      # get text for plotly
-      # Make tooltip
-      mytext <- paste(
-        "Country: ", as.character(temp$ADM1_NAME),"<br/>",
-        "Value: ", round(temp$value, digits = 3), "<br/>",
-        "Year: ", as.character(temp$year),"<br/>",
-        sep="") %>%
-        lapply(htmltools::HTML)
-      plot_title = paste0('Population mean - ', indicator)
-      y_axis_text = 'Population mean'
-      temp <- highlight_key(temp, key=~ADM1_NAME)
-      # plotly plot
-      # plotly plot
-      print(ggplotly(ggplot(temp, aes(ADM1_NAME, value, text = mytext)) +
-                       geom_bar(stat = 'identity', aes(fill = value)) +
-                       scale_fill_distiller(palette = "Greens", direction = 1) +
-                       labs(x='Country',
-                            y = y_axis_text,
-                            title = plot_title) +
-                       hefpi::theme_gdocs() +
-                       theme(panel.grid.major.x = element_blank(),
-                             axis.text.x = element_blank(),
-                             axis.ticks = element_blank()),
-                     tooltip = 'text')   %>%
-              highlight(on='plotly_hover',
-                        color = 'darkgreen',
-                        opacityDim = 0.6))
-
-    }
-
-    return(p)
-  })
-  
+# 
+#   output$recent_mean_sub_plot <- renderPlotly({
+#     pop_map <- get_pop_map()
+#     plot_years <- input$date_range
+#     indicator <- input$indicator
+#     if(is.null(pop_map)){
+#       NULL
+#     } else {
+#       shp <- pop_map[[4]]
+#     }
+# 
+#     # get data from shp and remove NA
+#     temp <- shp@data
+#     # temp <- temp %>% filter(!is.na(value))
+#     temp$ADM1_NAME <- as.character(temp$ADM1_NAME)
+# 
+#     if(all(is.na(temp$value))){
+#       empty_plot <- function(title = NULL){
+#         p <- plotly_empty(type = "scatter", mode = "markers") %>%
+#           config(
+#             displayModeBar = FALSE
+#           ) %>%
+#           layout(
+#             title = list(
+#               text = title,
+#               yref = "paper",
+#               y = 0.5
+#             )
+#           )
+#         return(p)
+#       }
+#       p <- empty_plot("No data available for the selected inputs")
+#     } else {
+#       # order countries by value
+#       temp$ADM1_NAME <- factor(temp$ADM1_NAME, levels = unique(temp$ADM1_NAME)[order(temp$value, decreasing = TRUE)])
+#       # get text for plotly
+#       # Make tooltip
+#       mytext <- paste(
+#         "Country: ", as.character(temp$ADM1_NAME),"<br/>",
+#         "Value: ", round(temp$value, digits = 3), "<br/>",
+#         "Year: ", as.character(temp$year),"<br/>",
+#         sep="") %>%
+#         lapply(htmltools::HTML)
+#       plot_title = paste0('Population mean - ', indicator)
+#       y_axis_text = 'Population mean'
+#       temp <- highlight_key(temp, key=~ADM1_NAME)
+#       # plotly plot
+#       # plotly plot
+#       print(ggplotly(ggplot(temp, aes(ADM1_NAME, value, text = mytext)) +
+#                        geom_bar(stat = 'identity', aes(fill = value)) +
+#                        scale_fill_distiller(palette = "Greens", direction = 1) +
+#                        labs(x='Country',
+#                             y = y_axis_text,
+#                             title = plot_title) +
+#                        hefpi::theme_gdocs() +
+#                        theme(panel.grid.major.x = element_blank(),
+#                              axis.text.x = element_blank(),
+#                              axis.ticks = element_blank()),
+#                      tooltip = 'text')   %>%
+#               highlight(on='plotly_hover',
+#                         color = 'darkgreen',
+#                         opacityDim = 0.6))
+# 
+#     }
+# 
+#     return(p)
+#   })
+#   
 }
 
 # -------------------------------------------------------------------------------------
