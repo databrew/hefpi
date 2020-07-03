@@ -19,12 +19,10 @@
 mod_dots_country_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
     fluidPage(
-      column(8,
-             plotlyOutput(
-               ns('dots_country'),height = '100%',
-             )),
+       column(8,
+                 tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dots_country'), height = '600px') )
+      ),
       column(4,
              selectInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
@@ -118,7 +116,7 @@ mod_dots_country_server <- function(input, output, session){
                     label = 'Country', 
                     choices = countries,
                     selected = countries,
-                    width = '60%',
+                    width = '100%',
                     options = list( `selected-text-format` = "count > 2",
                                     `count-selected-text` = "{0}/{1} countries"),
                     multiple = TRUE),
@@ -126,7 +124,6 @@ mod_dots_country_server <- function(input, output, session){
                     'X axis range',
                     min = min_value,
                     max = max_value,
-                    post = '%',
                     value = c(min_value, max_value),
                     sep = '')
       )
@@ -189,8 +186,8 @@ mod_dots_country_server <- function(input, output, session){
       
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Economies', ' - ', indicator)
-      y_axis_text = indicator
-      x_axis_text = paste0('Most recent value for', '\n', 'time period: ', date_range[1], ' - ', date_range[2])
+      sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+      
       df <- df %>%
         filter(value >= value_range[1],
                value <= value_range[2])
@@ -209,40 +206,12 @@ mod_dots_country_server <- function(input, output, session){
         NULL
       } else {
         
-        # p <- plot_ly(data = df, 
-        #              x = ~value, 
-        #              y = ~country, 
-        #              color = ~variable, 
-        #              colors = col_vec, text = mytext, 
-        #              hoverinfo = 'text') %>%
-        #   layout(title = plot_title,
-        #          xaxis= list(title = 'Value', showticklabels = TRUE),
-        #          yaxis= list(title = '', showticklabels = TRUE))
-        # 
-        # p
-        # df <- df[df$country != 'Japan',]
-        # df <- df[df$country != 'China',]
-        # df <- df[df$country != 'Lao PDR',]
-        # df <- df[df$country != 'Australia',]
-        # 
-        # 
         # number of countries
-        num_country <- length(unique(df$country))
-        if(num_country <= 3){
-          plot_height <- ((num_country*100)/2)
-          missin_num =  200 - plot_height
-          plot_height <- ((num_country*100)/2)+ missin_num
-          
-        } else {
-          plot_height <- (num_country*100)/2
-          
+        plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
+        if(plot_height < 250){
+          plot_height <- 250
         }
         
-        if(plot_height > 500){
-          plot_height <- 500
-        }
-        
-         
             p <- ggplot(df, aes(x=country,
                                       y=value,
                                       text = mytext)) +
@@ -250,16 +219,14 @@ mod_dots_country_server <- function(input, output, session){
                          geom_line(aes(group = country)) +
                          scale_color_manual(name = '',
                                             values = col_vec) +
-                         scale_y_continuous(labels = function(x) paste0(x, "%"), 
-                                            limits = c(value_range[1], value_range[2])) +
-                         labs(title=plot_title, x = x_axis_text, y ='') +
+                         scale_y_continuous(limits = c(value_range[1], value_range[2])) +
+                         labs(title=plot_title,
+                              subtitle = sub_title, x= '', y = '') +
                          coord_flip() +
                          theme_gdocs() 
             fig <- ggplotly(p, 
                             tooltip = 'text', 
                             height = plot_height)
-            fig <- fig %>% layout(dragmode = "pan")
-               
         fig
       }
       
@@ -286,13 +253,17 @@ mod_dots_ind_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotlyOutput(
-               ns('dots_ind'),
-             )),
+             tags$div(style='overflow-y: scroll; position: relative', 
+                      plotlyOutput(ns('dots_ind'), height = '600px') )),
       column(4,
-             selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list,
-                         selected = indicators_list[[1]],
+             tags$style("#indicator {font-size:10px;height:10px;}"),
+             pickerInput(inputId = ns("indicator"),
+                         label = 'Indicator', 
+                         choices = sort(unique(indicators$indicator_short_name)),
+                         selected = sort(unique(indicators$indicator_short_name)),
+                         width = '100%',
+                         options = list( `selected-text-format` = "count > 2",
+                                         `count-selected-text` = "{0}/{1} indicators"),
                          multiple = TRUE),
              selectInput(ns('country'), 'Country',
                          choices = as.character(country_list),
@@ -320,7 +291,7 @@ mod_dots_ind_ui <- function(id){
 #' @import ggthemes
 #' @import scales
 #' @import reshape2
-#' @plotly
+#' @import plotly
 #' @import htmltools
 #' @keywords internal
 
@@ -390,16 +361,16 @@ mod_dots_ind_server <- function(input, output, session){
                 'X axis range',
                 min = min_value,
                 max = max_value,
-                post = '%',
                 value = c(min_value, max_value),
                 sep = '')
     
   })
   output$dots_ind <- renderPlotly({
-    # date_range = c(1982,2016)
-    # indicator <- c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%',
-    #                'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women')
-    # country_names <- 'United States'
+    date_range = c(1982,2016)
+    indicator <- c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%',
+                   'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women')
+    country_names <- 'United States'
+    value_range <- c(0,30)
     date_range <- input$date_range
     indicator <- input$indicator
     country_names <- input$country
@@ -445,7 +416,7 @@ mod_dots_ind_server <- function(input, output, session){
       
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Indicators', ' - ', country_names)
-      x_axis_text = paste0('Most recent value for', '\n', 'time period: ', date_range[1], ' - ', date_range[2])
+      sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
       
       # subset by y axis
       df <- df %>% 
@@ -464,40 +435,30 @@ mod_dots_ind_server <- function(input, output, session){
       if(is.null(df) | nrow(df) == 0){
         NULL
       } else {
+        # number of countries
+        plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
+        if(plot_height < 250){
+          plot_height <- 250
+        }
         
-        # p <- plot_ly(data = df, 
-        #              x = ~value, 
-        #              y = ~indicator_short_name, 
-        #              color = ~variable, 
-        #              colors = col_vec, text = mytext, 
-        #              hoverinfo = 'text') %>%
-        #   layout(title = plot_title,
-        #          xaxis= list(title = 'Value', showticklabels = TRUE),
-        #          yaxis= list(title = '', showticklabels = TRUE))
+        p <- ggplot(df, aes(x=indicator_short_name,
+                            y=value,
+                            text = mytext)) +
+          geom_point(size=5, alpha = 0.7, aes(color = variable)) +
+          geom_line(aes(group = indicator_short_name)) +
+          scale_color_manual(name = '',
+                             values = col_vec) +
+          scale_y_continuous(limits = c(value_range[1], value_range[2])) +
+          labs(title=plot_title, x= '', y = '',
+               subtitle = sub_title) +
+          coord_flip() +
+          theme_gdocs() +
+          theme(axis.text = element_text(size = 8,  family = 'sans'))
+        fig <- ggplotly(p, 
+                        tooltip = 'text', 
+                        height = plot_height)
+        fig
         
-        # # plot
-        # print(ggplotly(ggplot(df, aes(value, indicator_short_name,group = indicator_short_name, color = variable, text = mytext)) +
-        #   geom_point(size = 2.5, alpha = 0.8) +
-        #   geom_line(size = 1.5, alpha = 1, color = 'grey') +
-        #   scale_color_manual(name = 'Quintiles',
-        #                      values = col_vec) +
-        #   labs(x = 'Most recent value (before selected year)',
-        #        y = '',
-        #        title = plot_title) +
-        #   hefpi::theme_gdocs(), tooltip = 'text'))
-        
-        print(ggplotly(ggplot(df, aes(x=indicator_short_name,
-                                      y=value,
-                                      text = mytext)) +
-                         geom_point(size=5, aes(color = variable), alpha = 0.7) +
-                         geom_line(aes(group = indicator_short_name)) +
-                         scale_color_manual(name = '',
-                                            values = col_vec) +
-                         scale_y_continuous(labels = function(x) paste0(x, "%"), limits = c(value_range[1], value_range[2])) +
-                         labs(title=plot_title, x = x_axis_text, y = '') +
-                         coord_flip() +
-                         hefpi::theme_gdocs() +
-                         theme(axis.text = element_text(size=9, face = 'bold')), tooltip = 'text'))
         
       }
       
