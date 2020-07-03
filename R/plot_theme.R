@@ -9,7 +9,7 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
   
   ltgray <- "#cccccc"
   dkgray <- "#757575"
-  dkgray2 <- "#666666"
+  dkgray2 <- "#5A5A5A"
   
   theme_foundation(base_size = base_size,
                    base_family = base_family) +
@@ -33,9 +33,9 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
           strip.background = element_rect(colour = NA, fill = NA),
           # axis titles: Roboto 12pt, plain.
           axis.title = element_text(face = "plain", colour = dkgray2,
-                                    size = 14),
+                                    size = rel(1)),
           # axis text: Roboto 12pt, plain
-          axis.text = element_text(face = "plain", colour = dkgray,
+          axis.text = element_text(face = "plain", colour = dkgray2,
                                    size = 12),
           # only axis line on the x-axis. black.
           axis.line = element_line(colour = "black"),
