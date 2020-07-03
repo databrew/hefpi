@@ -98,11 +98,10 @@ temp <- country %>% select(short_name, region, region_code)
 # join with country
 sub_national <- left_join(sub_national, temp, by = c('country'='short_name'))
 
-# get list of indicators from sub_national that are not present in indicators, and remove them temporarily from subnation until sven gives us all the descriptions
-remove_indic <- unique(sub_national$indic)[!unique(sub_national$indic) %in% indicators$variable_name]
-sub_national <- sub_national[!sub_national$indic %in% remove_indic, ]
+sub_national <- inner_join(sub_national, indicators, by = c('indic'='variable_name'))
 
-# join with df to get region data
+# get list of indicators from sub_national that are not present in indicators, and remove them temporarily from subnation until sven gives us all the descriptions
+
 usethis::use_data(sub_national, overwrite = T)
 
 # Read in the indicators hierarchy data from WB

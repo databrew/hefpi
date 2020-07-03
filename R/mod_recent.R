@@ -302,7 +302,7 @@ mod_recent_mean_server <- function(input, output, session){
       temp <- highlight_key(temp, key=~NAME)
       
       # plotly plot
-      print(ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
+      p <- ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                        geom_bar(stat = 'identity', aes(fill = value)) +
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
                        labs(x='Country',
@@ -312,10 +312,13 @@ mod_recent_mean_server <- function(input, output, session){
                        theme(panel.grid.major.x = element_blank(),
                              axis.text.x = element_blank(),
                              axis.ticks = element_blank()),
-                     tooltip = 'text')   %>%
+                     tooltip = 'text')   
+      p <- p %>% 
+        config(displayModeBar = F) %>%
               highlight(on='plotly_hover',
                         color = 'darkgreen',
-                        opacityDim = 0.6))
+                        opacityDim = 0.6)
+      p
     }
   })
 }
@@ -582,7 +585,7 @@ mod_recent_con_server <- function(input, output, session){
       plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
       temp <- highlight_key(temp, key=~NAME)
       # plotly plot
-      print(ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
+      p <- ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                        geom_bar(stat = 'identity', aes(fill = value)) +
                        scale_fill_distiller(palette = "BrBG", limit = plot_limit) +
                        labs(x='Country',
@@ -592,10 +595,14 @@ mod_recent_con_server <- function(input, output, session){
                        theme(panel.grid.major.x = element_blank(),
                              axis.text.x = element_blank(),
                              axis.ticks = element_blank()),
-                     tooltip = 'text')   %>%
-              highlight(on='plotly_hover',
-                        color = 'darkgreen',
-                        opacityDim = 0.6))
+                     tooltip = 'text')
+      p <- p %>% 
+        config(displayModeBar = F) %>%
+        highlight(on='plotly_hover',
+                  color = 'darkgreen',
+                  opacityDim = 0.6)
+    p
+     
       
     }
     
