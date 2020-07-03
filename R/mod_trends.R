@@ -26,14 +26,21 @@ mod_trends_mean_ui <- function(id){
              ns('trends_mean'), height = '800px'
            )),
     column(4,
-           selectInput(ns('indicator'), 'Indicator',
+           pickerInput(ns('indicator'),
+                       'Indicator',
                        choices = indicators_list,
-                       selected = '4+ antenatal care visits'),
+                       selected = '4+ antenatal care visits',
+                       options = list(`dropdown-align-right` = TRUE)),
           checkboxInput(ns('interpolate'), 'Interpolate missing values',
                        value = TRUE),
-           selectInput(ns('region'), 'Region',
-                       choices = as.character(region_list$region),
-                       selected = 'East Asia & Pacific'),
+          pickerInput(inputId = ns("region"),
+                      label = 'Region', 
+                      choices = as.character(region_list$region),
+                      selected = as.character(region_list$region)[1],
+                      options = list( `actions-box`=TRUE,
+                                      `selected-text-format` = "count > 2",
+                                      `count-selected-text` = "{0}/{1} Regions"),
+                      multiple = TRUE),
            uiOutput(ns('country_ui')),
           sliderInput(ns('date_range'),
                                   'Date range',
@@ -102,15 +109,20 @@ mod_trends_mean_server <- function(input, output, session){
       # subset data by variable and region code
         df <- hefpi::df
         df <- df[df$indic == variable,]
-        df <- df[df$regioncode == region_code,]
+        df <- df[df$regioncode %in% region_code,]
        
        
       
         countries <- unique(df$country)
-        selectInput(session$ns("country"), 
+        
+        pickerInput(inputId = session$ns("country"),
                     label = 'Country', 
                     choices = countries,
-                    multiple = TRUE, selected = countries)
+                    selected = countries,
+                    options = list( `actions-box`=TRUE,
+                                    `selected-text-format` = "count > 2",
+                                    `count-selected-text` = "{0}/{1} Countries"),
+                    multiple = TRUE)
       
     })
     
@@ -148,7 +160,7 @@ mod_trends_mean_server <- function(input, output, session){
         
         # subet by variable, region code and a list of countries
         df <- df[df$indic == variable_name,]
-        df <- df[df$regioncode == region_code,]
+        df <- df[df$regioncode %in% region_code,]
         pd <- df[df$country %in% country_names,]
         pd <- pd %>% filter(year >= min(date_range),
                             year <= max(date_range)) 
@@ -178,7 +190,7 @@ mod_trends_mean_server <- function(input, output, session){
         if(yn){
          
           # condition if we connect the dots
-          print(ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
+          p <- ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
                                     geom_point() + 
                                     geom_line(aes(group = country)) +
                                     scale_color_manual(name = '',
@@ -189,11 +201,12 @@ mod_trends_mean_server <- function(input, output, session){
                                          title = plot_title) +
                                     hefpi::theme_gdocs() +
                                     theme(panel.grid.major.x = element_blank(),
-                                          axis.text.x = element_blank(),
-                                          axis.ticks = element_blank()), tooltip = 'text'))
+                                          axis.ticks = element_blank()), tooltip = 'text')
+          fig <- p %>% config(displayModeBar = F)
+          
         } else {
           # condition if we connect the dots
-          print(ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
+          p <- ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
                                     geom_point() +
                                     scale_color_manual(name = '',
                                                        values = trend_palette) +
@@ -203,8 +216,8 @@ mod_trends_mean_server <- function(input, output, session){
                                          title = plot_title) +
                                     hefpi::theme_gdocs() +
                                     theme(panel.grid.major.x = element_blank(),
-                                          axis.text.x = element_blank(),
-                                          axis.ticks = element_blank()), tooltip = 'text'))
+                                          axis.ticks = element_blank()), tooltip = 'text')
+          fig <- p %>% config(displayModeBar = F)
         }
        
       }

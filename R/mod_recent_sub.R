@@ -30,8 +30,8 @@ mod_recent_mean_sub_ui <- function(id){
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region[1])),
              selectInput(ns('indicator'), 'Indicator',
-                         choices = sort(unique(sub_national$indic)),
-                         selected = sort(unique(sub_national$indic))[1]),
+                         choices = sort(unique(sub_national$indicator_short_name)),
+                         selected = sort(unique(sub_national$indicator_short_name))[1]),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -39,6 +39,8 @@ mod_recent_mean_sub_ui <- function(id){
                          value = c(1982, 2017),
                          step = 1,
                          sep = ''),
+             downloadButton(ns("dl_plot"), label = 'Download image'),
+             downloadButton(ns("dl_data"), label = 'Download data'),
              useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info"), "Plot Info"))
     )#,
@@ -96,12 +98,15 @@ mod_recent_mean_sub_server <- function(input, output, session){
     # get region code
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region == region])
+    variable <- indicators %>%
+      filter(indicator_short_name == indicator) %>%
+      .$variable_name
     
     # Get the data to be plotted
     temp <- hefpi::sub_national[sub_national$region_code == region_code,]
     pd <- temp %>% filter(year >= min(plot_years),
                           year <= max(plot_years)) %>%
-      filter(indic == indicator) %>%
+      filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
       filter(year == max(year, na.rm = TRUE)) %>%
       summarise(value = first(pop),
@@ -324,8 +329,8 @@ mod_recent_con_sub_ui <- function(id){
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region[1])),
              selectInput(ns('indicator'), 'Indicator',
-                         choices = sort(unique(sub_national$indic)),
-                         selected = sort(unique(sub_national$indic))[1]),
+                         choices = sort(unique(sub_national$indicator_short_name)),
+                         selected = sort(unique(sub_national$indicator_short_name))[1]),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -334,6 +339,8 @@ mod_recent_con_sub_ui <- function(id){
                          step = 1,
                          sep = ''),
              useShinyalert(),  # Set up shinyalert
+             downloadButton(ns("dl_plot"), label = 'Download image'),
+             downloadButton(ns("dl_data"), label = 'Download data'),
              actionButton(ns("plot_info"), "Plot Info"))
     )#,
     # br(), br(),
@@ -370,7 +377,7 @@ mod_recent_con_sub_server <- function(input, output, session){
   })
   
   get_pop_map <- reactive({
-    indicator <- 'c_anc'
+    indicator <- sub_national$indicator_short_name[1]
     region = 'Latin America & Caribbean'
     plot_years <- c(1982, 2017)
     
@@ -381,12 +388,16 @@ mod_recent_con_sub_server <- function(input, output, session){
     
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region == region])
+    # Get the variable
+    variable <- indicators %>%
+      filter(indicator_short_name == indicator) %>%
+      .$variable_name
     
     # Get the data to be plotted
     temp <- hefpi::sub_national[sub_national$region_code == region_code,]
     pd <- temp %>% filter(year >= min(plot_years),
                           year <= max(plot_years)) %>%
-      filter(indic == indicator) %>%
+      filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
       filter(year == max(year, na.rm = TRUE)) %>%
       summarise(value = first(CI),
