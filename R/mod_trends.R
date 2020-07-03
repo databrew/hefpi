@@ -339,18 +339,29 @@ mod_trends_con_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('trends_con'),  height = '800px'
+               ns('trends_con'), height = '800px'
              )),
       column(4,
-             selectInput(ns('indicator'), 'Indicator',
+             pickerInput(ns('indicator'),
+                         'Indicator',
                          choices = indicators_list,
-                         selected = '4+ antenatal care visits'),
-             checkboxInput(ns('interpolate'), 'Interpolate missing values',
-                           value = TRUE),
-             selectInput(ns('region'), 'Region',
+                         selected = '4+ antenatal care visits',
+                         options = list(`dropdown-align-right` = TRUE)),
+             pickerInput(inputId = ns("region"),
+                         label = 'Region', 
                          choices = as.character(region_list$region),
-                         selected = 'East Asia and Pacific'),
-             uiOutput(ns('country_ui')),
+                         selected = as.character(region_list$region)[1],
+                         options = list( `actions-box`=TRUE,
+                                         `selected-text-format` = "count > 2",
+                                         `count-selected-text` = "{0}/{1} Regions"),
+                         multiple = TRUE),
+             uiOutput(ns('ui_outputs')),
+             sliderInput(ns('value_range'),
+                         'Y axis range',
+                         min = 0,
+                         max = 1,
+                         value = c(0,1),
+                         sep = ''),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -358,15 +369,15 @@ mod_trends_con_ui <- function(id){
                          value = c(1982, 2017),
                          step = 1,
                          sep = ''),
-             sliderInput(ns('value_range'),
-                         'Y axis range',
-                         min = -1,
-                         max = 1,
-                         value = c(-1, 1),
-                         step = 0.05,
-                         sep = ''),
-             useShinyalert(),  # Set up shinyalert
-             actionButton(ns("plot_info"), "Plot Info"))
+             checkboxInput(ns('interpolate'), 'Interpolate missing values',
+                           value = TRUE),
+             downloadButton(ns("dl_plot"), label = 'Download image'),
+             downloadButton(ns("dl_data"), label = 'Download data'),
+             fluidPage(
+               fluidRow(
+                 useShinyalert(),  # Set up shinyalert
+                 actionButton(ns("plot_info"), label = "Plot Info"))
+             ))
     )
   )
 }
@@ -385,25 +396,24 @@ mod_trends_con_ui <- function(id){
 
 mod_trends_con_server <- function(input, output, session){
   
-  # Observe changes to inputs in order to generate changes to the map
-  observeEvent(input$plot_info, {
-    # Show a modal when the button is pressed
-    shinyalert(title = "Trends - Concentration Index", 
-               text = "charts allow users to track the over-time dynamics in an indicator’s concentration index. tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
-               type = "info", 
-               closeOnClickOutside = TRUE, 
-               showCancelButton = FALSE, 
-               showConfirmButton = FALSE)
-  })
   
-  # country ui
-  output$country_ui <- renderUI({
-   
+  output$ui_outputs <- renderUI({
+    
+    # Observe changes to inputs in order to generate changes to the map
+    observeEvent(input$plot_info, {
+      # Show a modal when the button is pressed
+      shinyalert(title = "Trends - Concentration Index", 
+                 text = "charts allow users to track the over-time dynamics in an indicator’s concentration index. tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+                 type = "info", 
+                 closeOnClickOutside = TRUE, 
+                 showCancelButton = FALSE, 
+                 showConfirmButton = FALSE)
+    })
+    
     # get inputs
     indicator <- input$indicator
     region <- input$region
-    yn <- input$interpolate
-    country_names <- input$country
+    
     
     # get region code
     region_list <- hefpi::region_list
@@ -417,28 +427,40 @@ mod_trends_con_server <- function(input, output, session){
     # subset data by variable and region code
     df <- hefpi::df
     df <- df[df$indic == variable,]
-    df <- df[df$regioncode == region_code,]
-    
+    df <- df[df$regioncode %in% region_code,]
     
     countries <- unique(df$country)
-    selectInput(session$ns("country"), 
-                label = 'Country', 
-                choices = countries,
-                multiple = TRUE, selected = countries)
+    
+    fluidPage(
+      fluidRow(
+        pickerInput(inputId = session$ns("country"),
+                    label = 'Country', 
+                    choices = countries,
+                    selected = countries,
+                    options = list( `actions-box`=TRUE,
+                                    `selected-text-format` = "count > 2",
+                                    `count-selected-text` = "{0}/{1} Countries"),
+                    multiple = TRUE),
+        
+      )
+    )
+    
     
   })
   
-  output$trends_con <- renderPlotly({
-    # indicator <- "Catastrophic health spending, 10%"
-    # region <- "Latin America & Caribbean"
-    # temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
-    # country_names <- unique(temp$country_name)
-    # date_range <- c(1982, 2017)
-    # value_range <- c(-1,1)
+  get_con_data <- reactive({
+    indicator <- "Infant mortality"
+    region <- region_list$region[1]
+    temp <- hefpi::df_series %>% filter(region %in% region)
+    country_names <- unique(temp$country_name)
+    date_range <- c(1982, 2017)
+    value_range <- c(0,81)
+    yn <- input$interpolate
+    
     # get inputs
+    con_list <- list()
     indicator <- input$indicator
     region <- input$region
-    yn <- input$interpolate
     country_names <- input$country
     date_range <- input$date_range
     value_range <- input$value_range
@@ -451,53 +473,147 @@ mod_trends_con_server <- function(input, output, session){
       NULL
     } else {
       
-      region_code <- as.character(region_list$region_code[region_list$region == region])
+      region_code <- as.character(region_list$region_code[region_list$region %in% region])
       
       # get variable
-      variable <- indicators %>%
+      ind_info <- indicators %>%
         filter(indicator_short_name == indicator) %>%
-        .$variable_name
+        select(variable_name, unit_of_measure)
+      variable_name = ind_info$variable_name
       
       # subet by variable, region code and a list of countries
-      
-      df <- df[df$indic == variable,]
-      df <- df[df$regioncode == region_code,]
+      df <- df[df$indic == variable_name,]
+      df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
       pd <- pd %>% filter(year >= min(date_range),
                           year <= max(date_range)) 
       pd <- pd %>% filter(CI >= min(value_range),
                           CI <= max(value_range))
-      
-      # get title and subtitle
-      plot_title <- paste0('Concentration index - ', indicator)
-      y_axis_text <- indicator
-      
-      # text for plot
-      mytext <- paste(
-        "Country: ", as.character(pd$country),"\n", 
-        "Concentration Index: ", round(pd$CI, digits = 3), "\n",
-        "Year: ", as.character(pd$year),"\n",
-        "Data source: ", as.character(pd$referenceid_list), "\n",
-        sep="") %>%
-        lapply(htmltools::HTML)
-      # condition if we connect the dots
-      if(yn){
-        p <- plot_ly(data = pd, x = ~year, y = ~CI, color = ~country, 
-                     text = mytext, hoverinfo = 'text') %>%
-          add_trace(x = ~year, y = ~CI, color = ~country, mode = 'lines+markers') 
-        
-        
+      if(nrow(pd) == 0){
+        NULL
       } else {
-        p <- plot_ly(data = pd, x = ~year, y = ~CI, color = ~country,
-                     text = mytext, hoverinfo = 'text')
         
+        # get title and subtitle
+        plot_title <- paste0('Trends - Concentration index')
+        y_axis_text <- paste0(indicator)
+        
+      
+        # text for plot
+        mytext <- paste(
+          "Indicator: ", indicator,"<br>", 
+          "Economy: ", as.character(pd$country),"<br>", 
+          "Value: ", round(pd$CI, digits = 2), "<br>",
+          "Year: ", as.character(pd$year),"<br>",
+          "Data source: ", as.character(pd$referenceid_list), "<br>",
+          sep="") %>%
+          lapply(htmltools::HTML)
+        
+        trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
+        
+        
+        if(yn){
+          
+          # condition if we connect the dots
+          p <- ggplotly(ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+                          geom_point() + 
+                          geom_line(aes(group = country)) +
+                          scale_color_manual(name = '',
+                                             values = trend_palette) +
+                          labs(x='Year',
+                               y = y_axis_text,
+                               title = plot_title) +
+                          hefpi::theme_gdocs() +
+                          theme(panel.grid.major.x = element_blank(),
+                                axis.ticks = element_blank()), tooltip = 'text')
+          fig <- p %>% config(displayModeBar = F)
+          
+        } else {
+          # condition if we connect the dots
+          p <- ggplotly(ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+                          geom_point() +
+                          scale_color_manual(name = '',
+                                             values = trend_palette) +
+                          labs(x='Year',
+                               y = y_axis_text,
+                               title = plot_title) +
+                          hefpi::theme_gdocs() +
+                          theme(panel.grid.major.x = element_blank(),
+                                axis.ticks = element_blank()), tooltip = 'text')
+          fig <- p %>% config(displayModeBar = F)
+        }
+        
+        
+        con_list[[1]] <- fig
+        con_list[[2]] <- pd
+        con_list[[3]] <- list(plot_title, mytext, y_axis_text, trend_palette)
+        
+        
+        return(con_list)
       }
-      p <- p %>%
-        layout(title = plot_title,
-               xaxis= list(showline = TRUE, title = 'Year', showticklabels = TRUE),
-               yaxis= list(tickformat='%',showline = TRUE, title = y_axis_text, showticklabels = TRUE))
-      p
     }
+    
+  })
+  
+  # ---- DOWNLOAD DATA FROM MAP ---- #
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste("trends_ci_data", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      # get map
+      con_list <- get_con_data()
+      pd <- con_list[[2]]
+      
+      if(is.null(con_list)){
+        NULL
+      } else {
+        
+        write.csv(pd, file)
+      }
+    }
+  )
+  
+  # ---- DOWNLOAD MAP IMAGE ---- #
+  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_trends_ci", ".png"),
+                                    content = function(file) {
+                                      
+                                      con_list <- get_con_data()
+                                      fig <- con_list[[1]]
+                                      plot_title = con_list[[3]][[1]]
+                                      mytext = con_list[[3]][[2]]
+                                      y_axis_text = con_list[[3]][[3]]
+                                      trend_palette = con_list[[3]][[4]]
+                                      
+                                      
+                                      
+                                      if(is.null(con_list)){
+                                        NULL
+                                      } else {
+                                        fig
+                                        ggsave(file)
+                                      }
+                                      
+                                      
+                                    })
+  
+  output$trends_con <- renderPlotly({
+    
+    con_list <- get_con_data()
+    fig <- con_list[[1]]
+    pd <- con_list[[2]]
+    plot_title = con_list[[3]][[1]]
+    mytext = con_list[[3]][[2]]
+    y_axis_text = con_list[[3]][[3]]
+    trend_palette = con_list[[3]][[4]]
+    
+    
+    
+    if(is.null(con_list)){
+      NULL
+    } else {
+      fig
+    }
+    
     
     
   })
