@@ -31,8 +31,6 @@ mod_trends_mean_ui <- function(id){
                        choices = indicators_list,
                        selected = '4+ antenatal care visits',
                        options = list(`dropdown-align-right` = TRUE)),
-          checkboxInput(ns('interpolate'), 'Interpolate missing values',
-                       value = TRUE),
           pickerInput(inputId = ns("region"),
                       label = 'Region', 
                       choices = as.character(region_list$region),
@@ -41,7 +39,7 @@ mod_trends_mean_ui <- function(id){
                                       `selected-text-format` = "count > 2",
                                       `count-selected-text` = "{0}/{1} Regions"),
                       multiple = TRUE),
-           uiOutput(ns('country_ui')),
+           uiOutput(ns('ui_outputs')),
           sliderInput(ns('date_range'),
                                   'Date range',
                                   min = 1982,
@@ -49,15 +47,15 @@ mod_trends_mean_ui <- function(id){
                                   value = c(1982, 2017),
                                   step = 1,
                                   sep = ''),
-          sliderInput(ns('value_range'),
-                      'Y axis range',
-                      min = 0,
-                      max = 1,
-                      value = c(0, 1),
-                      step = 0.05,
-                      sep = ''),
-          useShinyalert(),  # Set up shinyalert
-          actionButton(ns("plot_info"), "Plot Info"))
+          checkboxInput(ns('interpolate'), 'Interpolate missing values',
+                        value = TRUE),
+          downloadButton(ns("dl_plot"), label = 'Download image'),
+          downloadButton(ns("dl_data"), label = 'Download data'),
+          fluidPage(
+            fluidRow(
+              useShinyalert(),  # Set up shinyalert
+              actionButton(ns("plot_info"), label = "Plot Info"))
+          ))
   )
   )
 }
@@ -77,7 +75,7 @@ mod_trends_mean_ui <- function(id){
 
 mod_trends_mean_server <- function(input, output, session){
  
-    output$country_ui <- renderUI({
+    output$ui_outputs <- renderUI({
       
       
       # Observe changes to inputs in order to generate changes to the map
@@ -94,8 +92,7 @@ mod_trends_mean_server <- function(input, output, session){
       # get inputs
       indicator <- input$indicator
       region <- input$region
-      yn <- input$interpolate
-      
+
 
       # get region code
       region_list <- hefpi::region_list
@@ -111,32 +108,51 @@ mod_trends_mean_server <- function(input, output, session){
         df <- df[df$indic == variable,]
         df <- df[df$regioncode %in% region_code,]
        
-       
+        max_value <- round(max(df$pop), 2)
+        min_value <- round(min(df$pop), 2)
+        if(max_value<1){
+          min_value=0
+          max_value = 1
+        } else {
+          min_value = 0
+          max_value = ceiling(max_value)
+        }
       
         countries <- unique(df$country)
         
-        pickerInput(inputId = session$ns("country"),
-                    label = 'Country', 
-                    choices = countries,
-                    selected = countries,
-                    options = list( `actions-box`=TRUE,
-                                    `selected-text-format` = "count > 2",
-                                    `count-selected-text` = "{0}/{1} Countries"),
-                    multiple = TRUE)
+        fluidPage(
+          fluidRow(
+            pickerInput(inputId = session$ns("country"),
+                        label = 'Country', 
+                        choices = countries,
+                        selected = countries,
+                        options = list( `actions-box`=TRUE,
+                                        `selected-text-format` = "count > 2",
+                                        `count-selected-text` = "{0}/{1} Countries"),
+                        multiple = TRUE),
+            sliderInput(session$ns('value_range'),
+                        'Y axis range',
+                        min = min_value,
+                        max = max_value,
+                        value = c(min_value, max_value),
+                        sep = '')
+          )
+        )
+        
       
     })
     
-    output$trends_mean <- renderPlotly({
-      indicator <- "Catastrophic health spending, 10%"
-      region <- "Latin America & Caribbean"
-      temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
+    get_pop_data <- reactive({
+      indicator <- "Infant mortality"
+      region <- region_list$region[1]
+      temp <- hefpi::df_series %>% filter(region %in% region)
       country_names <- unique(temp$country_name)
       date_range <- c(1982, 2017)
-      value_range <- c(0,1)
+      value_range <- c(0,81)
       # get inputs
+      pop_list <- list()
       indicator <- input$indicator
       region <- input$region
-      yn <- input$interpolate
       country_names <- input$country
       date_range <- input$date_range
       value_range <- input$value_range
@@ -145,11 +161,11 @@ mod_trends_mean_server <- function(input, output, session){
       indicators <- hefpi::indicators
       df <- hefpi::df
       
-      if(is.null(country_names)){
+      if(is.null(country_names) | is.null(value_range)){
         NULL
       } else {
         
-        region_code <- as.character(region_list$region_code[region_list$region == region])
+        region_code <- as.character(region_list$region_code[region_list$region %in% region])
         
         # get variable
         ind_info <- indicators %>%
@@ -157,6 +173,9 @@ mod_trends_mean_server <- function(input, output, session){
           select(variable_name, unit_of_measure)
         variable_name = ind_info$variable_name
         unit_of_measure = ind_info$unit_of_measure
+        if(unit_of_measure != '%'){
+          unit_of_measure = paste0(' (', unit_of_measure, ')')
+        }
         
         # subet by variable, region code and a list of countries
         df <- df[df$indic == variable_name,]
@@ -166,61 +185,139 @@ mod_trends_mean_server <- function(input, output, session){
                             year <= max(date_range)) 
         pd <- pd %>% filter(pop >= min(value_range),
                             pop <= max(value_range))
-        
-        # get title and subtitle
-        plot_title <- paste0('Trends - Population mean')
-        y_axis_text <- paste0(indicator, ' - ', ' (',unit_of_measure,')')
-        
-        # condition on unit of measure
-        if(unit_of_measure == '%'){
-          pd$pop <- pd$pop*100
-        }
-        # text for plot
-        mytext <- paste(
-          "Indicator: ", indicator,"<br>", 
-          "Economy: ", as.character(pd$country),"<br>", 
-          "Value: ", round(pd$pop, digits = 2),' (',unit_of_measure,')', "<br>",
-          "Year: ", as.character(pd$year),"<br>",
-          "Data source: ", as.character(pd$referenceid_list), "<br>",
-          sep="") %>%
-          lapply(htmltools::HTML)
-        
-        trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
-        
-        if(yn){
-         
-          # condition if we connect the dots
-          p <- ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
-                                    geom_point() + 
-                                    geom_line(aes(group = country)) +
-                                    scale_color_manual(name = '',
-                                                       values = trend_palette) +
-                                    # guides(color = guide_legend(override.aes = list(shape = 15))) +
-                                    labs(x='Year',
-                                         y = y_axis_text,
-                                         title = plot_title) +
-                                    hefpi::theme_gdocs() +
-                                    theme(panel.grid.major.x = element_blank(),
-                                          axis.ticks = element_blank()), tooltip = 'text')
-          fig <- p %>% config(displayModeBar = F)
-          
+        if(nrow(pd) == 0){
+          NULL
         } else {
-          # condition if we connect the dots
-          p <- ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
-                                    geom_point() +
-                                    scale_color_manual(name = '',
-                                                       values = trend_palette) +
-                                    # guides(color = guide_legend(override.aes = list(shape = 15))) +
-                                    labs(x='Year',
-                                         y = y_axis_text,
-                                         title = plot_title) +
-                                    hefpi::theme_gdocs() +
-                                    theme(panel.grid.major.x = element_blank(),
-                                          axis.ticks = element_blank()), tooltip = 'text')
-          fig <- p %>% config(displayModeBar = F)
+          
+          # get title and subtitle
+          plot_title <- paste0('Trends - Population mean')
+          y_axis_text <- paste0(indicator)
+          
+          # condition on unit of measure
+          if(unit_of_measure == '%'){
+            pd$pop <- pd$pop*100
+          }
+          # text for plot
+          mytext <- paste(
+            "Indicator: ", indicator,"<br>", 
+            "Economy: ", as.character(pd$country),"<br>", 
+            "Value: ", round(pd$pop, digits = 2), "<br>",
+            "Year: ", as.character(pd$year),"<br>",
+            "Data source: ", as.character(pd$referenceid_list), "<br>",
+            sep="") %>%
+            lapply(htmltools::HTML)
+          
+          trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
+          
+          
+          yn <- input$interpolate
+          if(yn){
+            
+            # condition if we connect the dots
+            p <- ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
+                            geom_point() + 
+                            geom_line(aes(group = country)) +
+                            scale_color_manual(name = '',
+                                               values = trend_palette) +
+                            scale_y_continuous(labels = function(x) paste0(x, unit_of_measure))+
+                            labs(x='Year',
+                                 y = y_axis_text,
+                                 title = plot_title) +
+                            hefpi::theme_gdocs() +
+                            theme(panel.grid.major.x = element_blank(),
+                                  axis.ticks = element_blank()), tooltip = 'text')
+            fig <- p %>% config(displayModeBar = F)
+            
+          } else {
+            # condition if we connect the dots
+            p <- ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
+                            geom_point() +
+                            scale_color_manual(name = '',
+                                               values = trend_palette) +
+                            scale_y_continuous(labels = function(x) paste0(x, "%"))+
+                            labs(x='Year',
+                                 y = y_axis_text,
+                                 title = plot_title) +
+                            hefpi::theme_gdocs() +
+                            theme(panel.grid.major.x = element_blank(),
+                                  axis.ticks = element_blank()), tooltip = 'text')
+            fig <- p %>% config(displayModeBar = F)
+          }
+          
+      
+          pop_list[[1]] <- fig
+          pop_list[[2]] <- pd
+          pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
+          
+          
+          return(pop_list)
         }
-       
+        }
+        
+    })
+    
+    # ---- DOWNLOAD DATA FROM MAP ---- #
+    output$dl_data <- downloadHandler(
+      filename = function() {
+        paste("trends_population_mean_data", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        # get map
+        pop_list <- get_pop_data()
+        pd <- pop_list[[2]]
+        
+        if(is.null(pop_list)){
+          NULL
+        } else {
+          
+          write.csv(pd, file)
+        }
       }
+    )
+    
+    # ---- DOWNLOAD MAP IMAGE ---- #
+    output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_trends_population_mean", ".png"),
+                                      content = function(file) {
+                                        
+                                        pop_list <- get_pop_data()
+                                        fig <- pop_list[[1]]
+                                        plot_title = pop_list[[3]][[1]]
+                                        mytext = pop_list[[3]][[2]]
+                                        y_axis_text = pop_list[[3]][[3]]
+                                        unit_of_measure = pop_list[[3]][[4]]
+                                        trend_palette = pop_list[[3]][[5]]
+                                        
+                                        
+                                        
+                                        if(is.null(pop_list)){
+                                          NULL
+                                        } else {
+                                          fig
+                                          ggsave(file)
+                                        }
+                                        
+                                       
+                                      })
+    
+    output$trends_mean <- renderPlotly({
+      
+      pop_list <- get_pop_data()
+      fig <- pop_list[[1]]
+      pd <- pop_list[[2]]
+      plot_title = pop_list[[3]][[1]]
+      mytext = pop_list[[3]][[2]]
+      y_axis_text = pop_list[[3]][[3]]
+      unit_of_measure = pop_list[[3]][[4]]
+      trend_palette = pop_list[[3]][[5]]
+      
+     
+      
+      if(is.null(pop_list)){
+        NULL
+      } else {
+        fig
+      }
+        
       
       
     })
