@@ -23,7 +23,7 @@ mod_trends_mean_ui <- function(id){
   fluidPage(
     column(8,
            plotlyOutput(
-             ns('trends_mean'), height = '800px'
+             ns('trends_mean'), height = '600px'
            )),
     column(4,
            pickerInput(ns('indicator'),
@@ -339,7 +339,7 @@ mod_trends_con_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('trends_con'), height = '800px'
+               ns('trends_con'), height = '600px'
              )),
       column(4,
              pickerInput(ns('indicator'),
@@ -599,18 +599,18 @@ mod_trends_con_server <- function(input, output, session){
   output$trends_con <- renderPlotly({
     
     con_list <- get_con_data()
-    fig <- con_list[[1]]
-    pd <- con_list[[2]]
-    plot_title = con_list[[3]][[1]]
-    mytext = con_list[[3]][[2]]
-    y_axis_text = con_list[[3]][[3]]
-    trend_palette = con_list[[3]][[4]]
-    
-    
-    
     if(is.null(con_list)){
       NULL
     } else {
+      fig <- con_list[[1]]
+      pd <- con_list[[2]]
+      plot_title = con_list[[3]][[1]]
+      mytext = con_list[[3]][[2]]
+      y_axis_text = con_list[[3]][[3]]
+      trend_palette = con_list[[3]][[4]]
+      
+      
+      
       fig
     }
     
@@ -630,23 +630,24 @@ mod_trends_con_server <- function(input, output, session){
 #' @import ggplot2
 #' @import reshape2
 #' @importFrom shiny NS tagList 
+
 mod_trends_quin_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('trends_quin'),  height = '800px'
+               ns('trends_quin'),  height = '600px'
              )),
       column(4,
-             selectInput(ns('country'), 'Country',
+             pickerInput(ns('country'), '
+                         Country',
                          choices = country_list,
                          selected = 'United States'),
-             selectInput(ns('indicator'), 'Indicator',
+             pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults'),
-             selectInput(ns('view_as'), 'View as',
+             pickerInput(ns('view_as'), 'View as',
                          choices =c('Slope chart', 'Line chart')),
              sliderInput(ns('date_range'),
                          'Date range',
@@ -655,9 +656,13 @@ mod_trends_quin_ui <- function(id){
                          value = c(1982, 2017),
                          step = 1,
                          sep = ''),
-             uiOutput(ns('ui_value_range')),
-             useShinyalert(),  # Set up shinyalert
-             actionButton(ns("plot_info"), "Plot Info"))
+             uiOutput(ns('ui_outputs')),
+             downloadButton(ns("dl_plot"), label = 'Download image'),
+             downloadButton(ns("dl_data"), label = 'Download data'),
+             fluidPage(
+               fluidRow(
+                 useShinyalert(),  # Set up shinyalert
+                 actionButton(ns("plot_info"), label = "Plot Info"))))
     )
   )
 }
@@ -676,20 +681,21 @@ mod_trends_quin_ui <- function(id){
 
 mod_trends_quin_server <- function(input, output, session){
   
-  # Observe changes to inputs in order to generate changes to the map
-  observeEvent(input$plot_info, {
-    # Show a modal when the button is pressed
-    shinyalert(title = "Trends - Quintile", 
-               text = "charts show HEFPI health outcome and health service coverage indicator trends at the wealth quintile level, revealing if any inequalities have reduced, remained stable, or increased over time. Users can tailor the charts to their time period of interest.", 
-               type = "info", 
-               closeOnClickOutside = TRUE, 
-               showCancelButton = FALSE, 
-               showConfirmButton = FALSE)
-  })
   
-  output$ui_value_range <- renderUI({
+  
+  output$ui_outputs <- renderUI({
+    # Observe changes to inputs in order to generate changes to the map
+    observeEvent(input$plot_info, {
+      # Show a modal when the button is pressed
+      shinyalert(title = "Trends - Quintile", 
+                 text = "charts show HEFPI health outcome and health service coverage indicator trends at the wealth quintile level, revealing if any inequalities have reduced, remained stable, or increased over time. Users can tailor the charts to their time period of interest.", 
+                 type = "info", 
+                 closeOnClickOutside = TRUE, 
+                 showCancelButton = FALSE, 
+                 showConfirmButton = FALSE)
+    })
     country_names <- 'United States'
-    indicator <- 'Catastrophic health spending, 10%'
+    indicator <- 'Inpatient care use, adults'
     # value_range <- c(0.06,0.12)
     date_range <- c(1982,2016)
     # 
@@ -710,8 +716,8 @@ mod_trends_quin_server <- function(input, output, session){
              year <= max(date_range))  %>%
       select(year, Q1:Q5) 
     temp <- melt(df, id.vars = 'year')
-    max_value <- round(max(temp$value), 2)
-    min_value <- round(min(temp$value), 2)
+    max_value <- round(max(temp$value, na.rm = TRUE), 2)
+    min_value <- round(min(temp$value, na.rm = TRUE), 2)
     if(max_value<1){
       min_value=0
       max_value = 1
@@ -727,13 +733,14 @@ mod_trends_quin_server <- function(input, output, session){
                 sep = '')
   })
   
-  output$trends_quin <- renderPlotly({
-    # country_names <- 'United States'
-    # indicator <- 'Catastrophic health spending, 10%'
-    # value_range <- c(0.06,0.12)
-    # date_range <- c(1982,2016)
-    # view_as <- 'Slope chart'
+  get_quin_data <- reactive({
+    country_names <- 'United States'
+    indicator <- 'Inpatient care use, adults'
+    value_range <- c(0,1)
+    date_range <- c(1982,2016)
+    view_as <- 'Slope chart'
     # 
+    quin_list <- list()
     country_names <- input$country
     indicator <- input$indicator
     date_range <- input$date_range
@@ -754,7 +761,7 @@ mod_trends_quin_server <- function(input, output, session){
         filter(indic == variable) %>%
         filter(year >= min(date_range),
                year <= max(date_range))  %>%
-        select(year, Q1:Q5) 
+        select(year, referenceid_list, Q1:Q5)
       if(view_as == 'Slope chart'){
         # filter to get year_one and year_last
         year_begin = min(df$year)
@@ -764,7 +771,7 @@ mod_trends_quin_server <- function(input, output, session){
         # save(df, file = 'df.rda')
       }
       
-      df <- melt(df, id.vars = 'year')
+      df <- melt(df, id.vars = c('referenceid_list','year'))
       
       # recode Quintiels
       df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
@@ -777,7 +784,7 @@ mod_trends_quin_server <- function(input, output, session){
       col_vec <- col_vec[-1]
       
       # make plot title
-      plot_title = paste0('Quintile Trends - ', country_names, ' , ', indicator)
+      plot_title = paste0('Quintile Trends - ', country_names)
       y_axis_text = indicator
       # subset by y axis
       df <- df %>% 
@@ -785,20 +792,97 @@ mod_trends_quin_server <- function(input, output, session){
                value <= value_range[2])
       # text for plot
       mytext <- paste(
+        "Indicator: ", indicator, '\n',
+        "Economy: ", country_names, '\n',
         "Value: ", round(df$value, digits = 3), "\n",
         "Year: ", as.character(df$year),"\n",
+        "Data source: ", as.character(df$referenceid_list),"\n",
         sep="") %>%
         lapply(htmltools::HTML)
-      # condition if we connect the dots
-      p <- plot_ly(data = df, x = ~year, y = ~value, color = ~variable, colors = col_vec,
-                   text = mytext, hoverinfo = 'text') %>%
-        add_trace(x = ~year, y = ~value, color = ~variable, colors = col_vec, mode = 'lines+markers') %>%
-        layout(title = plot_title,
-               xaxis= list(showline = TRUE, title = 'Year', showticklabels = TRUE),
-               yaxis= list(tickformat='%',showline = TRUE, title = y_axis_text, showticklabels = TRUE))
       
-      return(p)
+      p <- ggplotly(ggplot(data = df, aes(year, value, color = variable)) +
+                        geom_point() +
+                        geom_line() +
+                        scale_color_manual(name = '',
+                                           values = col_vec) +
+                        ylim(c(0, max(df$value))) +
+                        labs(x='Year',
+                             y = y_axis_text,
+                             title = plot_title) +
+                        hefpi::theme_gdocs(), tooltip = 'text')
+  fig <- p %>% config(displayModeBar = F)
+      
+      
+      quin_list[[1]] <- fig
+      quin_list[[2]] <- df
+      quin_list[[3]] <- list(plot_title, mytext, y_axis_text, col_vec)
+      return(quin_list)
     }
+  })
+  
+  
+  # ---- DOWNLOAD DATA FROM MAP ---- #
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste("trends_ci_data", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      # get map
+      quin_list <- get_quin_data()
+      
+      
+      if(is.null(quin_list)){
+        df <- quin_list[[2]]
+        NULL
+      } else {
+        
+        write.csv(df, file)
+      }
+    }
+  )
+  
+  # ---- DOWNLOAD MAP IMAGE ---- #
+  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_trends_ci", ".png"),
+                                    content = function(file) {
+                                      
+                                      quin_list <- get_quin_data()
+                                      
+                                      
+                                      
+                                      
+                                      if(is.null(quin_list)){
+                                        NULL
+                                      } else {
+                                        fig <- quin_list[[1]]
+                                        plot_title = quin_list[[3]][[1]]
+                                        mytext = quin_list[[3]][[2]]
+                                        y_axis_text = quin_list[[3]][[3]]
+                                        col_vec = quin_list[[3]][[4]]
+                                        fig
+                                        ggsave(file)
+                                      }
+                                      
+                                      
+                                    })
+  
+  output$trends_quin <- renderPlotly({
+    
+    quin_list <- get_quin_data()
+    
+    
+    if(is.null(quin_list)){
+      NULL
+    } else {
+      fig <- quin_list[[1]]
+      pd <- quin_list[[2]]
+      plot_title = quin_list[[3]][[1]]
+      mytext = quin_list[[3]][[2]]
+      y_axis_text = quin_list[[3]][[3]]
+      col_vec = quin_list[[3]][[4]]
+      fig
+    }
+    
+    
     
   })
 }
