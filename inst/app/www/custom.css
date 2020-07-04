@@ -1533,15 +1533,28 @@ label {
 }
 
 .btn-primary {
-    background-color: rgb(26,51,95);
-    border-color: rgb(26,51,95)}
+    background-color: #fff;
+    border-color: #666;
+    color: #666;
+}
 .btn-primary.hover,.btn-primary:active,.btn-primary:hover {
-    background-color: rgb(99,144,178)}
+    background-color: #fff;
+    border-color: #666;
+    color: #666;
+
+}
 .btn-success {
-    background-color: rgb(26,51,95);
-    border-color: rgb(99,144,178)}
+    background-color: #fff;
+    border-color: #fff;
+    color: #666;
+    
+}
 .btn-success.hover,.btn-success:active,.btn-success:hover {
-    background-color: rgb(26,51,95)}
+   background-color: #fff;
+    border-color: #fff;
+    color: #666;
+    
+}
 .btn-info {
     background-color: rgb(26,51,95);
     border-color: rgb(99,144,178)}
@@ -1829,8 +1842,10 @@ table.text-center,table.text-center td,table.text-center th {
 .modal-danger .modal-footer,.modal-danger .modal-header {
     border-color: #c23321}
 .box-widget {
-    border: none;
-    position: relative}
+    background-color: #fff;
+    border-color: #666;
+    color: #666;
+}
 .widget-user .widget-user-header {
     padding: 20px;
     height: 120px;
