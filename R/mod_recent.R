@@ -26,9 +26,10 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_leaf'), height = '650px'),
              ),
       column(4,
-             selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list,
-                         selected = 'Inpatient care use, adults'),
+             pickerInput(ns('indicator'), 'Indicator',
+                         choices = sort(unique(indicators$indicator_short_name)),
+                         selected = 'Inpatient care use, adults',
+                         options = list(`style` = "btn-primary")),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -36,12 +37,12 @@ mod_recent_mean_ui <- function(id){
                          value = c(1982, 2017),
                          step = 1,
                          sep = ''),
-             downloadButton(ns("dl_plot"), label = 'Download image'),
-             downloadButton(ns("dl_data"), label = 'Download data'),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info"))
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
                )
              )
     ),
@@ -342,9 +343,10 @@ mod_recent_con_ui <- function(id){
                ns('recent_con_leaf'), height = '650px'),
              ),
       column(4,
-             selectInput(ns('indicator'), 'Indicator',
+             pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults'),
+                         selected = 'Inpatient care use, adults',
+                         options = list(`style` = "btn-primary")),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -352,12 +354,12 @@ mod_recent_con_ui <- function(id){
                          value = c(1982, 2017),
                          step = 1,
                          sep = ''),
-             downloadButton(ns("dl_plot"), label = 'Download image'),
-             downloadButton(ns("dl_data"), label = 'Download data'),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info"))
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
                )
              )
     ),

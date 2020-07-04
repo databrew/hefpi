@@ -34,7 +34,9 @@ mod_dots_country_ui <- function(id){
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region),
                          options = list( `selected-text-format` = "count > 2",
-                                         `count-selected-text` = "{0}/{1} Regions"),
+                                         `count-selected-text` = "{0}/{1} Regions",
+                                         `style` = "btn-primary",
+                                         `actions-box`=TRUE),
                          multiple = TRUE),
              uiOutput(ns('ui_outputs')),
              sliderInput(ns('date_range'),
@@ -44,12 +46,12 @@ mod_dots_country_ui <- function(id){
                          value = c(1982, 2017),
                          step = 1,
                          sep = ''),
-             downloadButton(ns("dl_plot"), label = 'Download image'),
-             downloadButton(ns("dl_data"), label = 'Download data'),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info"))
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              ))
     )
   )
@@ -128,7 +130,9 @@ mod_dots_country_server <- function(input, output, session){
                     choices = countries,
                     selected = countries,
                     options = list( `selected-text-format` = "count > 2",
-                                    `count-selected-text` = "{0}/{1} countries"),
+                                    `count-selected-text` = "{0}/{1} countries",
+                                    `style` = "btn-primary",
+                                    `actions-box`=TRUE),
                     multiple = TRUE),
         sliderInput(session$ns('value_range'),
                     'X axis range',
@@ -339,12 +343,15 @@ mod_dots_ind_ui <- function(id){
                          label = 'Indicator', 
                          choices = sort(unique(indicators$indicator_short_name)),
                          selected = sort(unique(indicators$indicator_short_name)),
-                         options = list( `selected-text-format` = "count > 2",
-                                         `count-selected-text` = "{0}/{1} indicators"),
+                         options = list( `actions-box`=TRUE,
+                                         `selected-text-format` = "count > 2",
+                                         `count-selected-text` = "{0}/{1} indicators",
+                                         `style` = "btn-primary"),
                          multiple = TRUE),
              pickerInput(ns('country'), 'Country',
                          choices = as.character(country_list),
-                         selected = 'United States'),
+                         selected = 'United States',
+                         options = list(`style` = "btn-primary")),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -353,12 +360,12 @@ mod_dots_ind_ui <- function(id){
                          step = 1,
                          sep = ''),
              uiOutput(ns('ui_value_range')),
-             downloadButton(ns("dl_plot"), label = 'Download image'),
-             downloadButton(ns("dl_data"), label = 'Download data'),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info"))
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              ))
     )
   )
