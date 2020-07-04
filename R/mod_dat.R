@@ -28,13 +28,14 @@ mod_dat_country_ui <- function(id){
       column(4,
              pickerInput(ns('country'), 'Country',
                          choices = country_list,
-                         selected = 'United States'),
-             downloadButton(ns("dl_plot"), label = 'Download image'),
-             downloadButton(ns("dl_data"), label = 'Download data'),
+                         selected = 'United States',
+                         options = list(`style` = "btn-primary")),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info"))
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              ))
     )
   )
@@ -198,12 +199,14 @@ mod_dat_ind_ui <- function(id){
                          choices = sort(unique(indicators$indicator_short_name)),
                          selected = sort(unique(indicators$indicator_short_name))[1:4],
                          options = list( `actions-box`=TRUE,
+                                         `style` = "btn-primary",
                                          `selected-text-format` = "count > 2",
                                          `count-selected-text` = "{0}/{1} Indicator"),
                          multiple = TRUE),
              pickerInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
-                         selected = 'Europe & Central Asia'),
+                         selected = 'Europe & Central Asia',
+                         options = list(`style` = "btn-primary")),
              uiOutput(ns('country_ui')),
              sliderInput(ns('date_range'),
                          'Date range',
@@ -212,12 +215,12 @@ mod_dat_ind_ui <- function(id){
                          value = c(1982, 2018),
                          step = 1,
                          sep = ''),
-             downloadButton(ns("dl_plot"), label = 'Download image'),
-             downloadButton(ns("dl_data"), label = 'Download data'),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info"))
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              ))
     )
   )
@@ -278,6 +281,7 @@ mod_dat_ind_server <- function(input, output, session){
                 choices = country_names, 
                 selected = country_names[1:4],
                 options = list( `actions-box`=TRUE,
+                                `style` = "btn-primary",
                                 `selected-text-format` = "count > 2",
                                 `count-selected-text` = "{0}/{1} Countries"),
                 multiple = TRUE)
@@ -372,10 +376,7 @@ mod_dat_ind_server <- function(input, output, session){
                              title = plot_title) +
                         coord_flip() +
                         hefpi::theme_gdocs() +
-                        theme(axis.text.x = element_text(angle =45, hjust = 1)) +
-                        theme(legend.position = "top") +
-                        theme(legend.direction = "horizontal", 
-                              legend.text=element_text(size=10)), tooltip = 'text')
+                        theme(axis.text.x = element_text(angle =45, hjust = 1)), tooltip = 'text')
         fig <- p %>% config(displayModeBar = F)
         dat_list[[1]] <- fig
         dat_list[[2]] <- df

@@ -30,12 +30,13 @@ mod_trends_mean_ui <- function(id){
                        'Indicator',
                        choices = indicators_list,
                        selected = '4+ antenatal care visits',
-                       options = list(`dropdown-align-right` = TRUE)),
+                       options = list(`style` = "btn-primary")),
           pickerInput(inputId = ns("region"),
                       label = 'Region', 
                       choices = as.character(region_list$region),
                       selected = as.character(region_list$region)[1],
                       options = list( `actions-box`=TRUE,
+                                      `style` = "btn-primary",
                                       `selected-text-format` = "count > 2",
                                       `count-selected-text` = "{0}/{1} Regions"),
                       multiple = TRUE),
@@ -49,12 +50,13 @@ mod_trends_mean_ui <- function(id){
                                   sep = ''),
           checkboxInput(ns('interpolate'), 'Interpolate missing values',
                         value = TRUE),
-          downloadButton(ns("dl_plot"), label = 'Download image'),
-          downloadButton(ns("dl_data"), label = 'Download data'),
+          downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+          downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+          br(),
           fluidPage(
             fluidRow(
               useShinyalert(),  # Set up shinyalert
-              actionButton(ns("plot_info"), label = "Plot Info"))
+              actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
           ))
   )
   )
@@ -128,7 +130,8 @@ mod_trends_mean_server <- function(input, output, session){
                         selected = countries,
                         options = list( `actions-box`=TRUE,
                                         `selected-text-format` = "count > 2",
-                                        `count-selected-text` = "{0}/{1} Countries"),
+                                        `count-selected-text` = "{0}/{1} Countries",
+                                        `style` = "btn-primary"),
                         multiple = TRUE),
             sliderInput(session$ns('value_range'),
                         'Y axis range',
@@ -143,8 +146,8 @@ mod_trends_mean_server <- function(input, output, session){
     })
     
     get_pop_data <- reactive({
-      indicator <- "Infant mortality"
-      region <- region_list$region[1]
+      indicator <- "Inpatient care use, adults"
+      region <- region_list$region
       temp <- hefpi::df_series %>% filter(region %in% region)
       country_names <- unique(temp$country_name)
       date_range <- c(1982, 2017)
@@ -207,8 +210,10 @@ mod_trends_mean_server <- function(input, output, session){
             sep="") %>%
             lapply(htmltools::HTML)
           
-          trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
+          # trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
           
+          temp <- tableau_color_pal(palette = "Tableau 20")
+          trend_palette <- rep(temp(n = 20), 10)
           
           yn <- input$interpolate
           if(yn){
@@ -346,12 +351,13 @@ mod_trends_con_ui <- function(id){
                          'Indicator',
                          choices = indicators_list,
                          selected = '4+ antenatal care visits',
-                         options = list(`dropdown-align-right` = TRUE)),
+                         options = list(`style` = "btn-primary")),
              pickerInput(inputId = ns("region"),
                          label = 'Region', 
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region)[1],
                          options = list( `actions-box`=TRUE,
+                                         `style` = "btn-primary",
                                          `selected-text-format` = "count > 2",
                                          `count-selected-text` = "{0}/{1} Regions"),
                          multiple = TRUE),
@@ -371,12 +377,13 @@ mod_trends_con_ui <- function(id){
                          sep = ''),
              checkboxInput(ns('interpolate'), 'Interpolate missing values',
                            value = TRUE),
-             downloadButton(ns("dl_plot"), label = 'Download image'),
-             downloadButton(ns("dl_data"), label = 'Download data'),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info"))
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              ))
     )
   )
@@ -438,6 +445,7 @@ mod_trends_con_server <- function(input, output, session){
                     choices = countries,
                     selected = countries,
                     options = list( `actions-box`=TRUE,
+                                    `style` = "btn-primary",
                                     `selected-text-format` = "count > 2",
                                     `count-selected-text` = "{0}/{1} Countries"),
                     multiple = TRUE),
@@ -508,9 +516,10 @@ mod_trends_con_server <- function(input, output, session){
           sep="") %>%
           lapply(htmltools::HTML)
         
-        trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
+        # trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
         
-        
+        temp <- tableau_color_pal(palette = "Tableau 20")
+        trend_palette <- rep(temp(n = 20), 10)
         if(yn){
           
           # condition if we connect the dots
@@ -643,12 +652,15 @@ mod_trends_quin_ui <- function(id){
              pickerInput(ns('country'), '
                          Country',
                          choices = country_list,
-                         selected = 'United States'),
+                         selected = 'United States',
+                         options = list(`style` = "btn-primary")),
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults'),
+                         selected = 'Inpatient care use, adults',
+                         options = list(`style` = "btn-primary")),
              pickerInput(ns('view_as'), 'View as',
-                         choices =c('Slope chart', 'Line chart')),
+                         choices =c('Slope chart', 'Line chart'),
+                         options = list(`style` = "btn-primary")),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -657,12 +669,13 @@ mod_trends_quin_ui <- function(id){
                          step = 1,
                          sep = ''),
              uiOutput(ns('ui_outputs')),
-             downloadButton(ns("dl_plot"), label = 'Download image'),
-             downloadButton(ns("dl_data"), label = 'Download data'),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info"))))
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))))
     )
   )
 }

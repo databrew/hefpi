@@ -1521,15 +1521,13 @@ label {
     background-color: rgb(28,114,188);
     color: #fff;
     border-color: #fff;
-    padding: 10px 16px;
-    margin: 12px;
+   
 }
 .btn-default.hover,.btn-default:active,.btn-default:hover {
     background-color: rgb(21,47,74);
     color: #fff;
     border-color: #fff;
-    padding: 10px 16px;
-    margin: 12px;
+    
 }
 
 .btn-primary {
@@ -1543,18 +1541,7 @@ label {
     color: #666;
 
 }
-.btn-success {
-    background-color: #fff;
-    border-color: #fff;
-    color: #666;
-    
-}
-.btn-success.hover,.btn-success:active,.btn-success:hover {
-   background-color: #fff;
-    border-color: #fff;
-    color: #666;
-    
-}
+
 .btn-info {
     background-color: rgb(26,51,95);
     border-color: rgb(99,144,178)}
