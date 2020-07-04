@@ -21,16 +21,21 @@ mod_dat_country_ui <- function(id){
   tagList(
     
     fluidPage(
-      column(10,
+      column(8,
              plotOutput(
-               ns('dat_country'), height = '800px', 
+               ns('dat_country'), height = '700px', width = '1000px', 
              )),
-      column(2,
-             selectInput(ns('country'), 'Country',
+      column(4,
+             pickerInput(ns('country'), 'Country',
                          choices = country_list,
                          selected = 'United States'),
-             useShinyalert(),  # Set up shinyalert
-             actionButton(ns("plot_info"), "Plot Info"))
+             downloadButton(ns("dl_plot"), label = 'Download image'),
+             downloadButton(ns("dl_data"), label = 'Download data'),
+             fluidPage(
+               fluidRow(
+                 useShinyalert(),  # Set up shinyalert
+                 actionButton(ns("plot_info"), label = "Plot Info"))
+             ))
     )
   )
 }
@@ -61,11 +66,11 @@ mod_dat_country_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
-  
-  output$dat_country <- renderPlot({
+  get_dat <- reactive({
     country_name = 'United States'
     country_name <- input$country
     
+    dat_list <- list()
     # get all unique years and indicators
     temp <- hefpi::df
     all_years <- sort(unique(temp$year))
@@ -92,25 +97,79 @@ mod_dat_country_server <- function(input, output, session){
     df$indicator_short_name <- factor(df$indicator_short_name, levels = rev(all_ind))
     
     # get color vector (first 3 different shades of blue, 4th green, 5th orange, NA white)
-   col_vec =  c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'white')
+    col_vec =  c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'white')
     
     # make plot title 
     plot_title = paste0('Missing data profile', ' - ', country_name)
     
     # plot
-    p<-   ggplot(df, aes(year, indicator_short_name, fill = level_2)) + 
+    fig<-   ggplot(df, aes(year, indicator_short_name, fill = level_2)) + 
       geom_tile(alpha = 0.8, color = 'darkgrey') +
       scale_fill_manual(name = 'Indicator class',
-                         values = col_vec) +
+                        values = col_vec) +
       labs(x = 'Year',
            y = '',
            title = plot_title) +
       hefpi::theme_gdocs() +
-      theme(axis.text.y = element_text(face = "plain", size = rel(6/12)),
-            axis.text.x = element_text(face = "plain", size = rel(6/12), angle = 45, hjust = 1))
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      theme(legend.position = "top") +
+      theme(legend.direction = "horizontal", legend.text=element_text(size=10)) 
     
     
-    return(p)
+    dat_list[[1]] <- fig
+    dat_list[[2]] <- df
+    dat_list[[3]] <- list(plot_title, col_vec)
+    return(dat_list)
+    
+  })
+  
+  
+  # ---- DOWNLOAD DATA FROM MAP ---- #
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste("data_avialability_country", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      # get map
+      dat_list <- get_dat()
+      
+      if(is.null(dat_list)){
+        NULL
+      } else {
+        df <- dat_list[[2]]
+        
+        write.csv(df, file)
+      }
+    }
+  )
+  
+  # ---- DOWNLOAD MAP IMAGE ---- #
+  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_data_availability_country", ".png"),
+                                    content = function(file) {
+                                      
+                                      dat_list <- get_dat()
+                                      
+                                      if(is.null(dat_list)){
+                                        NULL
+                                      } else {
+                                        fig <- dat_list[[1]]
+                                        
+                                        fig
+                                        ggsave(file)
+                                      }
+                                      
+                                      
+                                    })
+  
+  output$dat_country <- renderPlot({
+    dat_list <- get_dat()
+    if(is.null(dat_list)){
+      NULL
+    } else {
+      fig <- dat_list[[1]]
+      fig
+    }
+    
   })
   
  
@@ -130,17 +189,21 @@ mod_dat_ind_ui <- function(id){
   tagList(
     
     fluidPage(
-      column(10,
+      column(8,
              plotlyOutput(
                ns('dat_ind'), height = '800px'
              )),
-      column(2,
-             selectInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list),
-             selectInput(ns('region'), 'Region',
-                         choices = as.character(region_list$region),
-                         selected = 'Europe & Central Asia',
+      column(4,
+             pickerInput(ns('indicator'), 'Indicator',
+                         choices = sort(unique(indicators$indicator_short_name)),
+                         selected = sort(unique(indicators$indicator_short_name))[1:4],
+                         options = list( `actions-box`=TRUE,
+                                         `selected-text-format` = "count > 2",
+                                         `count-selected-text` = "{0}/{1} Indicator"),
                          multiple = TRUE),
+             pickerInput(ns('region'), 'Region',
+                         choices = as.character(region_list$region),
+                         selected = 'Europe & Central Asia'),
              uiOutput(ns('country_ui')),
              sliderInput(ns('date_range'),
                          'Date range',
@@ -149,8 +212,13 @@ mod_dat_ind_ui <- function(id){
                          value = c(1982, 2018),
                          step = 1,
                          sep = ''),
-             useShinyalert(),  # Set up shinyalert
-             actionButton(ns("plot_info"), "Plot Info"))
+             downloadButton(ns("dl_plot"), label = 'Download image'),
+             downloadButton(ns("dl_data"), label = 'Download data'),
+             fluidPage(
+               fluidRow(
+                 useShinyalert(),  # Set up shinyalert
+                 actionButton(ns("plot_info"), label = "Plot Info"))
+             ))
     )
   )
 }
@@ -183,7 +251,7 @@ mod_dat_ind_server <- function(input, output, session){
                  showCancelButton = FALSE, 
                  showConfirmButton = FALSE)
     })
-    region <- c('Europe & Central Asia', 'Sub-Saharan Africa')
+    region <- c('Europe & Central Asia')
     region <- input$region
     
     
@@ -198,26 +266,29 @@ mod_dat_ind_server <- function(input, output, session){
       # filter(country %in% country_name) %>%
       select(year,country, indic, regioncode, referenceid_list) 
     
-    top_countries <- df %>% group_by(regioncode, country) %>% summarise(counts = n()) %>%
-      arrange(desc(counts)) %>% 
-      top_n(3) %>%
-      .$country
+    # top_countries <- df %>% group_by(regioncode, country) %>% summarise(counts = n()) %>%
+    #   arrange(desc(counts)) %>% 
+    #   top_n(3) %>%
+    #   .$country
+    country_names <- sort(unique(df$country))
 
 
-    selectInput(inputId = session$ns("country"), 
+    pickerInput(inputId = session$ns("country"), 
                 label = 'Countries', 
-                choices = unique(df$country), 
-                selected = top_countries,
+                choices = country_names, 
+                selected = country_names[1:4],
+                options = list( `actions-box`=TRUE,
+                                `selected-text-format` = "count > 2",
+                                `count-selected-text` = "{0}/{1} Countries"),
                 multiple = TRUE)
     
   })
   
-  
-  output$dat_ind <- renderPlotly({
-    # region <- 'Europe & Central Asia'
-    # indicator <- 'Catastrophic health spending, 10%'
+  get_dat <- reactive({
+    region <- 'Europe & Central Asia'
+    indicator <- 'Catastrophic health spending, 10%'
     # country_names <- top_countries[1:3]
-    # date_range <- c(2012, 2017)
+    date_range <- c(2012, 2017)
     # country_name = c('Argentina', 'Brazil', 'Chile', 'Ecuador')
     # country_name <- input$country
     indicator <- input$indicator
@@ -227,14 +298,14 @@ mod_dat_ind_server <- function(input, output, session){
     if(is.null(country_names)){
       NULL
     } else {
-      
+      dat_list <- list()
       # get region code
       region_list <- hefpi::region_list
       region_code <- as.character(region_list$region_code[region_list$region %in% region])
       
       # Get the variable
       variable <- indicators %>%
-        filter(indicator_short_name == indicator) %>%
+        filter(indicator_short_name %in% indicator) %>%
         .$variable_name
       
       # subset data by variable and region code - HERE need to get level_2 for plot
@@ -278,29 +349,38 @@ mod_dat_ind_server <- function(input, output, session){
       } else {
         # get color graident
         col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(temp_data$indic))))
-        col_vec[no_data_index] <- 'white'
+        col_vec[no_data_index] <- 'transparent'
         
         # make plot title 
         plot_title = paste0('Missing data profile', ' - ', indicator, ' for ', region)
         
         mytext <- paste(
+          "Indicator: ", as.character(as.character(temp_data$indic)), "\n",
+          "Economy: ", as.character(temp_data$country), "\n",
           "Year: ", as.character(temp_data$year),"\n",
-          "Country: ", as.character(temp_data$country), "\n",
           "Data source: ", as.character(temp_data$referenceid_list),
           sep="") %>%
           lapply(htmltools::HTML)
         
-        print(ggplotly(ggplot(temp_data, aes(country, as.character(year), fill =indic, text =mytext)) + 
-                         geom_tile(size = 2.5, alpha = 0.8) +
-                         scale_fill_manual(name = 'Country',
-                                           values = col_vec) +
-                         labs(x = 'Year',
-                              y = '',
-                              title = plot_title) +
-                         hefpi::theme_gdocs() +
-                         theme(legend.position = 'none',
-                               axis.text.y = element_text(face = "plain", size = rel(10/12)),
-                               axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1)) + coord_flip(), tooltip = 'text'))
+
+        p <- ggplotly(ggplot(temp_data, aes(country, as.character(year), fill =indic, text =mytext)) + 
+                        geom_tile(size = 2.5, alpha = 0.8) +
+                        scale_fill_manual(name = '',
+                                          values = col_vec) +
+                        labs(x = '',
+                             y = '',
+                             title = plot_title) +
+                        coord_flip() +
+                        hefpi::theme_gdocs() +
+                        theme(axis.text.x = element_text(angle =45, hjust = 1)) +
+                        theme(legend.position = "top") +
+                        theme(legend.direction = "horizontal", 
+                              legend.text=element_text(size=10)), tooltip = 'text')
+        fig <- p %>% config(displayModeBar = F)
+        dat_list[[1]] <- fig
+        dat_list[[2]] <- df
+        dat_list[[3]] <- list(plot_title, col_vec, mytext)
+        return(dat_list)
         
         
       }
@@ -308,6 +388,58 @@ mod_dat_ind_server <- function(input, output, session){
     }
     
   })
+  
+  
+  # ---- DOWNLOAD DATA FROM MAP ---- #
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste("data_avialability_indicators", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      # get map
+      dat_list <- get_dat()
+      
+      if(is.null(dat_list)){
+        NULL
+      } else {
+        df <- dat_list[[2]]
+        
+        write.csv(df, file)
+      }
+    }
+  )
+  
+  # ---- DOWNLOAD MAP IMAGE ---- #
+  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_data_availability_indicators", ".png"),
+                                    content = function(file) {
+                                      
+                                      dat_list <- get_dat()
+                                      
+                                      if(is.null(dat_list)){
+                                        NULL
+                                      } else {
+                                        fig <- dat_list[[1]]
+                                        
+                                        fig
+                                        ggsave(file)
+                                      }
+                                      
+                                      
+                                    })
+  
+  output$dat_ind <- renderPlotly({
+    dat_list <- get_dat()
+    if(is.null(dat_list)){
+      NULL
+    } else {
+      fig <- dat_list[[1]]
+      fig
+    }
+    
+  })
+  
+  
+  
 }
 
 
