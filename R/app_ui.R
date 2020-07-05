@@ -10,9 +10,21 @@ app_ui <- function() {
   sidebar <- dashboardSidebar(
     sidebarMenu(
       menuItem(
-        text="Main",
-        tabName="main"
-        ),
+        text="Population mean",
+        tabName="population_mean"
+      ),
+      menuItem(
+        text="Inequality",
+        tabName="inequality"
+      ),
+      menuItem(
+        text="Data",
+        tabName="data"
+      ),
+      menuItem(
+        text="CSS page",
+        tabName="css_page"
+      ),
       menuItem(
         text = 'About',
         tabName = 'about'
@@ -25,32 +37,44 @@ app_ui <- function() {
     golem_add_external_resources(),
     tabItems(
       tabItem(
-        tabName="main",
+        tabName="population_mean",
         navbarPage(title = '',
                    navbarMenu("Most recent value",
-                              tabPanel("Population mean",
+                              tabPanel("National mean",
                                        mod_recent_mean_ui("recent_mean_leaf1")),
-                              tabPanel("Concentration index",
-                                       mod_recent_con_ui("recent_con_leaf1")),
-                              tabPanel("Sub national",
+                              tabPanel("Sub-national mean",
                                        mod_recent_mean_sub_ui("recent_mean_sub_leaf1"))),
                    navbarMenu('Trends',
-                              tabPanel('Population mean',
+                              tabPanel('National mean',
                                        mod_trends_mean_ui("trends_mean1")),
-                              tabPanel('Concentration Index',
-                                       mod_trends_con_ui("trends_con1")),
-                              tabPanel('Quintiles',
-                                       mod_trends_quin_ui("trends_quin1"))),
-                   navbarMenu('Quintile dotplots',
-                              tabPanel('Countries',
+                              tabPanel('Sub-national mean')))),
+      tabItem(
+        tabName="inequality",
+        navbarPage(title = '',
+                   navbarMenu("Quintiles",
+                              tabPanel("Most recent value (National)",
                                        mod_dots_country_ui('dots_country1')),
-                              tabPanel('Indicators',
-                                       mod_dots_ind_ui('dots_ind1'))),
-                   navbarMenu('Data availability',
-                              tabPanel('By country',
+                              tabPanel("Most recent value (Indicators)",
+                                       mod_dots_ind_ui('dots_ind1')),
+                              tabPanel("Trends",
+                                       mod_trends_quin_ui("trends_quin1"))),
+                   navbarMenu('Concentration Index',
+                              tabPanel('Most recent value',
+                                       mod_recent_con_ui("recent_con_leaf1")),
+                              tabPanel('Trends',
+                                       mod_trends_con_ui("trends_con1"))))),
+      tabItem(
+        tabName="data",
+        navbarPage(title = '',
+                   navbarMenu("Data Availability",
+                              tabPanel("Country",
                                        mod_dat_country_ui('dat_country1')),
-                              tabPanel('By indicator',
-                                       mod_dat_ind_ui('dat_ind1'))),
+                              tabPanel('Indicator',
+                                       mod_dat_ind_ui('dat_ind1'))
+                              ))),
+      tabItem(
+        tabName = 'css_page',
+        navbarPage(title ='Css',
                    tabPanel(title = "CSS test page",
                             fluidRow(
                               shinydashboard::box(title = 'This is another box',
@@ -72,12 +96,12 @@ app_ui <- function() {
                             fluidRow(
                               column(4,
                                      h4('A bunch of inputs'),
-                                       selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
-                                       radioButtons('xyz', 'What do you like?', choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
-                                       dateRangeInput('aslk', 'Date range', start = Sys.Date() - 20, end = Sys.Date() - 5),
-                                       actionButton('action', 'This is a button', icon = icon('download')),
-                                       sliderInput('lakjaasa', 'This is a slider', min = 0, max = 100, value = 25),
-                                       textInput('qwer', 'This is some text input')),
+                                     selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
+                                     radioButtons('xyz', 'What do you like?', choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
+                                     dateRangeInput('aslk', 'Date range', start = Sys.Date() - 20, end = Sys.Date() - 5),
+                                     actionButton('action', 'This is a button', icon = icon('download')),
+                                     sliderInput('lakjaasa', 'This is a slider', min = 0, max = 100, value = 25),
+                                     textInput('qwer', 'This is some text input')),
                               column(4,
                                      h4('Here is some regular text'),
                                      p('This is normal (ie, p) text, This is normal (ie, p) text, This is normal (ie, p) text,
@@ -89,8 +113,8 @@ app_ui <- function() {
                                                   collapsible = TRUE,
                                                   footer = 'This is a footer',
                                                   leaflet::leafletOutput('l1')
-                              )))),
-        mod_social_ui("social_module_1")
+                              )))
+                   )
       ),
       tabItem(
         tabName = 'about',
