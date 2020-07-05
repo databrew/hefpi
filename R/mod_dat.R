@@ -192,7 +192,7 @@ mod_dat_ind_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('dat_ind'), height = '800px'
+               ns('dat_ind'), height = '700px'
              )),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
@@ -356,7 +356,7 @@ mod_dat_ind_server <- function(input, output, session){
         col_vec[no_data_index] <- 'transparent'
         
         # make plot title 
-        plot_title = paste0('Missing data profile', ' - ', indicator, ' for ', region)
+        plot_title = paste0('Missing data profile', ' - ', region)
         
         mytext <- paste(
           "Indicator: ", as.character(as.character(temp_data$indic)), "\n",
@@ -367,7 +367,7 @@ mod_dat_ind_server <- function(input, output, session){
           lapply(htmltools::HTML)
         
 
-        p <- ggplotly(ggplot(temp_data, aes(country, as.character(year), fill =indic, text =mytext)) + 
+        p <- ggplot(temp_data, aes(country, as.character(year), fill =indic, text =mytext)) + 
                         geom_tile(size = 2.5, alpha = 0.8) +
                         scale_fill_manual(name = '',
                                           values = col_vec) +
@@ -376,8 +376,8 @@ mod_dat_ind_server <- function(input, output, session){
                              title = plot_title) +
                         coord_flip() +
                         hefpi::theme_gdocs() +
-                        theme(axis.text.x = element_text(angle =45, hjust = 1)), tooltip = 'text')
-        fig <- p %>% config(displayModeBar = F)
+                        theme(axis.text.x = element_text(angle =45, hjust = 1))
+        fig <- ggplotly(p, tooltip = 'text') %>% config(displayModeBar = F)
         dat_list[[1]] <- fig
         dat_list[[2]] <- df
         dat_list[[3]] <- list(plot_title, col_vec, mytext)

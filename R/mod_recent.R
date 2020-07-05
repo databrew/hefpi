@@ -137,7 +137,7 @@ mod_recent_mean_server <- function(input, output, session){
     # Make tooltip
     map_text <- paste(
       "Indicator: ", as.character(indicator),"<br/>",
-      "Economy: ", as.character(shp@data$NAME),' (',unit_of_measure,')',"<br/>", 
+      "Economy: ", as.character(shp@data$NAME),"<br/>", 
       'Value: ', round(ind_value, digits = 2),  "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
@@ -145,11 +145,14 @@ mod_recent_mean_server <- function(input, output, session){
       lapply(htmltools::HTML)
     
     # create map
+    carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
+    
     pop_map <- leaflet(shp, 
                        options = leafletOptions(minZoom = 1, 
                                                 maxZoom = 10)) %>% 
       addProviderTiles('OpenStreetMap.DE', 
                        options=providerTileOptions(noWrap = TRUE)) %>%
+      addTiles(carto) %>%
       addPolygons( 
         color = 'black',
         fillColor = ~map_palette(value), 
@@ -317,7 +320,7 @@ mod_recent_mean_server <- function(input, output, session){
       p <- p %>% 
         config(displayModeBar = F) %>%
               highlight(on='plotly_hover',
-                        color = 'darkgreen',
+                        color = 'white',
                         opacityDim = 0.6)
       p
     }
@@ -444,8 +447,10 @@ mod_recent_con_server <- function(input, output, session){
     
     
     # get map
+    carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
     con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
       addProviderTiles('OpenStreetMap.DE', options=providerTileOptions(noWrap = TRUE)) %>%
+      addTiles(carto) %>%
       setView( lat=10, lng=0 , zoom=1.5) %>%
       addPolygons( 
         color = 'black',
@@ -601,7 +606,7 @@ mod_recent_con_server <- function(input, output, session){
       p <- p %>% 
         config(displayModeBar = F) %>%
         highlight(on='plotly_hover',
-                  color = 'darkgreen',
+                  color = 'white',
                   opacityDim = 0.6)
     p
      
