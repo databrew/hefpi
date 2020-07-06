@@ -83,8 +83,8 @@ mod_dots_country_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   output$ui_outputs <- renderUI({
-    indicator <- "Inpatient care use, adults"
-    region <- "Latin America & Caribbean"
+    indicator <- "BMI, adults"
+    region <-as.character(region_list$region)
     date_range = c(1982,2016)
     # get inputs
     indicator <- input$indicator
@@ -103,7 +103,7 @@ mod_dots_country_server <- function(input, output, session){
     # subset data by variable and region code
     df <- hefpi::df
     df <- df[df$indic == variable,]
-    df <- df[df$regioncode == region_code,]
+    df <- df[df$regioncode %in% region_code,]
     df <- df %>% filter(year >= date_range[1],
                         year<=date_range[2]) %>% 
       filter(!is.na(Q1) & !is.na(Q2) & !is.na(Q3) & !is.na(Q4) & !is.na(Q5)) %>%
