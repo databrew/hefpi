@@ -23,7 +23,7 @@ mod_recent_mean_ui <- function(id){
     fluidRow(
       column(8,
              leafletOutput(
-               ns('recent_mean_leaf'), height = '650px'),
+               ns('recent_mean_leaf')),
              ),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
@@ -136,7 +136,7 @@ mod_recent_mean_server <- function(input, output, session){
   
     # Make tooltip
     map_text <- paste(
-      "Indicator: ", as.character(indicator),"<br/>",
+      "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
       "Economy: ", as.character(shp@data$NAME),"<br/>", 
       'Value: ', round(ind_value, digits = 2),  "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
@@ -152,7 +152,7 @@ mod_recent_mean_server <- function(input, output, session){
                                                 maxZoom = 10)) %>% 
       addProviderTiles('OpenStreetMap.DE', 
                        options=providerTileOptions(noWrap = TRUE)) %>%
-      addTiles(carto) %>%
+      addTiles(carto,options=providerTileOptions(noWrap = TRUE)) %>%
       addPolygons( 
         color = 'black',
         fillColor = ~map_palette(value), 
@@ -289,7 +289,7 @@ mod_recent_mean_server <- function(input, output, session){
       temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
       
       plot_text <- paste(
-        "Indicator: ", as.character(indicator),"<br>",
+        "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
         "Economy: ", as.character(temp$NAME),"<br>", 
         'Value: ', round(ind_value, digits = 2),' (',unit_of_measure,')',"<br>",
         "Year: ", as.character(temp$year),"<br>",
@@ -437,7 +437,7 @@ mod_recent_con_server <- function(input, output, session){
     
     # Make tooltip
     map_text <- paste(
-      "Indicator: ", indicator,"<br/>",
+      "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
       "Economy: ", as.character(shp@data$NAME),"<br/>", 
       'Value: ', round(shp@data$value, digits = 2), "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
@@ -450,7 +450,7 @@ mod_recent_con_server <- function(input, output, session){
     carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
     con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
       addProviderTiles('OpenStreetMap.DE', options=providerTileOptions(noWrap = TRUE)) %>%
-      addTiles(carto) %>%
+      addTiles(carto,options=providerTileOptions(noWrap = TRUE)) %>%
       setView( lat=10, lng=0 , zoom=1.5) %>%
       addPolygons( 
         color = 'black',

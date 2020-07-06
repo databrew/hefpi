@@ -374,9 +374,8 @@ mod_dat_ind_server <- function(input, output, session){
                         labs(x = '',
                              y = '',
                              title = plot_title) +
-                        coord_flip() +
-                        hefpi::theme_gdocs() +
-                        theme(axis.text.x = element_text(angle =45, hjust = 1))
+                        hefpi::theme_gdocs() 
+                        # theme(axis.text.x = element_text(angle =45, hjust = 1))
         fig <- ggplotly(p, tooltip = 'text') %>% config(displayModeBar = F)
         dat_list[[1]] <- fig
         dat_list[[2]] <- df

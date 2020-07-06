@@ -162,7 +162,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     
     # Make tooltip
     map_text <- paste(
-      "Indicator: ", as.character(indicator),"<br/>", 
+      "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
       "Economy: ", as.character(shp@data$ADM1_NAME),"<br/>", 
       "Value: ", round(shp@data$value, digits = 3), "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
@@ -173,7 +173,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     carto= "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
     pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
       addProviderTiles('OpenStreetMap.DE', options=providerTileOptions(noWrap = TRUE)) %>%
-      addTiles(carto) %>%
+      addTiles(carto, options=providerTileOptions(noWrap = TRUE)) %>%
       addPolygons( 
         color = 'black',
         fillColor = ~map_palette(value), 
@@ -326,7 +326,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
       # get text for plotly
       # Make tooltip
       bar_text <- paste(
-        "Indicator: ", as.character(indicator),"<br>",
+        "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
         "Economy: ", as.character(temp$ADM1_NAME),"<br>",
         "Value: ", round(temp$value, digits = 3), "<br>",
         "Year: ", as.character(temp$year),"<br>",
