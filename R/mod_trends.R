@@ -199,6 +199,7 @@ mod_trends_mean_server <- function(input, output, session){
           # condition on unit of measure
           if(unit_of_measure == '%'){
             pd$pop <- pd$pop*100
+            value_range[2] <- value_range[2]*100
           }
           # text for plot
           mytext <- paste(
@@ -224,7 +225,7 @@ mod_trends_mean_server <- function(input, output, session){
                             geom_line(aes(group = country)) +
                             scale_color_manual(name = '',
                                                values = trend_palette) +
-                            scale_y_continuous(labels = function(x) paste0(x, unit_of_measure))+
+                            scale_y_continuous(labels = function(x) paste0(x, unit_of_measure), limits = c(value_range[1], value_range[2]))+
                             labs(x='Year',
                                  y = y_axis_text,
                                  title = plot_title) +
