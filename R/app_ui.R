@@ -18,7 +18,7 @@ app_ui <- function() {
         tabName="inequality"
       ),
       menuItem(
-        text="Data",
+        text="Data availability",
         tabName="data"
       ),
       menuItem(
@@ -47,7 +47,8 @@ app_ui <- function() {
                    navbarMenu('Trends',
                               tabPanel('National mean',
                                        mod_trends_mean_ui("trends_mean1")),
-                              tabPanel('Sub-national mean')))),
+                              tabPanel('Sub-national mean',
+                                       mod_trends_mean_sub_ui("trends_sub_mean1"))))),
       tabItem(
         tabName="inequality",
         navbarPage(title = '',
@@ -70,8 +71,7 @@ app_ui <- function() {
                               tabPanel("Country",
                                        mod_dat_country_ui('dat_country1')),
                               tabPanel('Indicator',
-                                       mod_dat_ind_ui('dat_ind1'))
-                              ))),
+                                       mod_dat_ind_ui('dat_ind1'))))),
       tabItem(
         tabName = 'css_page',
         navbarPage(title ='Css',
@@ -96,11 +96,24 @@ app_ui <- function() {
                             fluidRow(
                               column(4,
                                      h4('A bunch of inputs'),
-                                     selectInput('abc', 'Pick a place', choices = c('Home', 'Away', 'In-between')),
-                                     radioButtons('xyz', 'What do you like?', choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
-                                     dateRangeInput('aslk', 'Date range', start = Sys.Date() - 20, end = Sys.Date() - 5),
-                                     actionButton('action', 'This is a button', icon = icon('download')),
-                                     sliderInput('lakjaasa', 'This is a slider', min = 0, max = 100, value = 25),
+                                     selectInput('abc', 
+                                                 'Pick a place', 
+                                                 choices = c('Home', 'Away', 'In-between')),
+                                     radioButtons('xyz', 
+                                                  'What do you like?', 
+                                                  choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
+                                     dateRangeInput('aslk', 
+                                                    'Date range', 
+                                                    start = Sys.Date() - 20, 
+                                                    end = Sys.Date() - 5),
+                                     actionButton('action', 
+                                                  'This is a button', 
+                                                  icon = icon('download')),
+                                     sliderInput('lakjaasa', 
+                                                 'This is a slider', 
+                                                 min = 0,
+                                                 max = 100, 
+                                                 value = 25),
                                      textInput('qwer', 'This is some text input')),
                               column(4,
                                      h4('Here is some regular text'),
