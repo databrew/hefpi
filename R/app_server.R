@@ -18,6 +18,8 @@ app_server <- function(input, output,session) {
   
   # trends tab
   callModule(mod_trends_mean_server, 'trends_mean1')
+  callModule(mod_trends_mean_sub_server, 'trends_sub_mean1')
+  
   callModule(mod_trends_quin_server, 'trends_quin1')
   callModule(mod_trends_con_server, 'trends_con1')
   

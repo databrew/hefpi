@@ -198,10 +198,10 @@ mod_dat_ind_ui <- function(id){
              pickerInput(ns('indicator'), 'Indicator',
                          choices = sort(unique(indicators$indicator_short_name)),
                          selected = sort(unique(indicators$indicator_short_name))[1:4],
-                         options = list( `actions-box`=TRUE,
+                         options = list( `selected-text-format` = "count > 2",
+                                         `count-selected-text` = "{0}/{1} Indicators",
                                          `style` = "btn-primary",
-                                         `selected-text-format` = "count > 2",
-                                         `count-selected-text` = "{0}/{1} Indicator"),
+                                         `actions-box`=TRUE),
                          multiple = TRUE),
              pickerInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
@@ -312,12 +312,16 @@ mod_dat_ind_server <- function(input, output, session){
         filter(indicator_short_name %in% indicator) %>%
         .$variable_name
       
+      df <- hefpi::df %>%
+        left_join(indicators, by = c('indic' = 'variable_name'))
+      
+        
       # subset data by variable and region code - HERE need to get level_2 for plot
-      df<- hefpi::df %>%
+      df<- df %>%
         filter(indic == variable) %>%
         filter(regioncode %in% region_code) %>%
         filter(country %in% country) %>%
-        select(year,country, indic, regioncode, referenceid_list) 
+        select(year,country, indic, regioncode, referenceid_list, level_2, indicator_short_name) 
       
       names(df)[names(df) == 'regioncode'] <- 'region'
       
@@ -340,26 +344,32 @@ mod_dat_ind_server <- function(input, output, session){
       # subset by year 
       temp_data <- temp_data %>%filter(year >= min(date_range),
                                        year <= max(date_range)) 
+      # order level_2
+      temp_data$level_2 <- factor(temp_data$level_2, levels =c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data') )
+      
+
+      # get color vector (first 3 different shades of blue, 4th green, 5th orange, NA white)
+      col_vec =  c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'transparent')
       
       # temp_data$country <- ifelse(is.na(temp_data$country), 'No data', temp_data$country)
-      temp_data$indic <- ifelse(is.na(temp_data$indic), 'No data', indicator)
+      # temp_data$indic <- ifelse(is.na(temp_data$indic), 'No data', indicator)
       
       # # find no data index
-      all_indic <- as.character(sort(unique(temp_data$indic)))
-      no_data_index <- which(all_indic == 'No data')
-      
+      # all_indic <- as.character(sort(unique(temp_data$indic)))
+      # no_data_index <- which(all_indic == 'No data')
+      # 
       if(is.null(temp_data) | nrow(temp_data) == 0){
         NULL
       } else {
         # get color graident
-        col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(temp_data$indic))))
-        col_vec[no_data_index] <- 'transparent'
+        # col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(temp_data$indic))))
+        # col_vec[no_data_index] <- 'transparent'
         
         # make plot title 
         plot_title = paste0('Missing data profile', ' - ', region)
         
         mytext <- paste(
-          "Indicator: ", as.character(as.character(temp_data$indic)), "\n",
+          "Indicator: ", as.character(as.character(temp_data$indicator_short_name)), "\n",
           "Economy: ", as.character(temp_data$country), "\n",
           "Year: ", as.character(temp_data$year),"\n",
           "Data source: ", as.character(temp_data$referenceid_list),
@@ -367,7 +377,7 @@ mod_dat_ind_server <- function(input, output, session){
           lapply(htmltools::HTML)
         
 
-        p <- ggplot(temp_data, aes(country, as.character(year), fill =indic, text =mytext)) + 
+        p <- ggplot(temp_data, aes(country, as.character(year), fill =level_2, text =mytext)) + 
                         geom_tile(size = 2.5, alpha = 0.8) +
                         scale_fill_manual(name = '',
                                           values = col_vec) +
