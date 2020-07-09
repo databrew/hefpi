@@ -243,12 +243,9 @@ mod_dots_country_server <- function(input, output, session){
                subtitle = sub_title, x= '', y = '') +
           coord_flip() +
           theme_gdocs() 
-        fig <- ggplotly(p, 
-                        tooltip = 'text', 
-                        height = plot_height) %>%
-          config(displayModeBar = F)
+       
         
-        dot_list[[1]] <- fig
+        dot_list[[1]] <- p
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
         return(dot_list)
@@ -288,10 +285,12 @@ mod_dots_country_server <- function(input, output, session){
                                       if(is.null(dot_list)){
                                         NULL
                                       } else {
-                                        fig <- dot_list[[1]]
+                                        p <- dot_list[[1]]
                                         
-                                        fig
-                                        ggsave(file)
+                                        p =  p + theme(axis.text = element_text(size = rel(1/2))) 
+                                         
+                                        p
+                                        ggsave(file, width = 8, height = 8)
                                       }
                                       
                                       
@@ -302,13 +301,17 @@ mod_dots_country_server <- function(input, output, session){
     if(is.null(dot_list)){
       NULL
     } else {
-      fig <- dot_list[[1]]
+      p <- dot_list[[1]]
       # df <- dot_list[[2]]
       # plot_title <- dot_list[[3]][[1]]
       # sub_title <- dot_list[[3]][[2]]
       # col_vec <- dot_list[[3]][[3]]
       # mytext <- dot_list[[3]][[4]]
-      # plot_height <- dot_list[[3]][[5]]
+      plot_height <- dot_list[[3]][[5]]
+      fig <- ggplotly(p, 
+                      tooltip = 'text', 
+                      height = plot_height) %>%
+        config(displayModeBar = F)
       fig
     }
    
@@ -549,12 +552,9 @@ mod_dots_ind_server <- function(input, output, session){
           coord_flip() +
           theme_gdocs() +
           theme(axis.text = element_text(size = 8,  family = 'sans'))
-        fig <- ggplotly(p, 
-                        tooltip = 'text', 
-                        height = plot_height) %>%
-          config(displayModeBar = F)
+       
         
-        dot_list[[1]] <- fig
+        dot_list[[1]] <- p
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
         return(dot_list)
@@ -591,10 +591,11 @@ mod_dots_ind_server <- function(input, output, session){
                                       if(is.null(dot_list)){
                                         NULL
                                       } else {
-                                        fig <- dot_list[[1]]
+                                        p <- dot_list[[1]]
                                         
-                                        fig
-                                        ggsave(file)
+                                        p =  p + theme(axis.text = element_text(size = rel(1/2))) 
+                                        p
+                                        ggsave(file, width = 8, height = 8)
                                       }
                                       
                                       
@@ -606,14 +607,17 @@ mod_dots_ind_server <- function(input, output, session){
     if(is.null(dot_list)){
       NULL
     } else {
-      fig <- dot_list[[1]]
+      p <- dot_list[[1]]
       # df <- dot_list[[2]]
       # plot_title <- dot_list[[3]][[1]]
       # sub_title <- dot_list[[3]][[2]]
       # col_vec <- dot_list[[3]][[3]]
       # mytext <- dot_list[[3]][[4]]
-      # plot_height <- dot_list[[3]][[5]]
-      fig
+      plot_height <- dot_list[[3]][[5]]
+      fig <- ggplotly(p, 
+                      tooltip = 'text', 
+                      height = plot_height) %>%
+        config(displayModeBar = F)
     }
    
   })
