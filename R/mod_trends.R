@@ -222,7 +222,7 @@ mod_trends_mean_server <- function(input, output, session){
           if(yn){
             
             # condition if we connect the dots
-            p <- ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
+            p <- ggplot(data = pd, aes(as.character(year), pop, color= country, text=mytext)) +
                             geom_point() + 
                             geom_line(aes(group = country)) +
                             scale_color_manual(name = '',
@@ -233,12 +233,15 @@ mod_trends_mean_server <- function(input, output, session){
                                  title = plot_title) +
                             hefpi::theme_gdocs() +
                             theme(panel.grid.major.x = element_blank(),
-                                  axis.ticks = element_blank()), tooltip = 'text')
-            fig <- p %>% config(displayModeBar = F)
+                                  axis.text.x = element_text(angle = 45, hjust = 1),
+                                  axis.ticks = element_blank()) 
+     
+              
+  
             
           } else {
             # condition if we connect the dots
-            p <- ggplotly(ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
+            p <- ggplot(data = pd, aes(as.character(year), pop, color= country, text=mytext)) +
                             geom_point() +
                             scale_color_manual(name = '',
                                                values = trend_palette) +
@@ -248,12 +251,14 @@ mod_trends_mean_server <- function(input, output, session){
                                  title = plot_title) +
                             hefpi::theme_gdocs() +
                             theme(panel.grid.major.x = element_blank(),
-                                  axis.ticks = element_blank()), tooltip = 'text')
-            fig <- p %>% config(displayModeBar = F)
+                                  axis.text.x = element_text(angle = 45, hjust = 1),
+                                  axis.ticks = element_blank())
+            
+            
           }
           
       
-          pop_list[[1]] <- fig
+          pop_list[[1]] <- p
           pop_list[[2]] <- pd
           pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
           
@@ -288,7 +293,7 @@ mod_trends_mean_server <- function(input, output, session){
                                       content = function(file) {
                                         
                                         pop_list <- get_pop_data()
-                                        fig <- pop_list[[1]]
+                                        p <- pop_list[[1]]
                                         plot_title = pop_list[[3]][[1]]
                                         mytext = pop_list[[3]][[2]]
                                         y_axis_text = pop_list[[3]][[3]]
@@ -300,8 +305,12 @@ mod_trends_mean_server <- function(input, output, session){
                                         if(is.null(pop_list)){
                                           NULL
                                         } else {
-                                          fig
-                                          ggsave(file)
+                                         p =  p + theme(axis.text = element_text(size = rel(18/12))) +
+                                            theme(legend.position = "top") +
+                                            theme(legend.direction = "horizontal", 
+                                                  legend.text=element_text(size=7)) 
+                                          p
+                                          ggsave(file, width = 8, height = 8)
                                         }
                                         
                                        
@@ -310,7 +319,7 @@ mod_trends_mean_server <- function(input, output, session){
     output$trends_mean <- renderPlotly({
       
       pop_list <- get_pop_data()
-      fig <- pop_list[[1]]
+      p <- pop_list[[1]]
       pd <- pop_list[[2]]
       plot_title = pop_list[[3]][[1]]
       mytext = pop_list[[3]][[2]]
@@ -323,7 +332,10 @@ mod_trends_mean_server <- function(input, output, session){
       if(is.null(pop_list)){
         NULL
       } else {
+        fig <- ggplotly(p, tooltip = 'text')
+        fig <- fig %>% config(displayModeBar = F)
         fig
+        
       }
         
       
@@ -572,7 +584,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         if(yn){
           
           # condition if we connect the dots
-          p <- ggplotly(ggplot(data = pd, aes(as.character(year), value, color= ADM1_NAME, text=mytext)) +
+          p <-  ggplot(data = pd, aes(as.character(year), value, color= ADM1_NAME, text=mytext)) +
                           geom_point() + 
                           geom_line(aes(group = ADM1_NAME)) +
                           scale_color_manual(name = '',
@@ -583,12 +595,12 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.ticks = element_blank()), tooltip = 'text')
-          fig <- p %>% config(displayModeBar = F)
+                                axis.text.x = element_text(angle = 45, hjust = 1),
+                                axis.ticks = element_blank())
           
         } else {
           # condition if we connect the dots
-          p <- ggplotly(ggplot(data = pd, aes(year, value, color= ADM1_NAME, text=mytext)) +
+          p <- ggplot(data = pd, aes(as.character(year), value, color= ADM1_NAME, text=mytext)) +
                           geom_point() + 
                           # geom_line(aes(group = ADM1_NAME)) +
                           scale_color_manual(name = '',
@@ -599,12 +611,12 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.ticks = element_blank()), tooltip = 'text')
-          fig <- p %>% config(displayModeBar = F)
+                                axis.text.x = element_text(angle = 45, hjust = 1),
+                                axis.ticks = element_blank())
         }
         
         
-        pop_list[[1]] <- fig
+        pop_list[[1]] <- p
         pop_list[[2]] <- pd
         pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
         
@@ -639,7 +651,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                     content = function(file) {
                                       
                                       pop_list <- get_pop_data()
-                                      fig <- pop_list[[1]]
+                                      p <- pop_list[[1]]
                                       plot_title = pop_list[[3]][[1]]
                                       mytext = pop_list[[3]][[2]]
                                       y_axis_text = pop_list[[3]][[3]]
@@ -651,8 +663,12 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                       if(is.null(pop_list)){
                                         NULL
                                       } else {
-                                        fig
-                                        ggsave(file)
+                                        p =  p + theme(axis.text = element_text(size = rel(18/12))) +
+                                          theme(legend.position = "top") +
+                                          theme(legend.direction = "horizontal", 
+                                                legend.text=element_text(size=7)) 
+                                        p
+                                        ggsave(file, width = 8, height = 8)
                                       }
                                       
                                       
@@ -661,7 +677,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
   output$trends_mean <- renderPlotly({
     
     pop_list <- get_pop_data()
-    fig <- pop_list[[1]]
+    p <- pop_list[[1]]
     pd <- pop_list[[2]]
     plot_title = pop_list[[3]][[1]]
     mytext = pop_list[[3]][[2]]
@@ -674,7 +690,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
     if(is.null(pop_list)){
       NULL
     } else {
+      fig <- ggplotly(p, tooltip = 'text')
+      fig <- fig %>% config(displayModeBar = F)
       fig
+      
     }
     
     
@@ -879,7 +898,7 @@ mod_trends_con_server <- function(input, output, session){
         if(yn){
           
           # condition if we connect the dots
-          p <- ggplotly(ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+          p <- ggplot(data = pd, aes(as.character(year), CI, color= country, text=mytext)) +
                           geom_point() + 
                           geom_line(aes(group = country)) +
                           scale_color_manual(name = '',
@@ -889,12 +908,12 @@ mod_trends_con_server <- function(input, output, session){
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.ticks = element_blank()), tooltip = 'text')
-          fig <- p %>% config(displayModeBar = F)
-          
+                                axis.text.x = element_text(angle = 45, hjust = 1),
+                                axis.ticks = element_blank())
+
         } else {
           # condition if we connect the dots
-          p <- ggplotly(ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+          p <- ggplot(data = pd, aes(as.character(year), CI, color= country, text=mytext)) +
                           geom_point() +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
@@ -903,12 +922,12 @@ mod_trends_con_server <- function(input, output, session){
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.ticks = element_blank()), tooltip = 'text')
-          fig <- p %>% config(displayModeBar = F)
+                                axis.text.x = element_text(angle = 45, hjust = 1),
+                                axis.ticks = element_blank())
         }
         
         
-        con_list[[1]] <- fig
+        con_list[[1]] <- p
         con_list[[2]] <- pd
         con_list[[3]] <- list(plot_title, mytext, y_axis_text, trend_palette)
         
@@ -943,7 +962,7 @@ mod_trends_con_server <- function(input, output, session){
                                     content = function(file) {
                                       
                                       con_list <- get_con_data()
-                                      fig <- con_list[[1]]
+                                      p <- con_list[[1]]
                                       plot_title = con_list[[3]][[1]]
                                       mytext = con_list[[3]][[2]]
                                       y_axis_text = con_list[[3]][[3]]
@@ -954,8 +973,12 @@ mod_trends_con_server <- function(input, output, session){
                                       if(is.null(con_list)){
                                         NULL
                                       } else {
-                                        fig
-                                        ggsave(file)
+                                        p =  p + theme(axis.text = element_text(size = rel(18/12))) +
+                                          theme(legend.position = "top") +
+                                          theme(legend.direction = "horizontal", 
+                                                legend.text=element_text(size=7)) 
+                                        p
+                                        ggsave(file, width = 8, height = 8)
                                       }
                                       
                                       
@@ -967,16 +990,17 @@ mod_trends_con_server <- function(input, output, session){
     if(is.null(con_list)){
       NULL
     } else {
-      fig <- con_list[[1]]
+      p <- con_list[[1]]
       pd <- con_list[[2]]
       plot_title = con_list[[3]][[1]]
       mytext = con_list[[3]][[2]]
       y_axis_text = con_list[[3]][[3]]
       trend_palette = con_list[[3]][[4]]
       
-      
-      
+      fig <- ggplotly(p, tooltip = 'text')
+      fig <- fig %>% config(displayModeBar = F)
       fig
+      
     }
     
     
@@ -1169,7 +1193,7 @@ mod_trends_quin_server <- function(input, output, session){
         sep="") %>%
         lapply(htmltools::HTML)
       
-      p <- ggplotly(ggplot(data = df, aes(year, value, color = variable)) +
+      p <- ggplot(data = df, aes(year, value, color = variable)) +
                         geom_point() +
                         geom_line() +
                         scale_color_manual(name = '',
@@ -1178,11 +1202,11 @@ mod_trends_quin_server <- function(input, output, session){
                         labs(x='Year',
                              y = y_axis_text,
                              title = plot_title) +
-                        hefpi::theme_gdocs(), tooltip = 'text')
-  fig <- p %>% config(displayModeBar = F)
+                        hefpi::theme_gdocs() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1))
       
       
-      quin_list[[1]] <- fig
+      quin_list[[1]] <- p
       quin_list[[2]] <- df
       quin_list[[3]] <- list(plot_title, mytext, y_axis_text, col_vec)
       return(quin_list)
@@ -1222,13 +1246,17 @@ mod_trends_quin_server <- function(input, output, session){
                                       if(is.null(quin_list)){
                                         NULL
                                       } else {
-                                        fig <- quin_list[[1]]
+                                        p <- quin_list[[1]]
                                         plot_title = quin_list[[3]][[1]]
                                         mytext = quin_list[[3]][[2]]
                                         y_axis_text = quin_list[[3]][[3]]
                                         col_vec = quin_list[[3]][[4]]
-                                        fig
-                                        ggsave(file)
+                                        p =  p + theme(axis.text = element_text(size = rel(18/12))) +
+                                          theme(legend.position = "top") +
+                                          theme(legend.direction = "horizontal", 
+                                                legend.text=element_text(size=7)) 
+                                        p
+                                        ggsave(file, width = 8, height = 8)
                                       }
                                       
                                       
@@ -1242,12 +1270,14 @@ mod_trends_quin_server <- function(input, output, session){
     if(is.null(quin_list)){
       NULL
     } else {
-      fig <- quin_list[[1]]
+      p <- quin_list[[1]]
       pd <- quin_list[[2]]
       plot_title = quin_list[[3]][[1]]
       mytext = quin_list[[3]][[2]]
       y_axis_text = quin_list[[3]][[3]]
       col_vec = quin_list[[3]][[4]]
+      fig <- ggplotly(p, tooltip = 'text')
+      fig <- fig %>% config(displayModeBar = F)
       fig
     }
     
