@@ -39,6 +39,7 @@ mod_recent_mean_ui <- function(id){
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
@@ -253,6 +254,7 @@ mod_recent_mean_server <- function(input, output, session){
     }
     # get data from shp and remove NA
     temp <- shp@data
+    temp <- temp %>% filter(!is.na(value))
     
     # if data is null or all values are NA, generate empty plot with message
     if(all(is.na(temp$value)) | is.null(temp)){
@@ -315,7 +317,8 @@ mod_recent_mean_server <- function(input, output, session){
                        hefpi::theme_gdocs() +
                        theme(panel.grid.major.x = element_blank(),
                              axis.text.x = element_blank(),
-                             axis.ticks = element_blank()),
+                             axis.ticks = element_blank(),
+                             legend.position = 'none'),
                      tooltip = 'text')   
       p <- p %>% 
         config(displayModeBar = F) %>%
@@ -347,7 +350,7 @@ mod_recent_con_ui <- function(id){
              ),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list,
+                         choices = sort(unique(indicators$indicator_short_name)),
                          selected = 'Inpatient care use, adults',
                          options = list(`style` = "btn-primary")),
              sliderInput(ns('date_range'),
@@ -359,6 +362,7 @@ mod_recent_con_ui <- function(id){
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
@@ -605,7 +609,8 @@ mod_recent_con_server <- function(input, output, session){
                        hefpi::theme_gdocs() +
                        theme(panel.grid.major.x = element_blank(),
                              axis.text.x = element_blank(),
-                             axis.ticks = element_blank()),
+                             axis.ticks = element_blank(),
+                             legend.position = 'none'),
                      tooltip = 'text')
       p <- p %>% 
         config(displayModeBar = F) %>%

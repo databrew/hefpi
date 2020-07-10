@@ -32,6 +32,7 @@ mod_dat_country_ui <- function(id){
                          options = list(`style` = "btn-primary")),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
@@ -218,6 +219,7 @@ mod_dat_ind_ui <- function(id){
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
