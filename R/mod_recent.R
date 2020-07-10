@@ -553,7 +553,7 @@ mod_recent_con_server <- function(input, output, session){
     }
     # get data from shp and remove NA
     temp <- shp@data
-    # temp <- temp %>% filter(!is.na(value))
+    temp <- temp %>% filter(!is.na(value))
     
     if(all(is.na(temp$value)) | is.null(temp)){
       empty_plot <- function(title = NULL){
@@ -584,6 +584,10 @@ mod_recent_con_server <- function(input, output, session){
         sep="") %>%
         lapply(htmltools::HTML)
       
+      # order NAME by value 
+      ordered_names <- temp$NAME[order(temp$value, decreasing = TRUE)]
+      temp$NAME <- factor(temp$NAME, levels = ordered_names)
+      
       
       # create title and y axis label
       y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
@@ -608,7 +612,7 @@ mod_recent_con_server <- function(input, output, session){
         highlight(on='plotly_hover',
                   color = 'white',
                   opacityDim = 0.6)
-    p
+    
      
       
     }

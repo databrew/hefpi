@@ -112,7 +112,8 @@ mod_dat_country_server <- function(input, output, session){
            y = '',
            title = plot_title) +
       hefpi::theme_gdocs() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(1)),
+            axis.text.y = element_text(size = rel(1))) +
       theme(legend.position = "top") +
       theme(legend.direction = "horizontal", legend.text=element_text(size=10)) 
     
@@ -384,10 +385,14 @@ mod_dat_ind_server <- function(input, output, session){
                         labs(x = '',
                              y = '',
                              title = plot_title) +
-                        hefpi::theme_gdocs() 
+                        hefpi::theme_gdocs() +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(1)),
+                axis.text.y = element_text(size = rel(1))) +
+          theme(legend.position = "top") +
+          theme(legend.direction = "horizontal", legend.text=element_text(size=10)) 
+        
                         # theme(axis.text.x = element_text(angle =45, hjust = 1))
-        fig <- ggplotly(p, tooltip = 'text') %>% config(displayModeBar = F)
-        dat_list[[1]] <- fig
+        dat_list[[1]] <- p
         dat_list[[2]] <- df
         dat_list[[3]] <- list(plot_title, col_vec, mytext)
         return(dat_list)
@@ -428,9 +433,9 @@ mod_dat_ind_server <- function(input, output, session){
                                       if(is.null(dat_list)){
                                         NULL
                                       } else {
-                                        fig <- dat_list[[1]]
+                                        p <- dat_list[[1]]
+                                        p
                                         
-                                        fig
                                         ggsave(file)
                                       }
                                       
@@ -442,8 +447,10 @@ mod_dat_ind_server <- function(input, output, session){
     if(is.null(dat_list)){
       NULL
     } else {
-      fig <- dat_list[[1]]
-      fig
+      p <- dat_list[[1]]
+      fig <- ggplotly(p, tooltip = 'text') %>% config(displayModeBar = F)
+      p
+      
     }
     
   })
