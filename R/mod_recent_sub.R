@@ -147,10 +147,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
                 y = mean(y, na.rm = TRUE))
     # condition on unit of measure
     if(unit_of_measure == '%'){
-      ind_value <- shp@data$value*100
-    } else {
-      ind_value <- shp@data$value
-    }
+      shp@data$value<- shp@data$value*100
+    } 
     
     if(good_or_bad == 'Good'){
       # Make color palette
@@ -163,9 +161,9 @@ mod_recent_mean_sub_server <- function(input, output, session){
     
     # Make tooltip
     map_text <- paste(
-      "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
+      "Indicator: ",  indicator,"<br>",
       "Economy: ", as.character(shp@data$ADM1_NAME),"<br/>", 
-      "Value: ", round(shp@data$value, digits = 3), "<br/>",
+      "Value: ", paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'), "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       sep="") %>%
       lapply(htmltools::HTML)
@@ -198,8 +196,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
       ) %>% 
       setView(lat=0, lng=0 , zoom=1.7) %>%
       # setView(lat=centroid$y, lng=centroid$x , zoom=4) %>%
-      addLegend( pal=map_palette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
-    pop_map
+      addLegend(pal=map_palette, title= unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
     # store palette, text, map object, and data
     pop_map_list[[1]] <- map_palette
     pop_map_list[[2]] <- map_text
