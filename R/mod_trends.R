@@ -230,8 +230,7 @@ mod_trends_mean_server <- function(input, output, session){
                                  title = plot_title) +
                             hefpi::theme_gdocs() +
                             theme(panel.grid.major.x = element_blank(),
-                                  axis.text.x = element_text(angle = 45, hjust = 1),
-                                  axis.ticks = element_blank()) 
+                                  axis.text.x = element_text(angle = 45, hjust = 1)) 
      
               
   
@@ -248,8 +247,7 @@ mod_trends_mean_server <- function(input, output, session){
                                  title = plot_title) +
                             hefpi::theme_gdocs() +
                             theme(panel.grid.major.x = element_blank(),
-                                  axis.text.x = element_text(angle = 45, hjust = 1),
-                                  axis.ticks = element_blank())
+                                  axis.text.x = element_text(angle = 45, hjust = 1))
             
             
           }
@@ -596,8 +594,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 45, hjust = 1),
-                                axis.ticks = element_blank())
+                                axis.text.x = element_text(angle = 45, hjust = 1))
           
         } else {
           # condition if we connect the dots
@@ -612,8 +609,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 45, hjust = 1),
-                                axis.ticks = element_blank())
+                                axis.text.x = element_text(angle = 45, hjust = 1))
         }
         
         
@@ -909,8 +905,7 @@ mod_trends_con_server <- function(input, output, session){
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 45, hjust = 1),
-                                axis.ticks = element_blank())
+                                axis.text.x = element_text(angle = 45, hjust = 1))
 
         } else {
           # condition if we connect the dots
@@ -923,8 +918,7 @@ mod_trends_con_server <- function(input, output, session){
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 45, hjust = 1),
-                                axis.ticks = element_blank())
+                                axis.text.x = element_text(angle = 45, hjust = 1))
         }
         
         

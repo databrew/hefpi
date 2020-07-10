@@ -22,8 +22,8 @@ mod_dat_country_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotOutput(
-               ns('dat_country'), height = '700px', width = '1000px', 
+             plotlyOutput(
+               ns('dat_country'), height = '800px', width = '1000px', 
              )),
       column(4,
              pickerInput(ns('country'), 'Country',
@@ -105,21 +105,23 @@ mod_dat_country_server <- function(input, output, session){
     plot_title = paste0('Missing data profile', ' - ', country_name)
     
     # plot
-    fig<-   ggplot(df, aes(year, indicator_short_name, fill = level_2)) + 
+    p<-   ggplot(df, aes(year, indicator_short_name, fill = level_2)) + 
       geom_tile(alpha = 0.8, color = 'darkgrey') +
-      scale_fill_manual(name = 'Indicator class',
+      scale_fill_manual(name = '',
                         values = col_vec) +
       labs(x = 'Year',
            y = '',
            title = plot_title) +
       hefpi::theme_gdocs() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(1)),
-            axis.text.y = element_text(size = rel(1))) +
-      theme(legend.position = "top") +
-      theme(legend.direction = "horizontal", legend.text=element_text(size=10)) 
+      coord_flip() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(2/4)),
+            axis.text.y = element_text(size = rel(1)),
+            panel.background = element_rect(color = NA),
+            panel.grid.major = element_blank())
+      
+      
     
-    
-    dat_list[[1]] <- fig
+    dat_list[[1]] <- p
     dat_list[[2]] <- df
     dat_list[[3]] <- list(plot_title, col_vec)
     return(dat_list)
@@ -155,22 +157,29 @@ mod_dat_country_server <- function(input, output, session){
                                       if(is.null(dat_list)){
                                         NULL
                                       } else {
-                                        fig <- dat_list[[1]]
+                                        p <- dat_list[[1]]
+                                        p =  p + theme(axis.text = element_text(size = rel(3/4))) +
+                                          theme(legend.position = "top") +
+                                          theme(legend.direction = "horizontal", 
+                                                legend.text=element_text(size=7)) 
+                                        p
+                                        ggsave(file, width = 10, height = 8)
                                         
-                                        fig
-                                        ggsave(file)
                                       }
                                       
                                       
                                     })
   
-  output$dat_country <- renderPlot({
+  output$dat_country <- renderPlotly({
     dat_list <- get_dat()
     if(is.null(dat_list)){
       NULL
     } else {
-      fig <- dat_list[[1]]
-      fig
+      p <- dat_list[[1]]
+      p <- ggplotly(p, tooltip = 'none') %>%
+        config(displayModeBar = F) %>%
+        style(hoverinfo = 'none')
+      p
     }
     
   })
@@ -436,9 +445,14 @@ mod_dat_ind_server <- function(input, output, session){
                                         NULL
                                       } else {
                                         p <- dat_list[[1]]
+                                      
+                                        p =  p + theme(axis.text = element_text(size = rel(3/4))) +
+                                          theme(legend.position = "top") +
+                                          theme(legend.direction = "horizontal", 
+                                                legend.text=element_text(size=7)) 
                                         p
+                                        ggsave(file, width = 8, height = 8)
                                         
-                                        ggsave(file)
                                       }
                                       
                                       
