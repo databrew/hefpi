@@ -176,9 +176,6 @@ mod_trends_mean_server <- function(input, output, session){
           select(variable_name, unit_of_measure)
         variable_name = ind_info$variable_name
         unit_of_measure = ind_info$unit_of_measure
-        if(unit_of_measure != '%'){
-          unit_of_measure = paste0(' (', unit_of_measure, ')')
-        }
         
         # subet by variable, region code and a list of countries
         df <- df[df$indic == variable_name,]
@@ -194,7 +191,7 @@ mod_trends_mean_server <- function(input, output, session){
           
           # get title and subtitle
           plot_title <- paste0('Trends - Population mean')
-          y_axis_text <- paste0(indicator)
+          y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
           
           # condition on unit of measure
           if(unit_of_measure == '%'){
@@ -207,7 +204,7 @@ mod_trends_mean_server <- function(input, output, session){
           mytext <- paste(
             "Indicator: ", indicator,"<br>", 
             "Economy: ", as.character(pd$country),"<br>", 
-            "Value: ", round(pd$pop, digits = 2), "<br>",
+            "Value: ", paste0(round(pd$pop, digits = 2), ' (', unit_of_measure, ')'), "<br>",
             "Year: ", as.character(pd$year),"<br>",
             "Data source: ", as.character(pd$referenceid_list), "<br>",
             sep="") %>%
@@ -227,7 +224,7 @@ mod_trends_mean_server <- function(input, output, session){
                             geom_line(aes(group = country)) +
                             scale_color_manual(name = '',
                                                values = trend_palette) +
-                            scale_y_continuous(labels = function(x) paste0(x, unit_of_measure), limits = c(value_range[1], value_range[2]))+
+                            scale_y_continuous(limits = c(value_range[1], value_range[2]))+
                             labs(x='Year',
                                  y = y_axis_text,
                                  title = plot_title) +
@@ -524,9 +521,6 @@ mod_trends_mean_sub_server <- function(input, output, session){
         select(variable_name, unit_of_measure)
       variable_name = ind_info$variable_name
       unit_of_measure = ind_info$unit_of_measure
-      if(unit_of_measure != '%'){
-        unit_of_measure = paste0(' (', unit_of_measure, ')')
-      }
       
       temp <- hefpi::sub_national[sub_national$region_code == region_code,]
       pd <- temp %>%
@@ -556,7 +550,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         
         # get title and subtitle
         plot_title <- paste0('Trends - Population mean (sub national)')
-        y_axis_text <- paste0(indicator)
+        y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
         
         # condition on unit of measure
         if(unit_of_measure == '%'){
@@ -569,7 +563,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         mytext <- paste(
           "Indicator: ", indicator,"<br>", 
           "Economy: ", as.character(pd$country),"<br>", 
-          "Value: ", round(pd$value, digits = 2), "<br>",
+          "Value: ", paste0(round(pd$value, digits = 2), ' (', unit_of_measure, ')'), "<br>",
           "Year: ", as.character(pd$year),"<br>",
           "Data source: ", as.character(pd$referenceid_list), "<br>",
           sep="") %>%
@@ -589,7 +583,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                           geom_line(aes(group = ADM1_NAME)) +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
-                          scale_y_continuous(labels = function(x) paste0(x, unit_of_measure), limits = c(value_range[1], value_range[2]))+
+                          scale_y_continuous(limits = c(value_range[1], value_range[2]))+
                           labs(x='Year',
                                y = y_axis_text,
                                title = plot_title) +
@@ -1096,15 +1090,16 @@ mod_trends_quin_server <- function(input, output, session){
     indicator <- input$indicator
     date_range <- input$date_range
 
-    # Get the variable
-    variable <- indicators %>%
+    # get variable
+    ind_info <- indicators %>%
       filter(indicator_short_name == indicator) %>%
-      .$variable_name
-    
+      select(variable_name, unit_of_measure)
+    variable_name = ind_info$variable_name
+    unit_of_measure = ind_info$unit_of_measure
     # subset by country and variable
     df <- hefpi::df %>%
       filter(country == country_names) %>%
-      filter(indic == variable) %>%
+      filter(indic == variable_name) %>%
       filter(year >= min(date_range),
              year <= max(date_range))  %>%
       select(year, Q1:Q5) 
@@ -1133,7 +1128,6 @@ mod_trends_quin_server <- function(input, output, session){
     date_range <- c(1982,2016)
     view_as <- 'Slope chart'
     # 
-    quin_list <- list()
     country_names <- input$country
     indicator <- input$indicator
     date_range <- input$date_range
@@ -1143,73 +1137,89 @@ mod_trends_quin_server <- function(input, output, session){
     if(is.null(value_range)){
       NULL
     } else {
-      # Get the variable
-      variable <- indicators %>%
+      quin_list <- list()
+      
+      # get variable
+      ind_info <- indicators %>%
         filter(indicator_short_name == indicator) %>%
-        .$variable_name
+        select(variable_name, unit_of_measure)
+      variable_name = ind_info$variable_name
+      unit_of_measure = ind_info$unit_of_measure
       
       # subset by country and variable
       df <- hefpi::df %>%
         filter(country == country_names) %>%
-        filter(indic == variable) %>%
+        filter(indic == variable_name) %>%
         filter(year >= min(date_range),
                year <= max(date_range))  %>%
         select(year, referenceid_list, Q1:Q5)
-      if(view_as == 'Slope chart'){
-        # filter to get year_one and year_last
-        year_begin = min(df$year)
-        year_end = max(df$year)
-        df <- df %>%
-          filter(year == year_begin | year == year_end)
-        # save(df, file = 'df.rda')
+      
+      if(is.null(df)  | nrow(df) ==0){
+        NULL
+      } else {
+        if(view_as == 'Slope chart'){
+          # filter to get year_one and year_last
+          year_begin = min(df$year)
+          year_end = max(df$year)
+          df <- df %>%
+            filter(year == year_begin | year == year_end)
+          # save(df, file = 'df.rda')
+        }
+        
+        df <- melt(df, id.vars = c('referenceid_list','year'))
+        
+        # recode Quintiels
+        df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
+                              ifelse(df$variable == 'Q2', 'Q2: Poor',
+                                     ifelse(df$variable == 'Q3', 'Q3: Middle',
+                                            ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
+        
+        # condition on unit of measure
+        if(unit_of_measure == '%'){
+          df$value <- df$value*100
+          value_range[2] <- value_range[2]*100
+          value_range[1] <- value_range[1]*100
+          
+        }
+        
+        # # get color graident 
+        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+        col_vec <- col_vec[-1]
+        
+        # make plot title
+        plot_title = paste0('Quintile Trends - ', country_names)
+        y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+        # subset by y axis
+        
+        # text for plot
+        mytext <- paste(
+          "Indicator: ", indicator, '\n',
+          "Economy: ", country_names, '\n',
+          "Value: ", paste0(round(df$value, digits = 3), ' (', unit_of_measure, ')'), "\n",
+          "Year: ", as.character(df$year),"\n",
+          "Data source: ", as.character(df$referenceid_list),"\n",
+          sep="") %>%
+          lapply(htmltools::HTML)
+        
+        p <- ggplot(data = df, aes(as.character(year), value, color = variable)) +
+          geom_point() +
+          geom_line(aes(group = as.character(variable))) +
+          scale_color_manual(name = '',
+                             values = col_vec) +
+          scale_y_continuous(limits = c(value_range[1], value_range[2])) +
+          labs(x='Year',
+               y = y_axis_text,
+               title = plot_title) +
+          hefpi::theme_gdocs() +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1))
+        
+        
+        quin_list[[1]] <- p
+        quin_list[[2]] <- df
+        quin_list[[3]] <- list(plot_title, mytext, y_axis_text, col_vec)
+        return(quin_list)
       }
-      
-      df <- melt(df, id.vars = c('referenceid_list','year'))
-      
-      # recode Quintiels
-      df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
-                            ifelse(df$variable == 'Q2', 'Q2: Poor',
-                                   ifelse(df$variable == 'Q3', 'Q3: Middle',
-                                          ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
-      
-      # # get color graident 
-      col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-      col_vec <- col_vec[-1]
-      
-      # make plot title
-      plot_title = paste0('Quintile Trends - ', country_names)
-      y_axis_text = indicator
-      # subset by y axis
-      df <- df %>% 
-        filter(value >= value_range[1],
-               value <= value_range[2])
-      # text for plot
-      mytext <- paste(
-        "Indicator: ", indicator, '\n',
-        "Economy: ", country_names, '\n',
-        "Value: ", round(df$value, digits = 3), "\n",
-        "Year: ", as.character(df$year),"\n",
-        "Data source: ", as.character(df$referenceid_list),"\n",
-        sep="") %>%
-        lapply(htmltools::HTML)
-      
-      p <- ggplot(data = df, aes(year, value, color = variable)) +
-                        geom_point() +
-                        geom_line() +
-                        scale_color_manual(name = '',
-                                           values = col_vec) +
-                        ylim(c(0, max(df$value))) +
-                        labs(x='Year',
-                             y = y_axis_text,
-                             title = plot_title) +
-                        hefpi::theme_gdocs() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1))
-      
-      
-      quin_list[[1]] <- p
-      quin_list[[2]] <- df
-      quin_list[[3]] <- list(plot_title, mytext, y_axis_text, col_vec)
-      return(quin_list)
+     
     }
   })
   
@@ -1276,9 +1286,14 @@ mod_trends_quin_server <- function(input, output, session){
       mytext = quin_list[[3]][[2]]
       y_axis_text = quin_list[[3]][[3]]
       col_vec = quin_list[[3]][[4]]
-      fig <- ggplotly(p, tooltip = 'text')
-      fig <- fig %>% config(displayModeBar = F)
-      fig
+      if(is.null(p)){
+        NULL
+      } else {
+        fig <- ggplotly(p, tooltip = 'text')
+        fig <- fig %>% config(displayModeBar = F)
+        fig
+      }
+      
     }
     
     

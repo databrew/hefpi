@@ -136,9 +136,9 @@ mod_recent_mean_server <- function(input, output, session){
   
     # Make tooltip
     map_text <- paste(
-      "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
+      "Indicator: ",  indicator,"<br>",
       "Economy: ", as.character(shp@data$NAME),"<br/>", 
-      'Value: ', round(ind_value, digits = 2),  "<br/>",
+      'Value: ', paste0(round(ind_value, digits = 2), ' (',unit_of_measure,')'),  "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
@@ -175,7 +175,7 @@ mod_recent_mean_server <- function(input, output, session){
         )
       ) %>% 
       setView(lat=0, lng=0 , zoom=1.7) %>%
-      addLegend( pal=map_palette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+      addLegend( pal=map_palette,title = unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
     # store palette, text, map object, and data in list
     pop_map_list[[1]] <- map_palette
     pop_map_list[[2]] <- map_text
@@ -437,9 +437,9 @@ mod_recent_con_server <- function(input, output, session){
     
     # Make tooltip
     map_text <- paste(
-      "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
+      "Indicator: ",  indicator,"<br>",
       "Economy: ", as.character(shp@data$NAME),"<br/>", 
-      'Value: ', round(shp@data$value, digits = 2), "<br/>",
+      'Value: ', paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'), "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
@@ -473,7 +473,7 @@ mod_recent_con_server <- function(input, output, session){
           direction = "auto"
         )
       ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
-      addLegend( pal=map_palette, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+      addLegend( pal=map_palette, title = unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
     con_map_list[[1]] <- map_palette
     con_map_list[[2]] <- map_text
     con_map_list[[3]] <- con_map
@@ -576,9 +576,9 @@ mod_recent_con_server <- function(input, output, session){
       # temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
       # get text for plotly 
       plot_text <- paste(
-        "Indicator: ", indicator,' (',unit_of_measure,')',"<br>",
+        "Indicator: ", indicator,"<br>",
         "Economy: ", as.character(temp$NAME),"<br>", 
-        'Value: ', round(temp$value, digits = 2),  "<br>",
+        'Value: ', paste0(round(temp$value, digits = 2), ' (',unit_of_measure,')'),  "<br>",
         "Year: ", as.character(temp$year),"<br>",
         "Data source :", as.character(temp$data_source), "<br>",
         sep="") %>%
