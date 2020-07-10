@@ -46,6 +46,7 @@ mod_recent_mean_sub_ui <- function(id){
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert

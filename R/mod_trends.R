@@ -28,7 +28,7 @@ mod_trends_mean_ui <- function(id){
     column(4,
            pickerInput(ns('indicator'),
                        'Indicator',
-                       choices = indicators_list,
+                       choices = sort(unique(indicators$indicator_short_name)),
                        selected = '4+ antenatal care visits',
                        options = list(`style` = "btn-primary")),
           pickerInput(inputId = ns("region"),
@@ -52,10 +52,10 @@ mod_trends_mean_ui <- function(id){
                         value = TRUE),
           downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
           downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-          br(),
+          br(),br(),
           fluidPage(
             fluidRow(
-              useShinyalert(),  # Set up shinyalert
+              useShinyalert(), 
               actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
           ))
   )
@@ -390,7 +390,7 @@ mod_trends_mean_sub_ui <- function(id){
                            value = TRUE),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),
+             br(),br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
@@ -718,7 +718,7 @@ mod_trends_con_ui <- function(id){
       column(4,
              pickerInput(ns('indicator'),
                          'Indicator',
-                         choices = indicators_list,
+                         choices = sort(unique(indicators$indicator_short_name)),
                          selected = '4+ antenatal care visits',
                          options = list(`style` = "btn-primary")),
              pickerInput(inputId = ns("region"),
@@ -748,7 +748,7 @@ mod_trends_con_ui <- function(id){
                            value = TRUE),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),
+             br(),br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
@@ -1029,7 +1029,7 @@ mod_trends_quin_ui <- function(id){
                          selected = 'United States',
                          options = list(`style` = "btn-primary")),
              pickerInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list,
+                         choices = sort(unique(indicators$indicator_short_name)),
                          selected = 'Inpatient care use, adults',
                          options = list(`style` = "btn-primary")),
              pickerInput(ns('view_as'), 'View as',
@@ -1045,7 +1045,7 @@ mod_trends_quin_ui <- function(id){
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),
+             br(),br(),
              fluidPage(
                fluidRow(
                  useShinyalert(),  # Set up shinyalert
