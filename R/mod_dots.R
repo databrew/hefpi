@@ -94,7 +94,7 @@ mod_dots_country_server <- function(input, output, session){
     
     # get region code
     region_list <- hefpi::region_list
-    region_code <- as.character(region_list$region_code[region_list$region == region])
+    region_code <- as.character(region_list$region_code[region_list$region %in% region])
     
     # Get the variable
     variable <- indicators %>%

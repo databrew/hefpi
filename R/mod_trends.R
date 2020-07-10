@@ -98,7 +98,7 @@ mod_trends_mean_server <- function(input, output, session){
 
       # get region code
       region_list <- hefpi::region_list
-      region_code <- as.character(region_list$region_code[region_list$region == region])
+      region_code <- as.character(region_list$region_code[region_list$region %in% region])
         
       # Get the variable
       variable <- indicators %>%
@@ -107,8 +107,8 @@ mod_trends_mean_server <- function(input, output, session){
       
       # subset data by variable and region code
         df <- hefpi::df
-        df <- df[df$indic == variable,]
         df <- df[df$regioncode %in% region_code,]
+        df <- df[df$indic == variable,]
        
         max_value <- round(max(df$pop), 2)
         min_value <- round(min(df$pop), 2)
@@ -147,7 +147,7 @@ mod_trends_mean_server <- function(input, output, session){
     
     get_pop_data <- reactive({
       indicator <- "Inpatient care use, adults"
-      region <- region_list$region
+      region <- region_list$region[c(1,3)]
       temp <- hefpi::df_series %>% filter(region %in% region)
       country_names <- unique(temp$country_name)
       date_range <- c(1982, 2017)
@@ -430,7 +430,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     })
     
     indicator <- sort(unique(sub_national$indicator_short_name))[1]
-    region <- region_list$region[1]
+    region <- region_list$region[c(1,3)]
     date_range <- c(1982, 2018)
     # get inputs
     indicator <- input$indicator
@@ -439,7 +439,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     
     # get region code
     region_list <- hefpi::region_list
-    region_code <- as.character(region_list$region_code[region_list$region == region])
+    region_code <- as.character(region_list$region_code[region_list$region %in% region])
     
     # Get the variable from indicator input
     # ind_info <- indicators %>%
@@ -450,7 +450,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     # unit_of_measure = ind_info$unit_of_measure
     # 
     # Get the data to be plotted
-    temp <- hefpi::sub_national[sub_national$region_code == region_code,]
+    temp <- hefpi::sub_national[sub_national$region_code %in% region_code,]
     pd <- temp %>%
       filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
@@ -462,7 +462,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     shp <- hefpi::gaul
     
     # joine with data
-    shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code'))
+    shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
     
     # remove polygons associated with NA - keeps only that region
     na_rows <- which(!is.na(shp@data$value))
@@ -470,15 +470,22 @@ mod_trends_mean_sub_server <- function(input, output, session){
     shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
     df <- shp@data
     
+    sub_regions_top <- df %>% group_by(region, ADM1_NAME) %>% 
+      summarise(counts = n()) %>%
+      top_n(10) %>%
+      arrange(ADM1_NAME) %>%
+      .$ADM1_NAME
     
-    sub_regions <- unique(df$ADM1_NAME)
+    sub_regions <- sort(unique(df$ADM1_NAME))
     
+    
+
     fluidPage(
       fluidRow(
         pickerInput(inputId = session$ns("sub_country"),
                     label = 'Subnational region', 
                     choices = sub_regions,
-                    selected = sub_regions[1:10],
+                    selected = sub_regions_top,
                     options = list( `actions-box`=TRUE,
                                     `selected-text-format` = "count > 2",
                                     `count-selected-text` = "{0}/{1} Sub-national regions",
@@ -522,7 +529,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
       variable_name = ind_info$variable_name
       unit_of_measure = ind_info$unit_of_measure
       
-      temp <- hefpi::sub_national[sub_national$region_code == region_code,]
+      temp <- hefpi::sub_national[sub_national$region_code %in% region_code,]
       pd <- temp %>%
         filter(indicator_short_name == indicator) %>%
         group_by(ISO3 = iso3c, country,gaul_code) %>%
@@ -534,7 +541,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
       shp <- hefpi::gaul
       
       # joine with data
-      shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code'))
+      shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
       
       # remove polygons associated with NA - keeps only that region
       na_rows <- which(!is.na(shp@data$value))
@@ -572,7 +579,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         # trend_palette <- colorRampPalette(brewer.pal(name = "Paired", n = 12))(length(unique(pd$country)))
         
         temp <- tableau_color_pal(palette = "Tableau 20")
-        trend_palette <- rep(temp(n = 20), 10)
+        trend_palette <- rep(temp(n = 20), 50)
         
         yn <- input$interpolate
         if(yn){
@@ -793,7 +800,7 @@ mod_trends_con_server <- function(input, output, session){
     
     # get region code
     region_list <- hefpi::region_list
-    region_code <- as.character(region_list$region_code[region_list$region == region])
+    region_code <- as.character(region_list$region_code[region_list$region %in% region])
     
     # Get the variable
     variable <- indicators %>%
@@ -1081,7 +1088,7 @@ mod_trends_quin_server <- function(input, output, session){
                  showCancelButton = FALSE, 
                  showConfirmButton = FALSE)
     })
-    country_names <- 'United States'
+    country_names <- 'Belgium'
     indicator <- 'Inpatient care use, adults'
     # value_range <- c(0.06,0.12)
     date_range <- c(1982,2016)
@@ -1153,6 +1160,8 @@ mod_trends_quin_server <- function(input, output, session){
         filter(year >= min(date_range),
                year <= max(date_range))  %>%
         select(year, referenceid_list, Q1:Q5)
+      
+      df <- df[complete.cases(df),]
       
       if(is.null(df)  | nrow(df) ==0){
         NULL
