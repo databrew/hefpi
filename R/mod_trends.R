@@ -361,14 +361,14 @@ mod_trends_mean_sub_ui <- function(id){
                          choices = sort(unique(sub_national$indicator_short_name)),
                          selected = sort(unique(sub_national$indicator_short_name))[1],
                          options = list(`style` = "btn-primary")),
-             pickerInput(inputId = ns("region"),
-                         label = 'Region', 
-                         choices = as.character(region_list$region),
-                         selected = as.character(region_list$region)[1],
+             pickerInput(inputId = ns("country"),
+                         label = 'Country', 
+                         choices = as.character(sort(unique(sub_national$country))),
+                         selected ='Belize',
                          options = list( `actions-box`=TRUE,
                                          `style` = "btn-primary",
                                          `selected-text-format` = "count > 2",
-                                         `count-selected-text` = "{0}/{1} Regions"),
+                                         `count-selected-text` = "{0}/{1} Country"),
                          multiple = TRUE),
              uiOutput(ns('ui_outputs')),
              sliderInput(ns('value_range'),
@@ -428,28 +428,17 @@ mod_trends_mean_sub_server <- function(input, output, session){
     })
     
     indicator <- sort(unique(sub_national$indicator_short_name))[1]
-    region <- region_list$region[c(1,3)]
+    country_name <- 'Argentina'
     date_range <- c(1982, 2018)
     # get inputs
     indicator <- input$indicator
-    region <- input$region
+    country_name <- input$country
     date_range <- input$date_range
     
-    # get region code
-    region_list <- hefpi::region_list
-    region_code <- as.character(region_list$region_code[region_list$region %in% region])
-    
-    # Get the variable from indicator input
-    # ind_info <- indicators %>%
-    #   filter(indicator_short_name == indicator) %>%
-    #   select(good_or_bad, unit_of_measure)
-    # # variable_name = ind_info$variable_name
-    # good_or_bad = ind_info$good_or_bad
-    # unit_of_measure = ind_info$unit_of_measure
-    # 
+  
     # Get the data to be plotted
-    temp <- hefpi::sub_national[sub_national$region_code %in% region_code,]
-    pd <- temp %>%
+    pd <- hefpi::sub_national %>%
+      filter(country %in% country_name)%>%
       filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
       filter(year >= min(date_range),
@@ -468,7 +457,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
     df <- shp@data
     
-    sub_regions_top <- df %>% group_by(region, ADM1_NAME) %>% 
+    sub_regions_top <- df %>% group_by(country,ADM1_NAME) %>% 
       summarise(counts = n()) %>%
       top_n(10) %>%
       arrange(ADM1_NAME) %>%
@@ -496,12 +485,13 @@ mod_trends_mean_sub_server <- function(input, output, session){
   })
   
   get_pop_data <- reactive({
-    indicator <- sort(unique(sub_national$indicator_short_name))[1]
-    region <- region_list$region[1]
+    # indicator <- sort(unique(sub_national$indicator_short_name))[1]
+    # region <- region_list$region[1]
     # temp <- hefpi::df_series %>% filter(region %in% region)
     # sub_regions<- sub_regions
-    date_range <- c(1982, 2017)
-    value_range <- c(0,1)
+    # date_range <- c(1982, 2017)
+    # value_range <- c(0,1)
+    # country_names <- 'Argentina'
     # get inputs
     pop_list <- list()
     indicator <- input$indicator
@@ -509,16 +499,17 @@ mod_trends_mean_sub_server <- function(input, output, session){
     sub_regions <- input$sub_country
     date_range <- input$date_range
     value_range <- input$value_range
+    country_name <- input$country
     # get region code 
-    region_list <- hefpi::region_list
-    indicators <- hefpi::indicators
-    df <- hefpi::df
+    # region_list <- hefpi::region_list
     
     if(is.null(sub_regions) | is.null(value_range)){
       NULL
     } else {
       
-      region_code <- as.character(region_list$region_code[region_list$region %in% region])
+      # region_code <- as.character(region_list$region_code[region_list$region %in% region])
+      indicators <- hefpi::indicators
+      df <- hefpi::df
       
       # get variable
       ind_info <- indicators %>%
@@ -527,8 +518,9 @@ mod_trends_mean_sub_server <- function(input, output, session){
       variable_name = ind_info$variable_name
       unit_of_measure = ind_info$unit_of_measure
       
-      temp <- hefpi::sub_national[sub_national$region_code %in% region_code,]
-      pd <- temp %>%
+      # temp <- hefpi::sub_national[sub_national$region_code %in% region_code,]
+      pd <- hefpi::sub_national %>%
+        filter(country %in% country_name) %>%
         filter(indicator_short_name == indicator) %>%
         group_by(ISO3 = iso3c, country,gaul_code) %>%
         filter(year >= min(date_range),
