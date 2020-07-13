@@ -167,14 +167,16 @@ mod_dots_country_server <- function(input, output, session){
       dot_list <- list()
       
       # Get the variable
-      variable <- indicators %>%
+      ind_info <- indicators %>%
         dplyr::filter(indicator_short_name == indicator) %>%
-        .$variable_name
+        select(variable_name, unit_of_measure)
       
+      variable_name <- ind_info$variable_name
+      unit_of_measure <- ind_info$unit_of_measure
       # subset by country and variable
       df <- hefpi::df %>%
         filter(country %in% country_names) %>%
-        filter(indic == variable) %>%
+        filter(indic == variable_name) %>%
         filter(year >= date_range[1],
                year <= date_range[2]) %>%
         left_join(indicators, by = c('indic' = 'variable_name'))
@@ -207,18 +209,24 @@ mod_dots_country_server <- function(input, output, session){
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Economies', ' - ', indicator)
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+      y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
       
-      df <- df %>%
-        filter(value >= value_range[1],
-               value <= value_range[2])
+
+      if(unit_of_measure == '%'){
+        df$value <- df$value*100
+        value_range[2] <- value_range[2]*100
+        value_range[1] <- value_range[1]*100
+        
+      }
       # # # text for plot
       mytext <- paste(
-        "Value: ", round(df$value, digits = 3), "\n",
+        "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
         "Year: ", as.character(df$year),"\n",
         "Indicator: ", as.character(indicator),"\n",
         "Data source: ", as.character(df$referenceid_list),
         sep="") %>%
         lapply(htmltools::HTML)
+      
       
       
       # if the dataframe is null of empty make plot null
@@ -241,7 +249,7 @@ mod_dots_country_server <- function(input, output, session){
                              values = col_vec) +
           scale_y_continuous(limits = c(value_range[1], value_range[2])) +
           labs(title=plot_title,
-               subtitle = sub_title, x= '', y = '') +
+               subtitle = sub_title, x= '', y = y_axis_text) +
           coord_flip() +
           theme_gdocs() 
        
@@ -389,6 +397,7 @@ mod_dots_ind_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
 
+# HERE NEED TO HAVE UNIT OF MEASURE IN HOVER OVER FOR EACH INDICATOR (JOIN TO DATA?). ANYTHING WITH PERCENT SHOULD BE MULTIPLIED BY 100
 mod_dots_ind_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -477,14 +486,17 @@ mod_dots_ind_server <- function(input, output, session){
       
       dot_list <- list()
       # Get the variable
-      variable <- indicators %>%
-        filter(indicator_short_name %in% indicator) %>%
-        .$variable_name
+      ind_info <- indicators %>%
+        dplyr::filter(indicator_short_name %in% indicator) %>%
+        select(variable_name, unit_of_measure)
+      variable_name <- ind_info$variable_name
+      unit_of_measure <- ind_info$unit_of_measure
+     
       
       # subset by country and variable
       df <- hefpi::df %>%
         filter(country == country_names) %>%
-        filter(indic %in% variable) %>%
+        filter(indic %in% variable_name) %>%
         filter(year >= date_range[1],
                year <= date_range[2]) %>%
         left_join(indicators, by = c('indic' = 'variable_name'))
@@ -514,17 +526,14 @@ mod_dots_ind_server <- function(input, output, session){
       # make plot title 
       plot_title = paste0('Quintile Dot Plots for Indicators', ' - ', country_names)
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+      y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
       
-      # subset by y axis
-      df <- df %>% 
-        filter(value >= value_range[1],
-               value <= value_range[2])
       
       # order indicator alphabetically
       df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
-      # # # text for plot
+      
       mytext <- paste(
-        "Value: ", round(df$value, digits = 3), "\n",
+        "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
         "Year: ", as.character(df$year),"\n",
         "Country: ", as.character(df$country),"\n",
         "Data source: ", as.character(df$referenceid_list),
