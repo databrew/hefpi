@@ -208,16 +208,16 @@ mod_dat_ind_ui <- function(id){
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected =indicators_list[[1]][1:4],
-                         options = list( `selected-text-format` = "count > 2",
-                                         `count-selected-text` = "{0}/{1} Indicators",
-                                         `style` = "btn-primary",
-                                         `actions-box`=TRUE),
-                         multiple = TRUE),
+                         selected ='Catastrophic health spending, 10%',
+                         options = list(`style` = "btn-primary")),
              pickerInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
                          selected = 'Europe & Central Asia',
-                         options = list(`style` = "btn-primary")),
+                         options = list( `actions-box`=TRUE,
+                                         `style` = "btn-primary",
+                                         `selected-text-format` = "count > 2",
+                                         `count-selected-text` = "{0}/{1} Regions"),
+                         multiple = TRUE),
              uiOutput(ns('country_ui')),
              sliderInput(ns('date_range'),
                          'Date range',
@@ -399,10 +399,10 @@ mod_dat_ind_server <- function(input, output, session){
                         hefpi::theme_gdocs() +
           theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(1)),
                 axis.text.y = element_text(size = rel(1))) +
-          theme(legend.position = "top") +
-          theme(legend.direction = "horizontal", legend.text=element_text(size=10)) 
+          theme(legend.position = "none") 
+           
         
-                        # theme(axis.text.x = element_text(angle =45, hjust = 1))
+                       
         dat_list[[1]] <- p
         dat_list[[2]] <- df
         dat_list[[3]] <- list(plot_title, col_vec, mytext)
