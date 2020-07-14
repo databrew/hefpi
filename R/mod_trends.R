@@ -1196,11 +1196,12 @@ mod_trends_quin_server <- function(input, output, session){
           sep="") %>%
           lapply(htmltools::HTML)
         
-        p <- ggplot(data = df, aes(as.character(year), value, color = variable)) +
+        p <- ggplot(data = df, aes(year, value, color = variable)) +
           geom_point() +
           geom_line(aes(group = as.character(variable))) +
           scale_color_manual(name = '',
                              values = col_vec) +
+          scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 2 ))  +
           scale_y_continuous(limits = c(value_range[1], value_range[2])) +
           labs(x='Year',
                y = y_axis_text,
