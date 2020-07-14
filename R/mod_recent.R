@@ -443,7 +443,7 @@ mod_recent_con_server <- function(input, output, session){
     map_text <- paste(
       "Indicator: ",  indicator,"<br>",
       "Economy: ", as.character(shp@data$NAME),"<br/>", 
-      'Value: ', paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'), "<br/>",
+      'Value: ', paste0(round(shp@data$value, digits = 2), "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
@@ -477,7 +477,7 @@ mod_recent_con_server <- function(input, output, session){
           direction = "auto"
         )
       ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
-      addLegend( pal=map_palette, title = unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+      addLegend( pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
     con_map_list[[1]] <- map_palette
     con_map_list[[2]] <- map_text
     con_map_list[[3]] <- con_map
@@ -582,7 +582,7 @@ mod_recent_con_server <- function(input, output, session){
       plot_text <- paste(
         "Indicator: ", indicator,"<br>",
         "Economy: ", as.character(temp$NAME),"<br>", 
-        'Value: ', paste0(round(temp$value, digits = 2), ' (',unit_of_measure,')'),  "<br>",
+        'Value: ', paste0(round(temp$value, digits = 2)),  "<br>",
         "Year: ", as.character(temp$year),"<br>",
         "Data source :", as.character(temp$data_source), "<br>",
         sep="") %>%
@@ -594,7 +594,7 @@ mod_recent_con_server <- function(input, output, session){
       
       
       # create title and y axis label
-      y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
+      y_axis_text = paste0(indicator)
       plot_title = 'Most recent value - concentration index'
       
       plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
