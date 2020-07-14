@@ -26,8 +26,8 @@ mod_dots_country_ui <- function(id){
       column(4,
              pickerInput(inputId = ns("indicator"),
                          label = 'Indicator', 
-                         choices = sort(unique(indicators$indicator_short_name)),
-                         selected = sort(unique(indicators$indicator_short_name))[1],
+                         choices = indicators_list,
+                         selected = "4+ antenatal care visits",
                          options = list(`style` = "btn-primary")),
              pickerInput(inputId = ns("region"),
                          label = 'Region', 
@@ -353,8 +353,8 @@ mod_dots_ind_ui <- function(id){
              tags$style("#indicator {font-size:10px;height:10px;}"),
              pickerInput(inputId = ns("indicator"),
                          label = 'Indicator', 
-                         choices = sort(unique(indicators$indicator_short_name)),
-                         selected = sort(unique(indicators$indicator_short_name)),
+                         choices = indicators_list,
+                         selected = "4+ antenatal care visits",
                          options = list( `actions-box`=TRUE,
                                          `selected-text-format` = "count > 2",
                                          `count-selected-text` = "{0}/{1} indicators",
@@ -506,10 +506,10 @@ mod_dots_ind_server <- function(input, output, session){
         group_by(indicator_short_name) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) %>%
-        select(year, country, referenceid_list,indicator_short_name, Q1:Q5) 
+        select(year, country, referenceid_list,indicator_short_name,unit_of_measure, Q1:Q5) 
       
       # made data long form
-      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name'))
+      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name','unit_of_measure'))
       # recode Quintiels
       df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
@@ -528,12 +528,14 @@ mod_dots_ind_server <- function(input, output, session){
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
       y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
       
+      # make percent 
+      df$value[df$unit_of_measure == '%'] <-    (df$value[df$unit_of_measure == '%'])*100
       
       # order indicator alphabetically
       df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
       
       mytext <- paste(
-        "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
+        "Value: ", paste0(round(df$value, digits = 2), ' (', df$unit_of_measure, ')'), "\n",
         "Year: ", as.character(df$year),"\n",
         "Country: ", as.character(df$country),"\n",
         "Data source: ", as.character(df$referenceid_list),
