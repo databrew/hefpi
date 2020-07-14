@@ -447,11 +447,13 @@ mod_recent_con_server <- function(input, output, session){
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
-      lapply(htmltools::HTML)
+      lapply(htmltools::HTML))
     
     
     # get map
-    carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
+    carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
+    
+    
     con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
       addProviderTiles('OpenStreetMap.DE', options=providerTileOptions(noWrap = TRUE)) %>%
       addTiles(carto,options=providerTileOptions(noWrap = TRUE)) %>%
