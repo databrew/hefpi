@@ -219,35 +219,37 @@ mod_trends_mean_server <- function(input, output, session){
           if(yn){
             
             # condition if we connect the dots
-            p <- ggplot(data = pd, aes(as.character(year), pop, color= country, text=mytext)) +
+            p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
                             geom_point() + 
                             geom_line(aes(group = country)) +
                             scale_color_manual(name = '',
                                                values = trend_palette) +
                             scale_y_continuous(limits = c(value_range[1], value_range[2]))+
+              scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
                             labs(x='Year',
                                  y = y_axis_text,
                                  title = plot_title) +
                             hefpi::theme_gdocs() +
                             theme(panel.grid.major.x = element_blank(),
-                                  axis.text.x = element_text(angle = 45, hjust = 1)) 
+                                  axis.text.x = element_text(angle = 90, hjust = 1)) 
      
               
   
             
           } else {
             # condition if we connect the dots
-            p <- ggplot(data = pd, aes(as.character(year), pop, color= country, text=mytext)) +
+            p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
                             geom_point() +
                             scale_color_manual(name = '',
                                                values = trend_palette) +
                             scale_y_continuous(labels = function(x) paste0(x, "%"))+
+              scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
                             labs(x='Year',
                                  y = y_axis_text,
                                  title = plot_title) +
                             hefpi::theme_gdocs() +
                             theme(panel.grid.major.x = element_blank(),
-                                  axis.text.x = element_text(angle = 45, hjust = 1))
+                                  axis.text.x = element_text(angle = 90, hjust = 1))
             
             
           }
@@ -575,33 +577,35 @@ mod_trends_mean_sub_server <- function(input, output, session){
         if(yn){
           
           # condition if we connect the dots
-          p <-  ggplot(data = pd, aes(as.character(year), value, color= ADM1_NAME, text=mytext)) +
+          p <-  ggplot(data = pd, aes(year, value, color= ADM1_NAME, text=mytext)) +
                           geom_point() + 
                           geom_line(aes(group = ADM1_NAME)) +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
                           scale_y_continuous(limits = c(value_range[1], value_range[2]))+
+            scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
                           labs(x='Year',
                                y = y_axis_text,
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 45, hjust = 1))
+                                axis.text.x = element_text(angle = 90, hjust = 1))
           
         } else {
           # condition if we connect the dots
-          p <- ggplot(data = pd, aes(as.character(year), value, color= ADM1_NAME, text=mytext)) +
+          p <- ggplot(data = pd, aes(year, value, color= ADM1_NAME, text=mytext)) +
                           geom_point() + 
                           # geom_line(aes(group = ADM1_NAME)) +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
                           scale_y_continuous(labels = function(x) paste0(x, unit_of_measure), limits = c(value_range[1], value_range[2]))+
+            scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
                           labs(x='Year',
                                y = y_axis_text,
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 45, hjust = 1))
+                                axis.text.x = element_text(angle = 90, hjust = 1))
         }
         
         
@@ -887,30 +891,32 @@ mod_trends_con_server <- function(input, output, session){
         if(yn){
           
           # condition if we connect the dots
-          p <- ggplot(data = pd, aes(as.character(year), CI, color= country, text=mytext)) +
+          p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
                           geom_point() + 
                           geom_line(aes(group = country)) +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
+            scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
                           labs(x='Year',
                                y = y_axis_text,
                                title = plot_title) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 45, hjust = 1))
+                                axis.text.x = element_text(angle = 90, hjust = 1))
 
         } else {
           # condition if we connect the dots
-          p <- ggplot(data = pd, aes(as.character(year), CI, color= country, text=mytext)) +
+          p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
                           geom_point() +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
                           labs(x='Year',
                                y = y_axis_text,
                                title = plot_title) +
+            scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1))+
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 45, hjust = 1))
+                                axis.text.x = element_text(angle = 90, hjust = 1))
         }
         
         
@@ -1201,13 +1207,13 @@ mod_trends_quin_server <- function(input, output, session){
           geom_line(aes(group = as.character(variable))) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 2 ))  +
+          scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1))  +
           scale_y_continuous(limits = c(value_range[1], value_range[2])) +
           labs(x='Year',
                y = y_axis_text,
                title = plot_title) +
           hefpi::theme_gdocs() +
-          theme(axis.text.x = element_text(angle = 45, hjust = 1))
+          theme(axis.text.x = element_text(angle = 90, hjust = 1))
         
         
         quin_list[[1]] <- p
