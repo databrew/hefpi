@@ -378,10 +378,10 @@ mod_dat_ind_server <- function(input, output, session){
         # col_vec[no_data_index] <- 'transparent'
         
         # make plot title 
-        plot_title = paste0('Missing data profile', ' - ', region)
+        plot_title = paste0('Missing data profile', ' - ', region,' - ', indicator)
         
         mytext <- paste(
-          "Indicator: ", as.character(as.character(temp_data$indicator_short_name)), "\n",
+          "Indicator: ", as.character(temp_data$indicator_short_name), "\n",
           "Economy: ", as.character(temp_data$country), "\n",
           "Year: ", as.character(temp_data$year),"\n",
           "Data source: ", as.character(temp_data$referenceid_list),
@@ -447,9 +447,7 @@ mod_dat_ind_server <- function(input, output, session){
                                         p <- dat_list[[1]]
                                       
                                         p =  p + theme(axis.text = element_text(size = rel(3/4))) +
-                                          theme(legend.position = "top") +
-                                          theme(legend.direction = "horizontal", 
-                                                legend.text=element_text(size=7)) 
+                                          
                                         p
                                         ggsave(file, width = 8, height = 8)
                                         
@@ -465,7 +463,7 @@ mod_dat_ind_server <- function(input, output, session){
     } else {
       p <- dat_list[[1]]
       fig <- ggplotly(p, tooltip = 'text') %>% config(displayModeBar = F)
-      p
+      fig
       
     }
     
