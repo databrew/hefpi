@@ -24,6 +24,7 @@ mod_recent_mean_sub_ui <- function(id){
   fluidPage(
     fluidRow(
       column(8,
+             uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_mean_sub_leaf')),
              ),
@@ -159,6 +160,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
       map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="white")
     }
     
+    year_title = paste0(plot_years[1], ' - ', plot_years[2])
+    
     
     # Make tooltip
     map_text <- paste(
@@ -172,8 +175,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
     # create map
     carto= "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
     pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
-      addProviderTiles('OpenStreetMap.DE', options=providerTileOptions(noWrap = TRUE)) %>%
-      addTiles(carto, options=providerTileOptions(noWrap = TRUE)) %>%
+      addProviderTiles('OpenStreetMap.DE') %>%
+      addTiles(carto) %>%
       addPolygons( 
         color = 'black',
         fillColor = ~map_palette(value), 
@@ -205,6 +208,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     pop_map_list[[4]] <- shp
     pop_map_list[[5]] <- good_or_bad
     pop_map_list[[6]] <- unit_of_measure
+    pop_map_list[[7]] <- year_title
     
     return(pop_map_list)
   })
@@ -222,6 +226,26 @@ mod_recent_mean_sub_server <- function(input, output, session){
     }
     
   })
+  
+  # ---- RENDER MAP TITLE ---- #
+  output$map_title_ui <- renderUI({
+    pop_map <- get_pop_map()
+    if(is.null(pop_map)){
+      NULL
+    } else {
+      
+      indicator_name = input$indicator
+      year_title <- pop_map[[7]]
+      
+      
+      HTML(paste(h4(paste0('Most recent value - Population mean - ', indicator_name)), '\n',
+                 h4(year_title)))
+      
+      
+    }
+  })
+  
+  
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(

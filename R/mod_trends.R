@@ -190,8 +190,8 @@ mod_trends_mean_server <- function(input, output, session){
         } else {
           
           # get title and subtitle
-          plot_title <- paste0('Trends - Population mean')
-          y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
+          plot_title <- paste0('Trends - Population mean - ', indicator)
+          y_axis_text <- paste0(' (', unit_of_measure, ')')
           
           # condition on unit of measure
           if(unit_of_measure == '%'){
@@ -546,8 +546,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
       } else {
         
         # get title and subtitle
-        plot_title <- paste0('Trends - Population mean (sub national)')
-        y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
+        plot_title <- paste0('Trends - Population mean - ', indicator)
+        y_axis_text <- paste0(' (', unit_of_measure, ')')
         
         # condition on unit of measure
         if(unit_of_measure == '%'){
@@ -866,8 +866,8 @@ mod_trends_con_server <- function(input, output, session){
       } else {
         
         # get title and subtitle
-        plot_title <- paste0('Trends - Concentration index')
-        y_axis_text <- paste0(indicator)
+        plot_title <- paste0('Trends - Concentration index - ', indicator)
+        y_axis_text <- 'Value'
         
       
         # text for plot
@@ -1182,8 +1182,8 @@ mod_trends_quin_server <- function(input, output, session){
         col_vec <- col_vec[-1]
         
         # make plot title
-        plot_title = paste0('Quintile Trends - ', country_names)
-        y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+        plot_title = paste0('Quintile Trends - ',indicator)
+        y_axis_text = paste0(' (', unit_of_measure, ')')
         # subset by y axis
         
         # text for plot

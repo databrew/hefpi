@@ -22,6 +22,7 @@ mod_recent_mean_ui <- function(id){
   fluidPage(
     fluidRow(
       column(8,
+             uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_mean_leaf')),
              ),
@@ -122,11 +123,8 @@ mod_recent_mean_server <- function(input, output, session){
     
     # condition on unit of measure
     if(unit_of_measure == '%'){
-      ind_value <- shp@data$value*100
-    } else {
-      ind_value <- shp@data$value
-    }
-    
+      shp@data$value <- shp@data$value*100
+    } 
     if(good_or_bad == 'Good'){
       # Make color palette
       map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
@@ -139,11 +137,14 @@ mod_recent_mean_server <- function(input, output, session){
     map_text <- paste(
       "Indicator: ",  indicator,"<br>",
       "Economy: ", as.character(shp@data$NAME),"<br/>", 
-      'Value: ', paste0(round(ind_value, digits = 2), ' (',unit_of_measure,')'),  "<br/>",
+      'Value: ', paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'),  "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
       lapply(htmltools::HTML)
+    
+    
+    year_title = paste0(plot_years[1], ' - ', plot_years[2])
     
     # create map
     carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
@@ -151,9 +152,8 @@ mod_recent_mean_server <- function(input, output, session){
     pop_map <- leaflet(shp, 
                        options = leafletOptions(minZoom = 1, 
                                                 maxZoom = 10)) %>% 
-      addProviderTiles('OpenStreetMap.DE', 
-                       options=providerTileOptions(noWrap = TRUE)) %>%
-      addTiles(carto,options=providerTileOptions(noWrap = TRUE)) %>%
+      addProviderTiles('OpenStreetMap.DE') %>%
+      addTiles(carto) %>%
       addPolygons( 
         color = 'black',
         fillColor = ~map_palette(value), 
@@ -184,7 +184,26 @@ mod_recent_mean_server <- function(input, output, session){
     pop_map_list[[4]] <- shp
     pop_map_list[[5]] <- good_or_bad
     pop_map_list[[6]] <- unit_of_measure
+    pop_map_list[[7]] <- year_title
     return(pop_map_list)
+  })
+  
+  # ---- RENDER MAP TITLE ---- #
+  output$map_title_ui <- renderUI({
+    pop_map <- get_pop_map()
+    if(is.null(pop_map)){
+      NULL
+    } else {
+      
+      indicator_name = input$indicator
+      year_title <- pop_map[[7]]
+      
+    
+        HTML(paste(h4(paste0('Most recent value - Population mean - ', indicator_name)), '\n',
+             h4(year_title)))
+    
+      
+    }
   })
   
   # ---- RENDER MAP FROM REACTIVE LIST ---- #
@@ -274,12 +293,7 @@ mod_recent_mean_server <- function(input, output, session){
       } 
       p <- empty_plot("No data available for the selected inputs")
     } else {
-      # condition on unit of measure
-      if(unit_of_measure == '%'){
-        ind_value <- temp$value*100
-      } else {
-        ind_value <- temp$value
-      }
+      
       # get palette
       if(good_or_bad == 'Good'){
         bar_palette = 'Greens'
@@ -293,7 +307,7 @@ mod_recent_mean_server <- function(input, output, session){
       plot_text <- paste(
         "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
         "Economy: ", as.character(temp$NAME),"<br>", 
-        'Value: ', round(ind_value, digits = 2),' (',unit_of_measure,')',"<br>",
+        'Value: ', round(temp$value, digits = 2),' (',unit_of_measure,')',"<br>",
         "Year: ", as.character(temp$year),"<br>",
         "Data source :", as.character(temp$data_source), "<br>",
         sep="") %>%
@@ -345,6 +359,7 @@ mod_recent_con_ui <- function(id){
   fluidPage(
     fluidRow(
       column(8,
+             uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_con_leaf'), height = '650px'),
              ),
@@ -439,15 +454,20 @@ mod_recent_con_server <- function(input, output, session){
     # Make color palette
     map_palette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="white")
     
+    
+    
     # Make tooltip
     map_text <- paste(
       "Indicator: ",  indicator,"<br>",
       "Economy: ", as.character(shp@data$NAME),"<br/>", 
-      'Value: ', paste0(round(shp@data$value, digits = 2), "<br/>",
+      'Value: ', paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'),  "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
-      lapply(htmltools::HTML))
+      lapply(htmltools::HTML)
+    
+    year_title = paste0(plot_years[1], ' - ', plot_years[2])
+    
     
     
     # get map
@@ -455,8 +475,8 @@ mod_recent_con_server <- function(input, output, session){
     
     
     con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
-      addProviderTiles('OpenStreetMap.DE', options=providerTileOptions(noWrap = TRUE)) %>%
-      addTiles(carto,options=providerTileOptions(noWrap = TRUE)) %>%
+      addProviderTiles('OpenStreetMap.DE') %>%
+      addTiles(carto) %>%
       setView( lat=10, lng=0 , zoom=1.5) %>%
       addPolygons( 
         color = 'black',
@@ -485,6 +505,7 @@ mod_recent_con_server <- function(input, output, session){
     con_map_list[[3]] <- con_map
     con_map_list[[4]] <- shp
     con_map_list[[5]] <- unit_of_measure
+    con_map_list[[6]] <- year_title
     return(con_map_list)
     
   })
@@ -502,6 +523,24 @@ mod_recent_con_server <- function(input, output, session){
       this_map
     }
     
+  })
+  
+  # ---- RENDER MAP TITLE ---- #
+  output$map_title_ui <- renderUI({
+    con_map <- get_con_map()
+    if(is.null(con_map)){
+      NULL
+    } else {
+      
+      indicator_name = input$indicator
+      year_title <- con_map[[6]]
+      
+      
+      HTML(paste(h4(paste0('Most recent value - Concentration index - ', indicator_name)), '\n',
+                 h4(year_title)))
+      
+      
+    }
   })
   
   output$dl_data <- downloadHandler(

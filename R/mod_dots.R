@@ -354,7 +354,7 @@ mod_dots_ind_ui <- function(id){
              pickerInput(inputId = ns("indicator"),
                          label = 'Indicator', 
                          choices = indicators_list,
-                         selected = "4+ antenatal care visits",
+                         selected = indicators$indicator_short_name,
                          options = list( `actions-box`=TRUE,
                                          `selected-text-format` = "count > 2",
                                          `count-selected-text` = "{0}/{1} indicators",
