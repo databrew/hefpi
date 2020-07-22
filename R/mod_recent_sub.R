@@ -29,11 +29,10 @@ mod_recent_mean_sub_ui <- function(id){
                ns('recent_mean_sub_leaf')),
              ),
       column(4,
-             # pickerInput(ns('region'), 'Region',
-             #             choices = as.character(region_list$region),
-             #             selected = as.character(region_list$region),
-             #             options = list(`style` = "btn-primary"),
-             #             multiple = TRUE),
+             pickerInput(ns('region'), 'Region',
+                         choices = as.character(region_list$region),
+                         selected = as.character(region_list$region)[[1]],
+                         options = list(`style` = "btn-primary")),
              pickerInput(ns('indicator'), 'Indicator',
                          choices = sort(unique(sub_national$indicator_short_name)),
                          selected = sort(unique(sub_national$indicator_short_name))[1],
@@ -103,11 +102,11 @@ mod_recent_mean_sub_server <- function(input, output, session){
     # get input 
     plot_years <- input$date_range
     indicator <- input$indicator
-    # region  <- input$region
+    region  <- input$region
     
     # get region code
-    # region_list <- hefpi::region_list
-    # region_code <- as.character(region_list$region_code[region_list$region %in% region])
+    region_list <- hefpi::region_list
+    region_code <- as.character(region_list$region_code[region_list$region %in% region])
     # 
     # Get the variable from indicator input
     ind_info <- indicators %>%
@@ -118,8 +117,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
     unit_of_measure = ind_info$unit_of_measure
     
     # Get the data to be plotted
-    # temp <- hefpi::sub_national[sub_national$region_code == region_code,]
-    pd <- sub_national %>% filter(year >= min(plot_years),
+    temp <- hefpi::sub_national[sub_national$region_code == region_code,]
+    pd <- temp %>% filter(year >= min(plot_years),
                           year <= max(plot_years)) %>%
       filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
@@ -198,8 +197,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
           direction = "auto"
         )
       ) %>% 
-      setView(lat=0, lng=0 , zoom=1.7) %>%
-      # setView(lat=centroid$y, lng=centroid$x , zoom=4) %>%
+      # setView(lat=0, lng=0 , zoom=1.7) %>%
+      setView(lat=centroid$y, lng=centroid$x , zoom=3) %>%
       addLegend(pal=map_palette, title= unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
     # store palette, text, map object, and data
     pop_map_list[[1]] <- map_palette

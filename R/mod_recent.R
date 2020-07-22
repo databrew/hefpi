@@ -112,8 +112,13 @@ mod_recent_mean_server <- function(input, output, session){
       filter(year == max(year, na.rm = TRUE)) %>%
       filter(referenceid_list == first(referenceid_list)) %>%
       summarise(value = first(pop),
+                indic = indic,
                 year = year,
-                data_source = referenceid_list) 
+                data_source = referenceid_list) %>%
+      inner_join(indicators, by = c('indic'='variable_name'))
+    
+    # get indicator short name joined to data
+    
     
     # get world map shape files
     shp <- world
@@ -127,10 +132,10 @@ mod_recent_mean_server <- function(input, output, session){
     } 
     if(good_or_bad == 'Good'){
       # Make color palette
-      map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
+      map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="#CECECE")
     } else {
       # Make color palette
-      map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="white")
+      map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE")
     }
   
     # Make tooltip
@@ -361,7 +366,7 @@ mod_recent_con_ui <- function(id){
       column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
-               ns('recent_con_leaf'), height = '650px'),
+               ns('recent_con_leaf')),
              ),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
@@ -442,17 +447,19 @@ mod_recent_con_server <- function(input, output, session){
       filter(indic == variable_name) %>%
       group_by(ISO3 = iso3c) %>%
       filter(year == max(year, na.rm = TRUE)) %>%
-      filter(referenceid_list == first(referenceid_list)) %>%
-      summarise(value = first(CI),
+      filter(referenceid_list == first(referenceid_list))%>%
+      summarise(value = first(pop),
+                indic = indic,
                 year = year,
-                data_source = referenceid_list) 
+                data_source = referenceid_list) %>%
+      inner_join(indicators, by = c('indic'='variable_name'))
     
     shp <- world
     # save(shp, file = 'shp.rda')
     shp@data <- shp@data %>% left_join(pd)
     
     # Make color palette
-    map_palette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="white")
+    map_palette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="#CECECE")
     
     
     
@@ -460,7 +467,7 @@ mod_recent_con_server <- function(input, output, session){
     map_text <- paste(
       "Indicator: ",  indicator,"<br>",
       "Economy: ", as.character(shp@data$NAME),"<br/>", 
-      'Value: ', paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'),  "<br/>",
+      'Value: ', paste0(round(shp@data$value, digits = 2)),  "<br/>",
       "Year: ", as.character(shp@data$year),"<br/>",
       "Data source :", as.character(shp@data$data_source), "<br/>",
       sep="") %>%
@@ -470,14 +477,13 @@ mod_recent_con_server <- function(input, output, session){
     
     
     
+    
     # get map
     carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-    
     
     con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
       addProviderTiles('OpenStreetMap.DE') %>%
       addTiles(carto) %>%
-      setView( lat=10, lng=0 , zoom=1.5) %>%
       addPolygons( 
         color = 'black',
         fillColor = ~map_palette(value), 
@@ -499,7 +505,7 @@ mod_recent_con_server <- function(input, output, session){
           direction = "auto"
         )
       ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
-      addLegend( pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+      addLegend( pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
     con_map_list[[1]] <- map_palette
     con_map_list[[2]] <- map_text
     con_map_list[[3]] <- con_map

@@ -151,7 +151,7 @@ mod_dots_country_server <- function(input, output, session){
     # last_date <- '2018'
     indicator <- "Inpatient care use, adults"
     region <- "Latin America & Caribbean"
-    temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
+    temp <- hefpi::df_series %>% filter(region == '')
     country_names <- unique(temp$country_name)
     value_range = c(0,28)
     date_range = c(1982,2018)
@@ -161,7 +161,7 @@ mod_dots_country_server <- function(input, output, session){
     country_names <- input$country
     value_range <- input$value_range
     date_range <- input$date_range
-    if(is.null(country_names) | is.null(value_range)){
+    if(is.null(value_range)){
       NULL
     } else {
       dot_list <- list()
@@ -178,18 +178,20 @@ mod_dots_country_server <- function(input, output, session){
         filter(country %in% country_names) %>%
         filter(indic == variable_name) %>%
         filter(year >= date_range[1],
-               year <= date_range[2]) %>%
-        left_join(indicators, by = c('indic' = 'variable_name'))
+               year <= date_range[2]) 
       
       # get year and keep only necessary columns
       df <- df %>%
         group_by(country) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) %>%
-        select(year, country, referenceid_list, Q1:Q5)
+        select(year, country, referenceid_list, indic, Q1:Q5) %>%
+        left_join(indicators, by = c('indic' = 'variable_name'))
       
       # made data long form
-      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list'))
+      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indic', 'level_1', 
+                                 'level_2', 'good_or_bad', 'indicator_short_name',
+                                 'indicator_name','indicator_description', 'unit_of_measure'))
       # recode Quintiels
       df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
@@ -228,11 +230,7 @@ mod_dots_country_server <- function(input, output, session){
         lapply(htmltools::HTML)
       
       
-      
-      # if the dataframe is null of empty make plot null
-      if(is.null(df) | nrow(df) == 0){
-        NULL
-      } else {
+
         
         # number of countries
         plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
@@ -258,7 +256,7 @@ mod_dots_country_server <- function(input, output, session){
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
         return(dot_list)
-      }
+      
       
       
       
@@ -310,25 +308,43 @@ mod_dots_country_server <- function(input, output, session){
     if(is.null(dot_list)){
       NULL
     } else {
-      p <- dot_list[[1]]
-      # df <- dot_list[[2]]
-      # plot_title <- dot_list[[3]][[1]]
-      # sub_title <- dot_list[[3]][[2]]
-      # col_vec <- dot_list[[3]][[3]]
-      # mytext <- dot_list[[3]][[4]]
-      plot_height <- dot_list[[3]][[5]]
-      fig <- ggplotly(p, 
-                      tooltip = 'text', 
-                      height = plot_height) %>%
-        config(displayModeBar = F)
-      fig
+      df <- dot_list[[2]]
+      if(nrow(df)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
+      } else {
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- dot_list[[1]]
+        plot_height <- dot_list[[3]][[5]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text', 
+                        height = plot_height) %>%
+          config(displayModeBar = F)
+        fig
+      }
+      
     }
-   
-   
-   
-   
-   
+    
   })
+  
 }
 
 
@@ -426,7 +442,7 @@ mod_dots_ind_server <- function(input, output, session){
       .$variable_name
     
     # subset by country and variable
-    df <- hefpi::df %>%
+    temp <- hefpi::df %>%
       filter(country == country_names) %>%
       filter(indic %in% variable) %>%
       filter(year >= date_range[1],
@@ -434,14 +450,14 @@ mod_dots_ind_server <- function(input, output, session){
       left_join(indicators, by = c('indic' = 'variable_name'))
     
     # get year and keep only necessary columns
-    df <- df %>%
+    df <- temp %>%
       group_by(indicator_short_name) %>%
       arrange(desc(year)) %>%
       dplyr::filter(year == dplyr::first(year)) %>%
-      select(year, country, referenceid_list,indicator_short_name, Q1:Q5) 
+      select(year, country, referenceid_list,indicator_short_name,indicator_description, Q1:Q5) 
     
     # made data long form
-    df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name'))
+    df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name', 'indicator_description'))
     # recode Quintiels
     df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                           ifelse(df$variable == 'Q2', 'Q2: Poor',
@@ -494,7 +510,7 @@ mod_dots_ind_server <- function(input, output, session){
      
       
       # subset by country and variable
-      df <- hefpi::df %>%
+      temp <- hefpi::df %>%
         filter(country == country_names) %>%
         filter(indic %in% variable_name) %>%
         filter(year >= date_range[1],
@@ -502,14 +518,14 @@ mod_dots_ind_server <- function(input, output, session){
         left_join(indicators, by = c('indic' = 'variable_name'))
       
       # get year and keep only necessary columns
-      df <- df %>%
+      df <- temp %>%
         group_by(indicator_short_name) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) %>%
-        select(year, country, referenceid_list,indicator_short_name,unit_of_measure, Q1:Q5) 
+        select(year, country, referenceid_list,indicator_short_name, indicator_description, unit_of_measure, Q1:Q5) 
       
       # made data long form
-      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name','unit_of_measure'))
+      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name','indicator_description','unit_of_measure'))
       # recode Quintiels
       df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
@@ -543,9 +559,8 @@ mod_dots_ind_server <- function(input, output, session){
         lapply(htmltools::HTML)
       
       # if the dataframe is null of empty make plot null
-      if(is.null(df) | nrow(df) == 0){
-        NULL
-      } else {
+     
+      
         # number of countries
         plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
         if(plot_height < 250){
@@ -570,8 +585,9 @@ mod_dots_ind_server <- function(input, output, session){
         dot_list[[1]] <- p
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
+        # save(dot_list, file = 'dot_list.rda')
         return(dot_list)
-      }
+      
       
     }
   })
@@ -620,19 +636,41 @@ mod_dots_ind_server <- function(input, output, session){
     if(is.null(dot_list)){
       NULL
     } else {
-      p <- dot_list[[1]]
-      # df <- dot_list[[2]]
-      # plot_title <- dot_list[[3]][[1]]
-      # sub_title <- dot_list[[3]][[2]]
-      # col_vec <- dot_list[[3]][[3]]
-      # mytext <- dot_list[[3]][[4]]
-      plot_height <- dot_list[[3]][[5]]
-      fig <- ggplotly(p, 
-                      tooltip = 'text', 
-                      height = plot_height) %>%
-        config(displayModeBar = F)
+      df <- dot_list[[2]]
+      if(nrow(df)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
+      } else {
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- dot_list[[1]]
+        plot_height <- dot_list[[3]][[5]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text', 
+                        height = plot_height) %>%
+          config(displayModeBar = F)
+        fig
+      }
+      
     }
-   
+    
   })
 }
 

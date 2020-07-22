@@ -23,7 +23,7 @@ mod_dat_country_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('dat_country'), height = '800px', width = '1000px', 
+               ns('dat_country'), height = '800px', width = '1050px', 
              )),
       column(4,
              pickerInput(ns('country'), 'Country',
@@ -113,11 +113,13 @@ mod_dat_country_server <- function(input, output, session){
            y = '',
            title = plot_title) +
       hefpi::theme_gdocs() +
-      coord_flip() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(2/4)),
-            axis.text.y = element_text(size = rel(1)),
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, size = rel(2/3)),
+            axis.text.y = element_text(size = rel(1/2)),
             panel.background = element_rect(color = NA),
-            panel.grid.major = element_blank())
+            panel.grid.major = element_blank()) +
+      theme(legend.position = "top") +
+      theme(legend.direction = "horizontal", 
+            legend.text=element_text(size=7)) 
       
       
     
@@ -218,14 +220,7 @@ mod_dat_ind_ui <- function(id){
                                          `selected-text-format` = "count > 2",
                                          `count-selected-text` = "{0}/{1} Regions"),
                          multiple = TRUE),
-             uiOutput(ns('country_ui')),
-             sliderInput(ns('date_range'),
-                         'Date range',
-                         min = 1982,
-                         max = 2017,
-                         value = c(1982, 2018),
-                         step = 1,
-                         sep = ''),
+             uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(),br(),
@@ -255,7 +250,7 @@ mod_dat_ind_server <- function(input, output, session){
   
   
   
-  output$country_ui <- renderUI({
+  output$ui_outputs <- renderUI({
     # Observe changes to inputs in order to generate changes to the map
     observeEvent(input$plot_info, {
       # Show a modal when the button is pressed
@@ -287,16 +282,27 @@ mod_dat_ind_server <- function(input, output, session){
     #   .$country
     country_names <- sort(unique(df$country))
 
-
-    pickerInput(inputId = session$ns("country"), 
-                label = 'Countries', 
-                choices = country_names, 
-                selected = country_names[1:4],
-                options = list( `actions-box`=TRUE,
-                                `style` = "btn-primary",
-                                `selected-text-format` = "count > 2",
-                                `count-selected-text` = "{0}/{1} Countries"),
-                multiple = TRUE)
+    fluidPage(
+      fluidRow(
+        pickerInput(inputId = session$ns("country"), 
+                    label = 'Countries', 
+                    choices = country_names, 
+                    selected = country_names[1:4],
+                    options = list( `actions-box`=TRUE,
+                                    `style` = "btn-primary",
+                                    `selected-text-format` = "count > 2",
+                                    `count-selected-text` = "{0}/{1} Countries"),
+                    multiple = TRUE),
+        sliderInput(inputId = session$ns('date_range'),
+                    label = 'Date range',
+                    min = 1982,
+                    max = 2017,
+                    value = c(1982, 2018),
+                    step = 1,
+                    sep = '')
+        
+      )
+    )
     
   })
   
@@ -304,14 +310,14 @@ mod_dat_ind_server <- function(input, output, session){
     region <- 'Europe & Central Asia'
     indicator <- 'Catastrophic health spending, 10%'
     # country_names <- top_countries[1:3]
-    date_range <- c(2012, 2017)
+    date_range <- c(1982, 2017)
     # country_name = c('Argentina', 'Brazil', 'Chile', 'Ecuador')
     # country_name <- input$country
     indicator <- input$indicator
     region <- input$region
     country_names <- input$country
     date_range <- input$date_range
-    if(is.null(country_names)){
+    if(is.null(date_range)){
       NULL
     } else {
       dat_list <- list()
@@ -332,7 +338,7 @@ mod_dat_ind_server <- function(input, output, session){
       df<- df %>%
         filter(indic == variable) %>%
         filter(regioncode %in% region_code) %>%
-        filter(country %in% country) %>%
+        filter(country %in% country_names) %>%
         select(year,country, indic, regioncode, referenceid_list, level_2, indicator_short_name) 
       
       names(df)[names(df) == 'regioncode'] <- 'region'
@@ -363,16 +369,7 @@ mod_dat_ind_server <- function(input, output, session){
       # get color vector (first 3 different shades of blue, 4th green, 5th orange, NA white)
       col_vec =  c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'transparent')
       
-      # temp_data$country <- ifelse(is.na(temp_data$country), 'No data', temp_data$country)
-      # temp_data$indic <- ifelse(is.na(temp_data$indic), 'No data', indicator)
       
-      # # find no data index
-      # all_indic <- as.character(sort(unique(temp_data$indic)))
-      # no_data_index <- which(all_indic == 'No data')
-      # 
-      if(is.null(temp_data) | nrow(temp_data) == 0){
-        NULL
-      } else {
         # get color graident
         # col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(temp_data$indic))))
         # col_vec[no_data_index] <- 'transparent'
@@ -397,8 +394,9 @@ mod_dat_ind_server <- function(input, output, session){
                              y = '',
                              title = plot_title) +
                         hefpi::theme_gdocs() +
-          theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(1)),
+          theme(axis.text.x = element_text(angle = 90, hjust = 1, size = rel(1)),
                 axis.text.y = element_text(size = rel(1))) +
+          coord_flip() +
           theme(legend.position = "none") 
            
         
@@ -407,10 +405,6 @@ mod_dat_ind_server <- function(input, output, session){
         dat_list[[2]] <- df
         dat_list[[3]] <- list(plot_title, col_vec, mytext)
         return(dat_list)
-        
-        
-      }
-      
     }
     
   })
@@ -461,12 +455,38 @@ mod_dat_ind_server <- function(input, output, session){
     if(is.null(dat_list)){
       NULL
     } else {
-      p <- dat_list[[1]]
-      fig <- ggplotly(p, tooltip = 'text') %>% config(displayModeBar = F)
-      fig
+      pd <- dat_list[[2]]
+      if(nrow(pd)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
+      } else {
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- dat_list[[1]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text') %>%
+          config(displayModeBar = F)
+        fig
+      }
       
     }
-    
   })
   
   
