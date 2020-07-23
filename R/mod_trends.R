@@ -77,19 +77,20 @@ mod_trends_mean_ui <- function(id){
 
 mod_trends_mean_server <- function(input, output, session){
  
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Trends - Population mean", 
+               text = "This chart allows tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
+  
     output$ui_outputs <- renderUI({
       
       
-      # Observe changes to inputs in order to generate changes to the map
-      observeEvent(input$plot_info, {
-        # Show a modal when the button is pressed
-        shinyalert(title = "Trends - Population mean", 
-                   text = "charts allow tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
-                   type = "info", 
-                   closeOnClickOutside = TRUE, 
-                   showCancelButton = FALSE, 
-                   showConfirmButton = FALSE)
-      })
       
       # get inputs
       indicator <- input$indicator
@@ -151,7 +152,7 @@ mod_trends_mean_server <- function(input, output, session){
       temp <- hefpi::df_series %>% filter(region %in% region)
       country_names <- unique(temp$country_name)
       date_range <- c(1982, 2017)
-      value_range <- c(0,81)
+      value_range <- c(0,1)
       # get inputs
       pop_list <- list()
       indicator <- input$indicator
@@ -164,7 +165,7 @@ mod_trends_mean_server <- function(input, output, session){
       indicators <- hefpi::indicators
       df <- hefpi::df
       
-      if(is.null(country_names) | is.null(value_range)){
+      if(is.null(value_range)){
         NULL
       } else {
         
@@ -184,11 +185,10 @@ mod_trends_mean_server <- function(input, output, session){
         pd <- pd %>% filter(year >= min(date_range),
                             year <= max(date_range)) 
         pd <- pd %>% filter(pop >= min(value_range),
-                            pop <= max(value_range))
-        if(nrow(pd) == 0){
-          NULL
-        } else {
-          
+                            pop <= max(value_range)) %>%
+          inner_join(indicators, by = c('indic'='variable_name'))
+        
+       
           # get title and subtitle
           plot_title <- paste0('Trends - Population mean - ', indicator)
           y_axis_text <- paste0(' (', unit_of_measure, ')')
@@ -261,7 +261,7 @@ mod_trends_mean_server <- function(input, output, session){
           
           
           return(pop_list)
-        }
+        
         }
         
     })
@@ -269,73 +269,109 @@ mod_trends_mean_server <- function(input, output, session){
     # ---- DOWNLOAD DATA FROM MAP ---- #
     output$dl_data <- downloadHandler(
       filename = function() {
-        paste("trends_population_mean_data", Sys.Date(), ".csv", sep="")
+        paste0("trends_mean_", Sys.Date(), ".csv")
       },
       content = function(file) {
         # get map
         pop_list <- get_pop_data()
-        pd <- pop_list[[2]]
         
         if(is.null(pop_list)){
           NULL
         } else {
-          
-          write.csv(pd, file)
+          pd <- pop_list[[2]]
+          if(nrow(pd)==0){
+            temp <- data_frame()
+          } else {
+            temp <- pd
+          }
+          write.csv(temp, file)
         }
       }
     )
     
     # ---- DOWNLOAD MAP IMAGE ---- #
-    output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_trends_population_mean", ".png"),
+    output$dl_plot <- downloadHandler(filename = paste0("trends_mean_",Sys.Date(), ".png"),
                                       content = function(file) {
                                         
                                         pop_list <- get_pop_data()
-                                        p <- pop_list[[1]]
-                                        plot_title = pop_list[[3]][[1]]
-                                        mytext = pop_list[[3]][[2]]
-                                        y_axis_text = pop_list[[3]][[3]]
-                                        unit_of_measure = pop_list[[3]][[4]]
-                                        trend_palette = pop_list[[3]][[5]]
-                                        
-                                        
-                                        
+                                      
                                         if(is.null(pop_list)){
                                           NULL
                                         } else {
-                                         p =  p + theme(axis.text = element_text(size = rel(18/12))) +
-                                            theme(legend.position = "top") +
-                                            theme(legend.direction = "horizontal", 
-                                                  legend.text=element_text(size=7)) 
-                                          p
-                                          ggsave(file, width = 8, height = 8)
+                                          pd <- pop_list[[2]]
+                                          if(nrow(pd)==0){
+                                            empty_plot <- function(title = NULL){
+                                              p <- plotly_empty(type = "scatter", mode = "markers") %>%
+                                                config(
+                                                  displayModeBar = FALSE
+                                                ) %>%
+                                                layout(
+                                                  title = list(
+                                                    text = title,
+                                                    yref = "paper",
+                                                    y = 0.5
+                                                  )
+                                                )
+                                              
+                                            } 
+                                            p <- empty_plot("No data available for the selected inputs")
+                                            
+                                            p
+                                            ggsave(file, width = 8, height = 8)
+                                          } else {
+                                            p <- pop_list[[1]]
+                                            p =  p + theme(axis.text = element_text(size = rel(18/12))) +
+                                              theme(legend.position = "top") +
+                                              theme(legend.direction = "horizontal", 
+                                                    legend.text=element_text(size=7)) 
+                                            p
+                                            ggsave(file, width = 8, height = 8)
+                                          }
+                                          
+                                         
                                         }
                                         
                                        
                                       })
     
+    
     output$trends_mean <- renderPlotly({
-      
       pop_list <- get_pop_data()
-      p <- pop_list[[1]]
-      pd <- pop_list[[2]]
-      plot_title = pop_list[[3]][[1]]
-      mytext = pop_list[[3]][[2]]
-      y_axis_text = pop_list[[3]][[3]]
-      unit_of_measure = pop_list[[3]][[4]]
-      trend_palette = pop_list[[3]][[5]]
-      
-     
-      
       if(is.null(pop_list)){
         NULL
       } else {
-        fig <- ggplotly(p, tooltip = 'text')
-        fig <- fig %>% config(displayModeBar = F)
-        fig
+        pd <- pop_list[[2]]
+        if(nrow(pd)==0){
+          empty_plot <- function(title = NULL){
+            p <- plotly_empty(type = "scatter", mode = "markers") %>%
+              config(
+                displayModeBar = FALSE
+              ) %>%
+              layout(
+                title = list(
+                  text = title,
+                  yref = "paper",
+                  y = 0.5
+                )
+              )
+            
+          } 
+          fig <- empty_plot("No data available for the selected inputs")
+          
+        } else {
+          # df <- dot_list[[2]]
+          # plot_title <- dot_list[[3]][[1]]
+          # sub_title <- dot_list[[3]][[2]]
+          # col_vec <- dot_list[[3]][[3]]
+          # mytext <- dot_list[[3]][[4]]
+          p <- pop_list[[1]]
+          fig <- ggplotly(p, 
+                          tooltip = 'text') %>%
+            config(displayModeBar = F)
+          fig
+        }
         
       }
-        
-      
       
     })
 }
@@ -373,21 +409,6 @@ mod_trends_mean_sub_ui <- function(id){
                                          `count-selected-text` = "{0}/{1} Country"),
                          multiple = TRUE),
              uiOutput(ns('ui_outputs')),
-             sliderInput(ns('value_range'),
-                         'Y axis range',
-                         min = 0,
-                         max = 1,
-                         value = c(0, 1),
-                         sep = ''),
-             sliderInput(ns('date_range'),
-                         'Date range',
-                         min = 1982,
-                         max = 2017,
-                         value = c(1982, 2017),
-                         step = 1,
-                         sep = ''),
-             checkboxInput(ns('interpolate'), 'Interpolate missing values',
-                           value = TRUE),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(),br(),
@@ -415,27 +436,29 @@ mod_trends_mean_sub_ui <- function(id){
 
 mod_trends_mean_sub_server <- function(input, output, session){
   
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Trends - Population mean", 
+               text = "This chart allows tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   output$ui_outputs <- renderUI({
     
     
-    # Observe changes to inputs in order to generate changes to the map
-    observeEvent(input$plot_info, {
-      # Show a modal when the button is pressed
-      shinyalert(title = "Trends - Population mean", 
-                 text = "charts allow tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
-                 type = "info", 
-                 closeOnClickOutside = TRUE, 
-                 showCancelButton = FALSE, 
-                 showConfirmButton = FALSE)
-    })
+    
     
     indicator <- sort(unique(sub_national$indicator_short_name))[1]
     country_name <- 'Argentina'
-    date_range <- c(1982, 2018)
+    
+    
     # get inputs
     indicator <- input$indicator
     country_name <- input$country
-    date_range <- input$date_range
+    date_range <- c(1982, 2018)
     
   
     # Get the data to be plotted
@@ -459,6 +482,17 @@ mod_trends_mean_sub_server <- function(input, output, session){
     shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
     df <- shp@data
     
+    max_value <- round(max(df$value), 2)
+    min_value <- round(min(df$value), 2)
+    if(max_value<1){
+      min_value=0
+      max_value = 1
+    } else {
+      min_value = 0
+      max_value = ceiling(max_value)
+    }
+    
+    
     sub_regions_top <- df %>% group_by(country,ADM1_NAME) %>% 
       summarise(counts = n()) %>%
       top_n(10) %>%
@@ -467,8 +501,6 @@ mod_trends_mean_sub_server <- function(input, output, session){
     
     sub_regions <- sort(unique(df$ADM1_NAME))
     
-    
-
     fluidPage(
       fluidRow(
         pickerInput(inputId = session$ns("sub_country"),
@@ -479,7 +511,23 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                     `selected-text-format` = "count > 2",
                                     `count-selected-text` = "{0}/{1} Sub-national regions",
                                     `style` = "btn-primary"),
-                    multiple = TRUE)
+                    multiple = TRUE),
+        sliderInput(session$ns('value_range'),
+                    'Y axis range',
+                    min = min_value,
+                    max = max_value,
+                    value = c(min_value, max_value),
+                    sep = ''),
+        sliderInput(session$ns('date_range'),
+                    'Date range',
+                    min = 1982,
+                    max = 2017,
+                    value = c(1982, 2017),
+                    step = 1,
+                    sep = ''),
+        checkboxInput(session$ns('interpolate'), 
+                      'Interpolate missing values',
+                      value = TRUE)
       )
     )
     
@@ -495,7 +543,6 @@ mod_trends_mean_sub_server <- function(input, output, session){
     # value_range <- c(0,1)
     # country_names <- 'Argentina'
     # get inputs
-    pop_list <- list()
     indicator <- input$indicator
     region <- input$region
     sub_regions <- input$sub_country
@@ -505,9 +552,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
     # get region code 
     # region_list <- hefpi::region_list
     
-    if(is.null(sub_regions) | is.null(value_range)){
+    if(is.null(value_range) | is.null(date_range)){
       NULL
     } else {
+      pop_list <- list()
       
       # region_code <- as.character(region_list$region_code[region_list$region %in% region])
       indicators <- hefpi::indicators
@@ -543,9 +591,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
       
       pd <- pd %>% filter(ADM1_NAME %in% sub_regions)
       
-      if(nrow(pd) == 0){
-        NULL
-      } else {
+     
         
         # get title and subtitle
         plot_title <- paste0('Trends - Population mean - ', indicator)
@@ -615,7 +661,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         
         
         return(pop_list)
-      }
+      
     }
     
   })
@@ -623,74 +669,108 @@ mod_trends_mean_sub_server <- function(input, output, session){
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
-      paste("trends_population_mean_data", Sys.Date(), ".csv", sep="")
+      paste0("trends_mean_sub_", Sys.Date(), ".csv")
     },
     content = function(file) {
       # get map
       pop_list <- get_pop_data()
-      pd <- pop_list[[2]]
       
       if(is.null(pop_list)){
         NULL
+        pd <- pop_list[[2]]
+        if(nrow(pd)==0){
+          temp <- data_frame()
+        } else {
+          temp <- pd
+        }
       } else {
         
-        write.csv(pd, file)
+        write.csv(temp, file)
       }
     }
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_trends_population_mean", ".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("trends_mean_sub", Sys.Date(),".png"),
                                     content = function(file) {
                                       
                                       pop_list <- get_pop_data()
-                                      p <- pop_list[[1]]
-                                      plot_title = pop_list[[3]][[1]]
-                                      mytext = pop_list[[3]][[2]]
-                                      y_axis_text = pop_list[[3]][[3]]
-                                      unit_of_measure = pop_list[[3]][[4]]
-                                      trend_palette = pop_list[[3]][[5]]
-                                      
-                                      
+                                     
                                       
                                       if(is.null(pop_list)){
                                         NULL
                                       } else {
-                                        p =  p + theme(axis.text = element_text(size = rel(18/12))) +
-                                          theme(legend.position = "top") +
-                                          theme(legend.direction = "horizontal", 
-                                                legend.text=element_text(size=7)) 
-                                        p
-                                        ggsave(file, width = 8, height = 8)
+                                        pd <- pop_list[[2]]
+                                        if(nrow(pd)==0){
+                                          empty_plot <- function(title = NULL){
+                                            p <- plotly_empty(type = "scatter", mode = "markers") %>%
+                                              config(
+                                                displayModeBar = FALSE
+                                              ) %>%
+                                              layout(
+                                                title = list(
+                                                  text = title,
+                                                  yref = "paper",
+                                                  y = 0.5
+                                                )
+                                              )
+                                            
+                                          } 
+                                          p <- empty_plot("No data available for the selected inputs")
+                                          
+                                          p
+                                          ggsave(file, width = 8, height = 8)
+                                        } else {
+                                          p <- pop_list[[1]]
+                                          p =  p + theme(axis.text = element_text(size = rel(18/12))) +
+                                            theme(legend.position = "top") +
+                                            theme(legend.direction = "horizontal", 
+                                                  legend.text=element_text(size=7)) 
+                                          p
+                                          ggsave(file, width = 8, height = 8)
+                                        }
                                       }
                                       
                                       
                                     })
   
   output$trends_mean <- renderPlotly({
-    
     pop_list <- get_pop_data()
-    p <- pop_list[[1]]
-    pd <- pop_list[[2]]
-    plot_title = pop_list[[3]][[1]]
-    mytext = pop_list[[3]][[2]]
-    y_axis_text = pop_list[[3]][[3]]
-    unit_of_measure = pop_list[[3]][[4]]
-    trend_palette = pop_list[[3]][[5]]
-    
-    
-    
     if(is.null(pop_list)){
       NULL
     } else {
-      fig <- ggplotly(p, tooltip = 'text')
-      fig <- fig %>% config(displayModeBar = F)
-      fig
+      pd <- pop_list[[2]]
+      if(nrow(pd)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
+      } else {
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- pop_list[[1]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text') %>%
+          config(displayModeBar = F)
+        fig
+      }
       
     }
-    
-    
-    
   })
 }
 
@@ -730,12 +810,6 @@ mod_trends_con_ui <- function(id){
                                          `count-selected-text` = "{0}/{1} Regions"),
                          multiple = TRUE),
              uiOutput(ns('ui_outputs')),
-             sliderInput(ns('value_range'),
-                         'Y axis range',
-                         min = 0,
-                         max = 1,
-                         value = c(0,1),
-                         sep = ''),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -758,7 +832,7 @@ mod_trends_con_ui <- function(id){
 }
 
 # Module Server
-#' @rdname mod_trends_cib_server
+#' @rdname mod_trends_con_sub_server
 #' @export
 #' @import tidyverse
 #' @import RColorBrewer
@@ -771,19 +845,19 @@ mod_trends_con_ui <- function(id){
 
 mod_trends_con_server <- function(input, output, session){
   
-  
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Trends - Concentration Index", 
+               text = "This chart allows users to track the over-time dynamics in an indicator’s concentration index. tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   output$ui_outputs <- renderUI({
     
-    # Observe changes to inputs in order to generate changes to the map
-    observeEvent(input$plot_info, {
-      # Show a modal when the button is pressed
-      shinyalert(title = "Trends - Concentration Index", 
-                 text = "charts allow users to track the over-time dynamics in an indicator’s concentration index. tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
-                 type = "info", 
-                 closeOnClickOutside = TRUE, 
-                 showCancelButton = FALSE, 
-                 showConfirmButton = FALSE)
-    })
+    
     
     # get inputs
     indicator <- input$indicator
@@ -806,6 +880,11 @@ mod_trends_con_server <- function(input, output, session){
     
     countries <- unique(df$country)
     
+    max_value <- 1
+    min_value <- -1
+   
+    
+    
     fluidPage(
       fluidRow(
         pickerInput(inputId = session$ns("country"),
@@ -817,6 +896,12 @@ mod_trends_con_server <- function(input, output, session){
                                     `selected-text-format` = "count > 2",
                                     `count-selected-text` = "{0}/{1} Countries"),
                     multiple = TRUE),
+        sliderInput(session$ns('value_range'),
+                    'Y axis range',
+                    min = min_value,
+                    max = max_value,
+                    value = c(min_value, max_value),
+                    sep = '')
         
       )
     )
@@ -825,12 +910,12 @@ mod_trends_con_server <- function(input, output, session){
   })
   
   get_con_data <- reactive({
-    indicator <- "Infant mortality"
+    indicator <- "4+ antenatal care visits"
     region <- region_list$region[1]
-    temp <- hefpi::df_series %>% filter(region %in% region)
+    temp <- hefpi::df_series %>% filter(region %in% region_list$region[1])
     country_names <- unique(temp$country_name)
     date_range <- c(1982, 2017)
-    value_range <- c(0,81)
+    # value_range <- c(0,81)
     yn <- input$interpolate
     
     # get inputs
@@ -845,7 +930,7 @@ mod_trends_con_server <- function(input, output, session){
     indicators <- hefpi::indicators
     df <- hefpi::df
     
-    if(is.null(country_names)){
+    if(is.null(value_range)){
       NULL
     } else {
       
@@ -862,12 +947,9 @@ mod_trends_con_server <- function(input, output, session){
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
       pd <- pd %>% filter(year >= min(date_range),
-                          year <= max(date_range)) 
-      pd <- pd %>% filter(CI >= min(value_range),
-                          CI <= max(value_range))
-      if(nrow(pd) == 0){
-        NULL
-      } else {
+                          year <= max(date_range)) %>%
+        inner_join(indicators, by = c('indic'='variable_name'))
+      
         
         # get title and subtitle
         plot_title <- paste0('Trends - Concentration index - ', indicator)
@@ -897,6 +979,7 @@ mod_trends_con_server <- function(input, output, session){
                           scale_color_manual(name = '',
                                              values = trend_palette) +
             scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
+            scale_y_continuous(limits = c(value_range[1], value_range[2])) +
                           labs(x='Year',
                                y = y_axis_text,
                                title = plot_title) +
@@ -914,6 +997,7 @@ mod_trends_con_server <- function(input, output, session){
                                y = y_axis_text,
                                title = plot_title) +
             scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1))+
+            scale_y_continuous(limits = c(value_range[1], value_range[2])) +
                           hefpi::theme_gdocs() +
                           theme(panel.grid.major.x = element_blank(),
                                 axis.text.x = element_text(angle = 90, hjust = 1))
@@ -926,7 +1010,7 @@ mod_trends_con_server <- function(input, output, session){
         
         
         return(con_list)
-      }
+      
     }
     
   })
@@ -934,16 +1018,21 @@ mod_trends_con_server <- function(input, output, session){
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
-      paste("trends_ci_data", Sys.Date(), ".csv", sep="")
+      paste0("trends_ci_", Sys.Date(), ".csv")
     },
     content = function(file) {
       # get map
       con_list <- get_con_data()
-      pd <- con_list[[2]]
       
       if(is.null(con_list)){
         NULL
       } else {
+        pd <- con_list[[2]]
+        if(nrow(pd)==0){
+         temp <- data_frame()
+        } else {
+          temp <- pd
+        }
         
         write.csv(pd, file)
       }
@@ -951,53 +1040,87 @@ mod_trends_con_server <- function(input, output, session){
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_trends_ci", ".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("trends_ci_", Sys.Date(),".png"),
                                     content = function(file) {
                                       
                                       con_list <- get_con_data()
-                                      p <- con_list[[1]]
-                                      plot_title = con_list[[3]][[1]]
-                                      mytext = con_list[[3]][[2]]
-                                      y_axis_text = con_list[[3]][[3]]
-                                      trend_palette = con_list[[3]][[4]]
-                                      
                                       
                                       
                                       if(is.null(con_list)){
                                         NULL
                                       } else {
-                                        p =  p + theme(axis.text = element_text(size = rel(18/12))) +
-                                          theme(legend.position = "top") +
-                                          theme(legend.direction = "horizontal", 
-                                                legend.text=element_text(size=7)) 
-                                        p
-                                        ggsave(file, width = 8, height = 8)
+                                        pd <- con_list[[2]]
+                                        if(nrow(pd)==0){
+                                          empty_plot <- function(title = NULL){
+                                            p <- plotly_empty(type = "scatter", mode = "markers") %>%
+                                              config(
+                                                displayModeBar = FALSE
+                                              ) %>%
+                                              layout(
+                                                title = list(
+                                                  text = title,
+                                                  yref = "paper",
+                                                  y = 0.5
+                                                )
+                                              )
+                                            
+                                          } 
+                                          p <- empty_plot("No data available for the selected inputs")
+                                          
+                                          p
+                                          ggsave(file, width = 8, height = 8)
+                                        } else {
+                                          p <- con_list[[1]]
+                                          p =  p + theme(axis.text = element_text(size = rel(18/12))) +
+                                            theme(legend.position = "top") +
+                                            theme(legend.direction = "horizontal", 
+                                                  legend.text=element_text(size=7)) 
+                                          p
+                                          ggsave(file, width = 8, height = 8)
+                                        }
+                                        
                                       }
                                       
                                       
                                     })
   
   output$trends_con <- renderPlotly({
-    
     con_list <- get_con_data()
     if(is.null(con_list)){
       NULL
     } else {
-      p <- con_list[[1]]
       pd <- con_list[[2]]
-      plot_title = con_list[[3]][[1]]
-      mytext = con_list[[3]][[2]]
-      y_axis_text = con_list[[3]][[3]]
-      trend_palette = con_list[[3]][[4]]
-      
-      fig <- ggplotly(p, tooltip = 'text')
-      fig <- fig %>% config(displayModeBar = F)
-      fig
+      if(nrow(pd)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
+      } else {
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- con_list[[1]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text') %>%
+          config(displayModeBar = F)
+        fig
+      }
       
     }
-    
-    
-    
   })
   
   
@@ -1022,18 +1145,16 @@ mod_trends_quin_ui <- function(id){
                ns('trends_quin'),  height = '600px'
              )),
       column(4,
+             pickerInput(ns('indicator'), 'Indicator',
+                         choices = indicators_list,
+                         selected = 'Inpatient care use, adults',
+                         options = list(`style` = "btn-primary")),
              pickerInput(ns('country'), '
                          Country',
                          choices = country_list,
                          selected = 'United States',
                          options = list(`style` = "btn-primary")),
-             pickerInput(ns('indicator'), 'Indicator',
-                         choices = indicators_list,
-                         selected = 'Inpatient care use, adults',
-                         options = list(`style` = "btn-primary")),
-             pickerInput(ns('view_as'), 'View as',
-                         choices =c('Slope chart', 'Line chart'),
-                         options = list(`style` = "btn-primary")),
+             uiOutput(ns('ui_outputs')),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -1041,7 +1162,9 @@ mod_trends_quin_ui <- function(id){
                          value = c(1982, 2017),
                          step = 1,
                          sep = ''),
-             uiOutput(ns('ui_outputs')),
+             pickerInput(ns('view_as'), 'View as',
+                         choices =c('Slope chart', 'Line chart'),
+                         options = list(`style` = "btn-primary")),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(),br(),
@@ -1068,18 +1191,18 @@ mod_trends_quin_ui <- function(id){
 mod_trends_quin_server <- function(input, output, session){
   
   
-  
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Trends - Quintile", 
+               text = "This chart shows HEFPI health outcome and health service coverage indicator trends at the wealth quintile level, revealing if any inequalities have reduced, remained stable, or increased over time. Users can tailor the charts to their time period of interest.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   output$ui_outputs <- renderUI({
-    # Observe changes to inputs in order to generate changes to the map
-    observeEvent(input$plot_info, {
-      # Show a modal when the button is pressed
-      shinyalert(title = "Trends - Quintile", 
-                 text = "charts show HEFPI health outcome and health service coverage indicator trends at the wealth quintile level, revealing if any inequalities have reduced, remained stable, or increased over time. Users can tailor the charts to their time period of interest.", 
-                 type = "info", 
-                 closeOnClickOutside = TRUE, 
-                 showCancelButton = FALSE, 
-                 showConfirmButton = FALSE)
-    })
+    
     country_names <- 'Belgium'
     indicator <- 'Inpatient care use, adults'
     # value_range <- c(0.06,0.12)
@@ -1151,13 +1274,12 @@ mod_trends_quin_server <- function(input, output, session){
         filter(indic == variable_name) %>%
         filter(year >= min(date_range),
                year <= max(date_range))  %>%
-        select(year, referenceid_list, Q1:Q5)
+        select(year, referenceid_list, Q1:Q5, indic) %>%
+        inner_join(indicators, by = c('indic'='variable_name'))
       
       df <- df[complete.cases(df),]
       
-      if(is.null(df)  | nrow(df) ==0){
-        NULL
-      } else {
+      
         if(view_as == 'Slope chart'){
           # filter to get year_one and year_last
           year_begin = min(df$year)
@@ -1167,7 +1289,9 @@ mod_trends_quin_server <- function(input, output, session){
           # save(df, file = 'df.rda')
         }
         
-        df <- melt(df, id.vars = c('referenceid_list','year'))
+        df <- melt(df, id.vars = c('referenceid_list','year', 'indic', 'level_1', 
+                                  'level_2', 'good_or_bad', 'indicator_short_name',
+                                   'indicator_name','indicator_description', 'unit_of_measure'))
         
         # recode Quintiels
         df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
@@ -1196,13 +1320,13 @@ mod_trends_quin_server <- function(input, output, session){
         mytext <- paste(
           "Indicator: ", indicator, '\n',
           "Economy: ", country_names, '\n',
-          "Value: ", paste0(round(df$value, digits = 3), ' (', unit_of_measure, ')'), "\n",
+          "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
           "Year: ", as.character(df$year),"\n",
           "Data source: ", as.character(df$referenceid_list),"\n",
           sep="") %>%
           lapply(htmltools::HTML)
         
-        p <- ggplot(data = df, aes(year, value, color = variable)) +
+        p <- ggplot(data = df, aes(year, value, color = variable, text =mytext)) +
           geom_point() +
           geom_line(aes(group = as.character(variable))) +
           scale_color_manual(name = '',
@@ -1220,7 +1344,7 @@ mod_trends_quin_server <- function(input, output, session){
         quin_list[[2]] <- df
         quin_list[[3]] <- list(plot_title, mytext, y_axis_text, col_vec)
         return(quin_list)
-      }
+      
      
     }
   })
@@ -1229,7 +1353,7 @@ mod_trends_quin_server <- function(input, output, session){
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
-      paste("trends_ci_data", Sys.Date(), ".csv", sep="")
+      paste0("trends_quintiles_", Sys.Date(), ".csv")
     },
     content = function(file) {
       # get map
@@ -1237,9 +1361,14 @@ mod_trends_quin_server <- function(input, output, session){
       
       
       if(is.null(quin_list)){
-        df <- quin_list[[2]]
         NULL
       } else {
+        df <- quin_list[[2]]
+        if(nrow(df)==0){
+          temp <- data_frame()
+        } else {
+          temp <- df
+        }
         
         write.csv(df, file)
       }
@@ -1247,28 +1376,46 @@ mod_trends_quin_server <- function(input, output, session){
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_trends_ci", ".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("trends_quintiles_", Sys.Date(),".png"),
                                     content = function(file) {
                                       
                                       quin_list <- get_quin_data()
                                       
-                                      
-                                      
-                                      
                                       if(is.null(quin_list)){
                                         NULL
+                                        
                                       } else {
-                                        p <- quin_list[[1]]
-                                        plot_title = quin_list[[3]][[1]]
-                                        mytext = quin_list[[3]][[2]]
-                                        y_axis_text = quin_list[[3]][[3]]
-                                        col_vec = quin_list[[3]][[4]]
-                                        p =  p + theme(axis.text = element_text(size = rel(18/12))) +
-                                          theme(legend.position = "top") +
-                                          theme(legend.direction = "horizontal", 
-                                                legend.text=element_text(size=7)) 
-                                        p
-                                        ggsave(file, width = 8, height = 8)
+                                        df <- quin_list[[2]]
+                                        if(nrow(df)==0){
+                                          empty_plot <- function(title = NULL){
+                                            p <- plotly_empty(type = "scatter", mode = "markers") %>%
+                                              config(
+                                                displayModeBar = FALSE
+                                              ) %>%
+                                              layout(
+                                                title = list(
+                                                  text = title,
+                                                  yref = "paper",
+                                                  y = 0.5
+                                                )
+                                              )
+                                            
+                                          } 
+                                          p <- empty_plot("No data available for the selected inputs")
+                                          
+                                          p
+                                          ggsave(file, width = 8, height = 8)
+                                        } else {
+                                          p <- quin_list[[1]]
+                                          
+                                          p =  p + theme(axis.text = element_text(size = rel(18/12))) +
+                                            theme(legend.position = "top") +
+                                            theme(legend.direction = "horizontal", 
+                                                  legend.text=element_text(size=7)) 
+                                          p
+                                          ggsave(file, width = 8, height = 8)
+                                        }
+                                        
                                       }
                                       
                                       
@@ -1277,29 +1424,41 @@ mod_trends_quin_server <- function(input, output, session){
   output$trends_quin <- renderPlotly({
     
     quin_list <- get_quin_data()
-    
-    
     if(is.null(quin_list)){
       NULL
     } else {
-      p <- quin_list[[1]]
       pd <- quin_list[[2]]
-      plot_title = quin_list[[3]][[1]]
-      mytext = quin_list[[3]][[2]]
-      y_axis_text = quin_list[[3]][[3]]
-      col_vec = quin_list[[3]][[4]]
-      if(is.null(p)){
-        NULL
+      if(nrow(pd)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
       } else {
-        fig <- ggplotly(p, tooltip = 'text')
-        fig <- fig %>% config(displayModeBar = F)
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- quin_list[[1]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text') %>%
+          config(displayModeBar = F)
         fig
       }
       
     }
-    
-    
-    
   })
 }
 

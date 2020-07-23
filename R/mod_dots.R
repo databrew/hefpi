@@ -77,7 +77,7 @@ mod_dots_country_server <- function(input, output, session){
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
     shinyalert(title = "Quintile Dotpot for countries", 
-               text = "charts enable users to compare inequalities in health and service coverage outcomes both within and across countries. For a set of countries and an indicator the user specifies, the dot plot shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
+               text = "This chart enables users to compare inequalities in health and service coverage outcomes both within and across countries. For a set of countries and an indicator the user specifies, the dot plot shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -161,7 +161,7 @@ mod_dots_country_server <- function(input, output, session){
     country_names <- input$country
     value_range <- input$value_range
     date_range <- input$date_range
-    if(is.null(country_names) | is.null(value_range)){
+    if(is.null(value_range)){
       NULL
     } else {
       dot_list <- list()
@@ -174,22 +174,22 @@ mod_dots_country_server <- function(input, output, session){
       variable_name <- ind_info$variable_name
       unit_of_measure <- ind_info$unit_of_measure
       # subset by country and variable
-      df <- hefpi::df %>%
+      temp <- hefpi::df %>%
         filter(country %in% country_names) %>%
         filter(indic == variable_name) %>%
         filter(year >= date_range[1],
-               year <= date_range[2]) %>%
-        left_join(indicators, by = c('indic' = 'variable_name'))
+               year <= date_range[2]) 
       
       # get year and keep only necessary columns
-      df <- df %>%
+      df <- temp %>%
         group_by(country) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) %>%
-        select(year, country, referenceid_list, Q1:Q5)
+        left_join(indicators, by = c('indic' = 'variable_name'))
       
       # made data long form
-      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list'))
+      id_vars <- names(df)[!grepl('Q', names(df))]
+      df <- melt(df, id.vars = id_vars)
       # recode Quintiels
       df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
@@ -228,11 +228,7 @@ mod_dots_country_server <- function(input, output, session){
         lapply(htmltools::HTML)
       
       
-      
-      # if the dataframe is null of empty make plot null
-      if(is.null(df) | nrow(df) == 0){
-        NULL
-      } else {
+
         
         # number of countries
         plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
@@ -258,7 +254,7 @@ mod_dots_country_server <- function(input, output, session){
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
         return(dot_list)
-      }
+      
       
       
       
@@ -269,7 +265,7 @@ mod_dots_country_server <- function(input, output, session){
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
-      paste("quintile_dot_plots_country_data", Sys.Date(), ".csv", sep="")
+      paste0("quintile_country_", Sys.Date(), ".csv")
     },
     content = function(file) {
       # get map
@@ -286,7 +282,7 @@ mod_dots_country_server <- function(input, output, session){
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_quintile_dot_plots_country", ".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("quintile_country_", Sys.Date(),".png"),
                                     content = function(file) {
                                       
                                       dot_list <- get_dot_data()
@@ -310,25 +306,43 @@ mod_dots_country_server <- function(input, output, session){
     if(is.null(dot_list)){
       NULL
     } else {
-      p <- dot_list[[1]]
-      # df <- dot_list[[2]]
-      # plot_title <- dot_list[[3]][[1]]
-      # sub_title <- dot_list[[3]][[2]]
-      # col_vec <- dot_list[[3]][[3]]
-      # mytext <- dot_list[[3]][[4]]
-      plot_height <- dot_list[[3]][[5]]
-      fig <- ggplotly(p, 
-                      tooltip = 'text', 
-                      height = plot_height) %>%
-        config(displayModeBar = F)
-      fig
+      df <- dot_list[[2]]
+      if(nrow(df)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
+      } else {
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- dot_list[[1]]
+        plot_height <- dot_list[[3]][[5]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text', 
+                        height = plot_height) %>%
+          config(displayModeBar = F)
+        fig
+      }
+      
     }
-   
-   
-   
-   
-   
+    
   })
+  
 }
 
 
@@ -364,6 +378,7 @@ mod_dots_ind_ui <- function(id){
                          choices = as.character(country_list),
                          selected = 'United States',
                          options = list(`style` = "btn-primary")),
+             uiOutput(ns('ui_outputs')),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -371,7 +386,6 @@ mod_dots_ind_ui <- function(id){
                          value = c(1982, 2017),
                          step = 1,
                          sep = ''),
-             uiOutput(ns('ui_value_range')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(),br(),
@@ -404,17 +418,17 @@ mod_dots_ind_server <- function(input, output, session){
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
     shinyalert(title = "Quintile Dotpot for indicators", 
-               text = "charts allow users to shed light on overall health and service coverage inequality in a country and to explore differences in inequalities across indicators. For instance, the chart reveals if a country achieves universal coverage of maternal and child health services while failing to enable equitable access to inpatient care. For every health and service coverage indicator in the HEFPI database and a country the user selects, the dot plot shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
+               text = "This chart allows users to shed light on overall health and service coverage inequality in a country and to explore differences in inequalities across indicators. For instance, the chart reveals if a country achieves universal coverage of maternal and child health services while failing to enable equitable access to inpatient care. For every health and service coverage indicator in the HEFPI database and a country the user selects, the dot plot shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
                showConfirmButton = FALSE)
   })
   
-  output$ui_value_range <- renderUI({
+  output$ui_outputs <- renderUI({
     date_range = c(1982,2016)
     indicator <- indicators_list[[1]]
-    country_names <- 'Canada'
+    country_names <- 'United States'
     date_range <- input$date_range
     indicator <- input$indicator
     country_names <- input$country
@@ -426,7 +440,7 @@ mod_dots_ind_server <- function(input, output, session){
       .$variable_name
     
     # subset by country and variable
-    df <- hefpi::df %>%
+    temp <- hefpi::df %>%
       filter(country == country_names) %>%
       filter(indic %in% variable) %>%
       filter(year >= date_range[1],
@@ -434,14 +448,14 @@ mod_dots_ind_server <- function(input, output, session){
       left_join(indicators, by = c('indic' = 'variable_name'))
     
     # get year and keep only necessary columns
-    df <- df %>%
+    df <- temp %>%
       group_by(indicator_short_name) %>%
       arrange(desc(year)) %>%
-      dplyr::filter(year == dplyr::first(year)) %>%
-      select(year, country, referenceid_list,indicator_short_name, Q1:Q5) 
+      dplyr::filter(year == dplyr::first(year)) 
     
     # made data long form
-    df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name'))
+    id_vars <- names(df)[!grepl('Q', names(df))]
+    df <- melt(df, id.vars = id_vars)
     # recode Quintiels
     df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                           ifelse(df$variable == 'Q2', 'Q2: Poor',
@@ -494,7 +508,7 @@ mod_dots_ind_server <- function(input, output, session){
      
       
       # subset by country and variable
-      df <- hefpi::df %>%
+      temp <- hefpi::df %>%
         filter(country == country_names) %>%
         filter(indic %in% variable_name) %>%
         filter(year >= date_range[1],
@@ -502,19 +516,20 @@ mod_dots_ind_server <- function(input, output, session){
         left_join(indicators, by = c('indic' = 'variable_name'))
       
       # get year and keep only necessary columns
-      df <- df %>%
+      df <- temp %>%
         group_by(indicator_short_name) %>%
         arrange(desc(year)) %>%
-        dplyr::filter(year == dplyr::first(year)) %>%
-        select(year, country, referenceid_list,indicator_short_name,unit_of_measure, Q1:Q5) 
+        dplyr::filter(year == dplyr::first(year)) 
       
       # made data long form
-      df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indicator_short_name','unit_of_measure'))
+      id_vars <- names(df)[!grepl('Q', names(df))]
+      df <- melt(df, id.vars = id_vars)
       # recode Quintiels
       df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
                                    ifelse(df$variable == 'Q3', 'Q3: Middle',
                                           ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
+      
       
       # only keep data with no NAs
       df <- df[complete.cases(df),]
@@ -543,9 +558,8 @@ mod_dots_ind_server <- function(input, output, session){
         lapply(htmltools::HTML)
       
       # if the dataframe is null of empty make plot null
-      if(is.null(df) | nrow(df) == 0){
-        NULL
-      } else {
+     
+      
         # number of countries
         plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
         if(plot_height < 250){
@@ -570,8 +584,9 @@ mod_dots_ind_server <- function(input, output, session){
         dot_list[[1]] <- p
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
+        # save(dot_list, file = 'dot_list.rda')
         return(dot_list)
-      }
+      
       
     }
   })
@@ -579,7 +594,7 @@ mod_dots_ind_server <- function(input, output, session){
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
-      paste("quintile_dot_plots_indicator_data", Sys.Date(), ".csv", sep="")
+      paste0("quintile_indicator_", Sys.Date(), ".csv")
     },
     content = function(file) {
       # get map
@@ -596,7 +611,7 @@ mod_dots_ind_server <- function(input, output, session){
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_quintile_dot_plots_indicator", ".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("quintile_dot_plots_indicator_", Sys.Date(),".png"),
                                     content = function(file) {
                                       
                                       dot_list <- get_dot_data()
@@ -620,19 +635,41 @@ mod_dots_ind_server <- function(input, output, session){
     if(is.null(dot_list)){
       NULL
     } else {
-      p <- dot_list[[1]]
-      # df <- dot_list[[2]]
-      # plot_title <- dot_list[[3]][[1]]
-      # sub_title <- dot_list[[3]][[2]]
-      # col_vec <- dot_list[[3]][[3]]
-      # mytext <- dot_list[[3]][[4]]
-      plot_height <- dot_list[[3]][[5]]
-      fig <- ggplotly(p, 
-                      tooltip = 'text', 
-                      height = plot_height) %>%
-        config(displayModeBar = F)
+      df <- dot_list[[2]]
+      if(nrow(df)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
+      } else {
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- dot_list[[1]]
+        plot_height <- dot_list[[3]][[5]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text', 
+                        height = plot_height) %>%
+          config(displayModeBar = F)
+        fig
+      }
+      
     }
-   
+    
   })
 }
 
