@@ -623,6 +623,10 @@ mod_recent_con_server <- function(input, output, session){
   
   # ---- RENDER MAP FROM REACTIVE LIST ---- #
   output$recent_con_leaf <- renderLeaflet({
+    # Plotly hover capture
+    mouse_event <- event_data("plotly_click", source = "subset")
+    
+    print(mouse_event)
     con_map <- get_con_map()
     if(is.null(con_map)){
       NULL
