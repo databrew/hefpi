@@ -17,6 +17,8 @@
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
 mod_recent_mean_ui <- function(id){
+  # let leaflet know that selections should persist
+  options(persistent = TRUE)
   ns <- NS(id)
   # tagList(
   fluidPage(
@@ -241,6 +243,29 @@ mod_recent_mean_server <- function(input, output, session){
        this_map
      }
     }
+  })
+  
+  the_country <- reactiveVal(value = NULL)
+  the_shp <- reactiveValues(shp = NULL)
+  
+  observeEvent(input$recent_mean_leaf_shape_mouseover, {
+    # print('Shape mouseover')
+    shp_mouse <- input$recent_mean_leaf_shape_mouseover
+    lng <- shp_mouse$lng
+    lat <- shp_mouse$lat
+    the_point <- tibble(lng = lng, lat = lat)
+    coordinates(the_point) <- ~lng+lat    
+    proj4string(the_point) <- proj4string(world)
+    # Get the country
+    poly <- over(world, the_point)
+    poly_number <- which(!is.na(poly))
+    country_row <- world[poly_number,]
+    print(country_row@data)
+    the_shp$shp <- country_row
+    country_name <- country_row@data$NAME
+    the_country(country_name)
+    message('Mouse-overed country is ', country_name)
+    
   })
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
@@ -572,6 +597,7 @@ mod_recent_con_server <- function(input, output, session){
     return(con_map_list)
     
   })
+
   # ---- RENDER MAP TITLE ---- #
   output$map_title_ui <- renderUI({
     con_map <- get_con_map()
