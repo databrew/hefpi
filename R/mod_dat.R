@@ -23,7 +23,7 @@ mod_dat_country_ui <- function(id){
     fluidPage(
       column(8,
              plotlyOutput(
-               ns('dat_country'), height = '800px', width = '1050px', 
+               ns('dat_country'), height = '800px', width = '1000px', 
              )),
       column(4,
              pickerInput(ns('country'), 'Country',
@@ -61,7 +61,7 @@ mod_dat_country_server <- function(input, output, session){
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
     shinyalert(title = "Data availability by Country", 
-               text = "charts zoom in on the general data availability situation for a specific country. They allow users to explore, for instance, if data are frequently available for maternal and child health service coverage, while being largely missing for catastrophic healthcare spending. The charts’ vertical axis sorts all indicators in the database by the three HEFPI domains: health outcomes, service coverage, and financial protection. The horizontal axis represents time. Years for which data are available for an indicator are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s country of interest.", 
+               text = "This chart zooms in on the general data availability situation for a specific country. They allow users to explore, for instance, if data are frequently available for maternal and child health service coverage, while being largely missing for catastrophic healthcare spending. The charts’ vertical axis sorts all indicators in the database by the three HEFPI domains: health outcomes, service coverage, and financial protection. The horizontal axis represents time. Years for which data are available for an indicator are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s country of interest.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -248,19 +248,19 @@ mod_dat_ind_ui <- function(id){
 mod_dat_ind_server <- function(input, output, session){
   
   
-  
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Data availability by Indicator", 
+               text = "This chart allows user to compare data availability for an indicator across countries, regions, and over time. The units on the chart’s vertical axis represent countries (sorted by regions), and the chart’s horizontal axis represents time. Years for which data are available for a country are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s indicator of interest.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   
   output$ui_outputs <- renderUI({
-    # Observe changes to inputs in order to generate changes to the map
-    observeEvent(input$plot_info, {
-      # Show a modal when the button is pressed
-      shinyalert(title = "Data availability by Indicator", 
-                 text = "charts allow user to compare data availability for an indicator across countries, regions, and over time. The units on the chart’s vertical axis represent countries (sorted by regions), and the chart’s horizontal axis represents time. Years for which data are available for a country are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s indicator of interest.", 
-                 type = "info", 
-                 closeOnClickOutside = TRUE, 
-                 showCancelButton = FALSE, 
-                 showConfirmButton = FALSE)
-    })
+    
     region <- c('Europe & Central Asia')
     region <- input$region
     
@@ -413,7 +413,7 @@ mod_dat_ind_server <- function(input, output, session){
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
-      paste("data_avialability_indicators", Sys.Date(), ".csv", sep="")
+      paste0("data_indicators_", Sys.Date(), ".csv")
     },
     content = function(file) {
       # get map
@@ -430,7 +430,7 @@ mod_dat_ind_server <- function(input, output, session){
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_data_availability_indicators", ".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("data_indicators_",Sys.Date(), ".png"),
                                     content = function(file) {
                                       
                                       dat_list <- get_dat()
