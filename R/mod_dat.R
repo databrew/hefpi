@@ -61,7 +61,7 @@ mod_dat_country_server <- function(input, output, session){
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
     shinyalert(title = "Data availability by Country", 
-               text = "charts zoom in on the general data availability situation for a specific country. They allow users to explore, for instance, if data are frequently available for maternal and child health service coverage, while being largely missing for catastrophic healthcare spending. The charts’ vertical axis sorts all indicators in the database by the three HEFPI domains: health outcomes, service coverage, and financial protection. The horizontal axis represents time. Years for which data are available for an indicator are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s country of interest.", 
+               text = "This chart zooms in on the general data availability situation for a specific country. They allow users to explore, for instance, if data are frequently available for maternal and child health service coverage, while being largely missing for catastrophic healthcare spending. The charts’ vertical axis sorts all indicators in the database by the three HEFPI domains: health outcomes, service coverage, and financial protection. The horizontal axis represents time. Years for which data are available for an indicator are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s country of interest.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -113,11 +113,13 @@ mod_dat_country_server <- function(input, output, session){
            y = '',
            title = plot_title) +
       hefpi::theme_gdocs() +
-      coord_flip() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(2/4)),
-            axis.text.y = element_text(size = rel(1)),
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, size = rel(2/3)),
+            axis.text.y = element_text(size = rel(1/2)),
             panel.background = element_rect(color = NA),
-            panel.grid.major = element_blank())
+            panel.grid.major = element_blank()) +
+      theme(legend.position = "top") +
+      theme(legend.direction = "horizontal", 
+            legend.text=element_text(size=7)) 
       
       
     
@@ -218,14 +220,7 @@ mod_dat_ind_ui <- function(id){
                                          `selected-text-format` = "count > 2",
                                          `count-selected-text` = "{0}/{1} Regions"),
                          multiple = TRUE),
-             uiOutput(ns('country_ui')),
-             sliderInput(ns('date_range'),
-                         'Date range',
-                         min = 1982,
-                         max = 2017,
-                         value = c(1982, 2018),
-                         step = 1,
-                         sep = ''),
+             uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(),br(),
@@ -253,19 +248,19 @@ mod_dat_ind_ui <- function(id){
 mod_dat_ind_server <- function(input, output, session){
   
   
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Data availability by Indicator", 
+               text = "This chart allows user to compare data availability for an indicator across countries, regions, and over time. The units on the chart’s vertical axis represent countries (sorted by regions), and the chart’s horizontal axis represents time. Years for which data are available for a country are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s indicator of interest.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   
-  
-  output$country_ui <- renderUI({
-    # Observe changes to inputs in order to generate changes to the map
-    observeEvent(input$plot_info, {
-      # Show a modal when the button is pressed
-      shinyalert(title = "Data availability by Indicator", 
-                 text = "charts allow user to compare data availability for an indicator across countries, regions, and over time. The units on the chart’s vertical axis represent countries (sorted by regions), and the chart’s horizontal axis represents time. Years for which data are available for a country are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s indicator of interest.", 
-                 type = "info", 
-                 closeOnClickOutside = TRUE, 
-                 showCancelButton = FALSE, 
-                 showConfirmButton = FALSE)
-    })
+  output$ui_outputs <- renderUI({
+    
     region <- c('Europe & Central Asia')
     region <- input$region
     
@@ -287,16 +282,27 @@ mod_dat_ind_server <- function(input, output, session){
     #   .$country
     country_names <- sort(unique(df$country))
 
-
-    pickerInput(inputId = session$ns("country"), 
-                label = 'Countries', 
-                choices = country_names, 
-                selected = country_names[1:4],
-                options = list( `actions-box`=TRUE,
-                                `style` = "btn-primary",
-                                `selected-text-format` = "count > 2",
-                                `count-selected-text` = "{0}/{1} Countries"),
-                multiple = TRUE)
+    fluidPage(
+      fluidRow(
+        pickerInput(inputId = session$ns("country"), 
+                    label = 'Countries', 
+                    choices = country_names, 
+                    selected = country_names[1:4],
+                    options = list( `actions-box`=TRUE,
+                                    `style` = "btn-primary",
+                                    `selected-text-format` = "count > 2",
+                                    `count-selected-text` = "{0}/{1} Countries"),
+                    multiple = TRUE),
+        sliderInput(inputId = session$ns('date_range'),
+                    label = 'Date range',
+                    min = 1982,
+                    max = 2017,
+                    value = c(1982, 2018),
+                    step = 1,
+                    sep = '')
+        
+      )
+    )
     
   })
   
@@ -304,14 +310,14 @@ mod_dat_ind_server <- function(input, output, session){
     region <- 'Europe & Central Asia'
     indicator <- 'Catastrophic health spending, 10%'
     # country_names <- top_countries[1:3]
-    date_range <- c(2012, 2017)
+    date_range <- c(1982, 2017)
     # country_name = c('Argentina', 'Brazil', 'Chile', 'Ecuador')
     # country_name <- input$country
     indicator <- input$indicator
     region <- input$region
     country_names <- input$country
     date_range <- input$date_range
-    if(is.null(country_names)){
+    if(is.null(date_range)){
       NULL
     } else {
       dat_list <- list()
@@ -332,7 +338,7 @@ mod_dat_ind_server <- function(input, output, session){
       df<- df %>%
         filter(indic == variable) %>%
         filter(regioncode %in% region_code) %>%
-        filter(country %in% country) %>%
+        filter(country %in% country_names) %>%
         select(year,country, indic, regioncode, referenceid_list, level_2, indicator_short_name) 
       
       names(df)[names(df) == 'regioncode'] <- 'region'
@@ -363,16 +369,7 @@ mod_dat_ind_server <- function(input, output, session){
       # get color vector (first 3 different shades of blue, 4th green, 5th orange, NA white)
       col_vec =  c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'transparent')
       
-      # temp_data$country <- ifelse(is.na(temp_data$country), 'No data', temp_data$country)
-      # temp_data$indic <- ifelse(is.na(temp_data$indic), 'No data', indicator)
       
-      # # find no data index
-      # all_indic <- as.character(sort(unique(temp_data$indic)))
-      # no_data_index <- which(all_indic == 'No data')
-      # 
-      if(is.null(temp_data) | nrow(temp_data) == 0){
-        NULL
-      } else {
         # get color graident
         # col_vec <- c(brewer.pal(name = 'Accent', n = length(unique(temp_data$indic))))
         # col_vec[no_data_index] <- 'transparent'
@@ -397,8 +394,9 @@ mod_dat_ind_server <- function(input, output, session){
                              y = '',
                              title = plot_title) +
                         hefpi::theme_gdocs() +
-          theme(axis.text.x = element_text(angle = 45, hjust = 1, size = rel(1)),
+          theme(axis.text.x = element_text(angle = 90, hjust = 1, size = rel(1)),
                 axis.text.y = element_text(size = rel(1))) +
+          coord_flip() +
           theme(legend.position = "none") 
            
         
@@ -407,10 +405,6 @@ mod_dat_ind_server <- function(input, output, session){
         dat_list[[2]] <- df
         dat_list[[3]] <- list(plot_title, col_vec, mytext)
         return(dat_list)
-        
-        
-      }
-      
     }
     
   })
@@ -419,7 +413,7 @@ mod_dat_ind_server <- function(input, output, session){
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
-      paste("data_avialability_indicators", Sys.Date(), ".csv", sep="")
+      paste0("data_indicators_", Sys.Date(), ".csv")
     },
     content = function(file) {
       # get map
@@ -436,7 +430,7 @@ mod_dat_ind_server <- function(input, output, session){
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_data_availability_indicators", ".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("data_indicators_",Sys.Date(), ".png"),
                                     content = function(file) {
                                       
                                       dat_list <- get_dat()
@@ -461,12 +455,38 @@ mod_dat_ind_server <- function(input, output, session){
     if(is.null(dat_list)){
       NULL
     } else {
-      p <- dat_list[[1]]
-      fig <- ggplotly(p, tooltip = 'text') %>% config(displayModeBar = F)
-      fig
+      pd <- dat_list[[2]]
+      if(nrow(pd)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+          
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+        
+      } else {
+        # df <- dot_list[[2]]
+        # plot_title <- dot_list[[3]][[1]]
+        # sub_title <- dot_list[[3]][[2]]
+        # col_vec <- dot_list[[3]][[3]]
+        # mytext <- dot_list[[3]][[4]]
+        p <- dat_list[[1]]
+        fig <- ggplotly(p, 
+                        tooltip = 'text') %>%
+          config(displayModeBar = F)
+        fig
+      }
       
     }
-    
   })
   
   

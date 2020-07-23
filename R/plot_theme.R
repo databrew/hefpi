@@ -38,7 +38,7 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
           axis.text = element_text(face = "plain", colour = dkgray2,
                                    size = 12),
           # only axis line on the x-axis. black.
-          # axis.line = element_line(colour = "black"),
+          axis.line = element_line(colour = "black"),
           # axis.line.y = element_blank(),
           # no axis ticks
           # axis.ticks = element_blank(),
