@@ -78,7 +78,7 @@ mod_recent_mean_server <- function(input, output, session){
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Recent value- Population mean", 
+    shinyalert(title = "Most recent value - National mean", 
                text = "This chart displays a world map in which countries are color-coded according to the most recent value of an indicator’s population level mean. To give users a better idea of a country’s relative positioning, the map is complemented by a bar chart that ranks countries by indicator value. By default, the map and bar chart use the latest available HEFPI data point, but users can choose the time period from which this latest data point is chosen.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
@@ -149,7 +149,7 @@ mod_recent_mean_server <- function(input, output, session){
       pop_map <- leaflet(shp, 
                          options = leafletOptions(minZoom = 1, 
                                                   maxZoom = 10)) %>% 
-        addProviderTiles('OpenStreetMap.DE') %>%
+        addProviderTiles('CartoDB.VoyagerNoLabels') %>%
         # addTiles(carto) %>%
         addPolygons( 
           color = 'black',
@@ -193,7 +193,7 @@ mod_recent_mean_server <- function(input, output, session){
       } else {
         indicator_name <- input$indicator
         year_title <- pop_map[[5]]
-        HTML(paste(h4(paste0('Most recent value - Population mean - ', indicator_name)), '\n',
+        HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
                    h4(year_title)))
       }
     }
@@ -208,7 +208,7 @@ mod_recent_mean_server <- function(input, output, session){
      if(is.na(pop_map)){
        this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                    maxZoom = 10)) %>% 
-         addProviderTiles('OpenStreetMap.DE') %>%
+         addProviderTiles('CartoDB.VoyagerNoLabels') %>%
          setView(lat=0, lng=0 , zoom=1.7) 
        this_map
      } else {
@@ -348,20 +348,22 @@ mod_recent_mean_server <- function(input, output, session){
           sep="") %>%
           lapply(htmltools::HTML)
         y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
-        plot_title = 'Most recent value - population mean'
         temp <- highlight_key(temp, key=~NAME)
         
         p <- ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                         geom_bar(stat = 'identity', aes(fill = value)) +
                         scale_fill_distiller(palette = bar_palette, direction = 1) +
                         labs(x='Country',
-                             y = y_axis_text,
-                             title = plot_title) +
+                             y = y_axis_text) +
                         hefpi::theme_gdocs() +
                         theme(panel.grid.major.x = element_blank(),
                               axis.text.x = element_blank(),
                               axis.ticks = element_blank(),
-                              legend.position = 'none'),
+                              legend.position = 'none') + 
+                        theme(axis.line.x = element_blank(),
+                              axis.line.y = element_line(colour = "lightgrey")),
+                        
+                        
                       tooltip = 'text')   
         p <- p %>% 
           config(displayModeBar = F) %>%
@@ -443,8 +445,8 @@ mod_recent_con_server <- function(input, output, session){
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
     observeEvent(input$plot_info, {
       # Show a modal when the button is pressed
-      shinyalert(title = "Recent value- Concentration Index", 
-                 text = "This chart displasy a world map in which countries are color-coded according to the most recent value of an indicator’s concentration index. The concentration index is bounded between -1 and 1. Negative values indicate disproportionate concentration of a variable among the poor, and positive values disproportionate concentration among the rich. For instance, if the variable is “bad” such as infant mortality, a negative value means infant mortality is higher among the poor. The map is complemented by a bar chart that ranks countries by the concentration index. By default, the map and bar chart use an indicator’s latest available concentration index, but users can choose the time period from which this latest concentration index value is chosen.", 
+      shinyalert(title = "Concentration index – Most recent value", 
+                 text = 'This chart displays a world map in which countries are color-coded according to the most recent value of an indicator’s concentration index. The concentration index is based on a measure of household wealth and bounded between -1 and 1. How wealth is measured for a data point – by a wealth index, consumption, or income – depends on the underlying survey. Negative values of the concentration index indicate disproportionate concentration of an indicator among the poor, and positive values disproportionate concentration among the rich. For instance, a negative value for infant mortality in a country means infant mortality is higher among the poor there. The map is complemented by a bar chart that ranks countries by the concentration index. By default, the map and bar chart use an indicator’s latest available concentration index, but users can choose the time period from which this latest concentration index value is chosen.', 
                  type = "info", 
                  closeOnClickOutside = TRUE, 
                  showCancelButton = FALSE, 
@@ -498,7 +500,7 @@ mod_recent_con_server <- function(input, output, session){
       year_title = paste0(plot_years[1], ' - ', plot_years[2])
       # carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
-        addProviderTiles('OpenStreetMap.DE') %>%
+        addProviderTiles('CartoDB.VoyagerNoLabels') %>%
         # addTiles(carto) %>%
         addPolygons( 
           color = 'black',
@@ -522,8 +524,9 @@ mod_recent_con_server <- function(input, output, session){
             direction = "auto"
           )
         ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
-        addLegend( pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
-      con_map_list<- list(con_map, shp, unit_of_measure, good_or_bad, year_title)
+        addLegend(pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
+      con_map_list<- list(con_map, shp, unit_of_measure,year_title)
+      save(con_map_list, file = 'map.rda')
     }
     return(con_map_list)
   })
@@ -538,8 +541,8 @@ mod_recent_con_server <- function(input, output, session){
         HTML(paste(h4('')))
       } else {
         indicator_name = input$indicator
-        year_title <- con_map[[5]]
-        HTML(paste(h4(paste0('Most recent value - Concentration index - ', indicator_name)), '\n',
+        year_title <- con_map[[4]]
+        HTML(paste(h4(paste0('Concentration index - Most recent value - ', indicator_name)), '\n',
                    h4(year_title)))
       }
     }
@@ -558,11 +561,11 @@ mod_recent_con_server <- function(input, output, session){
         # carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
         this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                      maxZoom = 10)) %>% 
-          addProviderTiles('OpenStreetMap.DE') %>%
+          addProviderTiles('CartoDB.VoyagerNoLabels') %>%
           setView(lat=0, lng=0 , zoom=1.7) 
         this_map
       } else {
-        this_map <- con_map[[3]]
+        this_map <- con_map[[1]]
         this_map
       }
     }
@@ -651,7 +654,6 @@ mod_recent_con_server <- function(input, output, session){
       } else {
         shp <- con_map[[2]]
         unit_of_measure <- con_map[[3]]
-        good_or_bad = con_map[[4]]
         temp <- shp@data
         temp <- temp %>% filter(!is.na(value))
         
@@ -667,7 +669,7 @@ mod_recent_con_server <- function(input, output, session){
         ordered_names <- temp$NAME[order(temp$value, decreasing = TRUE)]
         temp$NAME <- factor(temp$NAME, levels = ordered_names)
         
-        y_axis_text = paste0(indicator)
+        y_axis_text = paste0('CI - ', indicator)
         plot_title = 'Most recent value - concentration index'
         
         plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
@@ -677,13 +679,14 @@ mod_recent_con_server <- function(input, output, session){
                         geom_bar(stat = 'identity', aes(fill = value)) +
                         scale_fill_distiller(palette = "BrBG", limit = plot_limit) +
                         labs(x='Country',
-                             y = y_axis_text,
-                             title = plot_title) +
+                             y = y_axis_text) +
                         hefpi::theme_gdocs() +
                         theme(panel.grid.major.x = element_blank(),
                               axis.text.x = element_blank(),
                               axis.ticks = element_blank(),
-                              legend.position = 'none'),
+                              legend.position = 'none') + 
+                        theme(axis.line.x = element_blank(),
+                              axis.line.y = element_line(colour = "lightgrey")),
                       tooltip = 'text')
         p <- p %>% 
           config(displayModeBar = F) %>%

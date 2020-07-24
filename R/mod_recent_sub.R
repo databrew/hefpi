@@ -37,13 +37,7 @@ mod_recent_mean_sub_ui <- function(id){
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region)[[1]],
                          options = list(`style` = "btn-primary")),
-             sliderInput(ns('date_range'),
-                         'Date range',
-                         min = 1982,
-                         max = 2017,
-                         value = c(1982, 2017),
-                         step = 1,
-                         sep = ''),
+             uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(),br(),
@@ -81,14 +75,61 @@ mod_recent_mean_sub_server <- function(input, output, session){
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Recent value- Population mean", 
-               text = "This chart displays a world map in which within country regions are color-coded according to the most recent value of an indicator’s population level mean. To give users a better idea of a country’s relative positioning, the map is complemented by a bar chart that ranks countries by indicator value. By default, the map and bar chart use the latest available HEFPI data point, but users can choose the time period from which this latest data point is chosen.", 
+    shinyalert(title = "Most recent value - Subnational mean", 
+               text = "This chart displays maps in which countries’ subnational regions are color-coded according to the most recent value of a subnational region’s indicator mean. By default, the map uses the latest available HEFPI data point, but users can choose the time period from which this latest data point is chosen.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
                showConfirmButton = FALSE)
   })
   
+  output$ui_outputs <- renderUI({
+    
+    # to be used for testing 
+    #indicator <- sort(unique(hefpi::sub_national$indicator_short_name))[1]
+    #region <- as.character(region_list$region)[[1]]
+    indicator <- input$indicator
+    region <- input$region
+    # get region code
+    region_list <- hefpi::region_list
+    region_code <- as.character(region_list$region_code[region_list$region %in% region])
+
+    # Get the data to be plotted
+    pd <- hefpi::sub_national[sub_national$region_code == region_code,]
+    
+    pd <- pd %>% 
+      filter(indicator_short_name == indicator) %>%
+      group_by(ISO3 = iso3c, country,gaul_code) %>%
+      filter(year == max(year, na.rm = TRUE)) %>%
+      # filter(referenceid_list == first(referenceid_list)) %>%
+      summarise(value = first(value),
+                year = year) 
+    
+    # get country_names 
+    country_names <- sort(unique(pd$country))
+    # get ui inputs
+    fluidPage(
+      fluidRow(
+        pickerInput(inputId = session$ns("country"),
+                    label = 'Country', 
+                    choices = country_names,
+                    selected = country_names,
+                    options = list( `actions-box`=TRUE,
+                                    `selected-text-format` = "count > 2",
+                                    `count-selected-text` = "{0}/{1} Countries",
+                                    `style` = "btn-primary"),
+                    multiple = TRUE),
+        sliderInput(inputId = session$ns('date_range'),
+                    label = 'Date range',
+                    min = 1982,
+                    max = 2017,
+                    value = c(1982, 2017),
+                    step = 1,
+                    sep = '')
+      )
+    )
+    
+  })
   # HERE MAKE THIS LIKE THE NATIONAL DATA, SO IT HANDLES ERRORS (ITS ALREADY COPY AND PASTED IN)
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
@@ -104,119 +145,125 @@ mod_recent_mean_sub_server <- function(input, output, session){
     plot_years <- input$date_range
     indicator <- input$indicator
     region  <- input$region
+    country_names <- input$country
     
-    # get region code
-    region_list <- hefpi::region_list
-    region_code <- as.character(region_list$region_code[region_list$region %in% region])
-    # 
-    # Get the variable from indicator input
-    ind_info <- indicators %>%
-      filter(indicator_short_name == indicator) %>%
-      select(good_or_bad, unit_of_measure)
-    # variable_name = ind_info$variable_name
-    good_or_bad = ind_info$good_or_bad
-    unit_of_measure = ind_info$unit_of_measure
-    
-    # Get the data to be plotted
-    temp <- hefpi::sub_national[sub_national$region_code == region_code,]
-    pd <- temp %>% filter(year >= min(plot_years),
-                          year <= max(plot_years)) %>%
-      filter(indicator_short_name == indicator) %>%
-      group_by(ISO3 = iso3c, country,gaul_code) %>%
-      filter(year == max(year, na.rm = TRUE)) %>%
-      # filter(referenceid_list == first(referenceid_list)) %>%
-      summarise(value = first(value),
-                year = year) 
-    
-    # get indicator short name joined to data
-    if(nrow(pd)==0 | all(is.na(pd$value))){
-      pop_map_list <- NA
+    if(is.null(plot_years)){
+      NULL
     } else {
-      # get shape files
-      shp <- hefpi::gaul
+      # get region code
+      region_list <- hefpi::region_list
+      region_code <- as.character(region_list$region_code[region_list$region %in% region])
+      # 
+      # Get the variable from indicator input
+      ind_info <- indicators %>%
+        filter(indicator_short_name == indicator) %>%
+        select(good_or_bad, unit_of_measure)
+      # variable_name = ind_info$variable_name
+      good_or_bad = ind_info$good_or_bad
+      unit_of_measure = ind_info$unit_of_measure
       
-      # joine with data
-      shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code'))
+      # Get the data to be plotted
+      temp <- hefpi::sub_national[sub_national$region_code == region_code,]
+      pd <- temp %>% filter(year >= min(plot_years),
+                            year <= max(plot_years)) %>%
+        filter(indicator_short_name == indicator) %>%
+        filter(country %in% country_names) %>%
+        group_by(ISO3 = iso3c, country,gaul_code) %>%
+        filter(year == max(year, na.rm = TRUE)) %>%
+        # filter(referenceid_list == first(referenceid_list)) %>%
+        summarise(value = first(value),
+                  year = year) 
       
-      # remove polygons associated with NA - keeps only that region
-      na_rows <- which(!is.na(shp@data$value))
-      shp <- shp[na_rows,]
-      shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
-      
-      # Define centroid
-      centroid <- coordinates(shp)
-      centroid <- data.frame(centroid)
-      names(centroid) <- c('x', 'y')
-      centroid <- centroid %>%
-        summarise(x = mean(x, na.rm = TRUE),
-                  y = mean(y, na.rm = TRUE))
-      # condition on unit of measure
-      if(unit_of_measure == '%'){
-        shp@data$value<- shp@data$value*100
-      } 
-      
-      if(good_or_bad == 'Good'){
-        # Make color palette
-        map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
+      # get indicator short name joined to data
+      if(nrow(pd)==0 | all(is.na(pd$value))){
+        pop_map_list <- NA
       } else {
-        # Make color palette
-        map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="white")
+        # get shape files
+        shp <- hefpi::gaul
+        
+        # joine with data
+        shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code'))
+        
+        # remove polygons associated with NA - keeps only that region
+        na_rows <- which(!is.na(shp@data$value))
+        shp <- shp[na_rows,]
+        shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
+        
+        # Define centroid
+        centroid <- coordinates(shp)
+        centroid <- data.frame(centroid)
+        names(centroid) <- c('x', 'y')
+        centroid <- centroid %>%
+          summarise(x = mean(x, na.rm = TRUE),
+                    y = mean(y, na.rm = TRUE))
+        # condition on unit of measure
+        if(unit_of_measure == '%'){
+          shp@data$value<- shp@data$value*100
+        } 
+        
+        if(good_or_bad == 'Good'){
+          # Make color palette
+          map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="white")
+        } else {
+          # Make color palette
+          map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="white")
+        }
+        
+        year_title = paste0(plot_years[1], ' - ', plot_years[2])
+        
+        
+        # Make tooltip
+        map_text <- paste(
+          "Indicator: ",  indicator,"<br>",
+          "Economy: ", as.character(shp@data$ADM1_NAME),"<br/>", 
+          "Value: ", paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'), "<br/>",
+          "Year: ", as.character(shp@data$year),"<br/>",
+          sep="") %>%
+          lapply(htmltools::HTML)
+        
+        # create map
+        carto= "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
+        pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
+          addProviderTiles('CartoDB.VoyagerNoLabels') %>%
+          # addTiles(carto) %>%
+          addPolygons( 
+            color = 'black',
+            fillColor = ~map_palette(value), 
+            stroke=TRUE, 
+            fillOpacity = 0.9, 
+            weight=1,
+            label = map_text,
+            highlightOptions = highlightOptions(
+              weight = 1,
+              fillOpacity = 0,
+              color = "black",
+              opacity = 1.0,
+              bringToFront = TRUE,
+              sendToBack = TRUE
+            ),
+            labelOptions = labelOptions( 
+              noHide = FALSE,
+              style = list("font-weight" = "normal", padding = "3px 8px"), 
+              textsize = "13px", 
+              direction = "auto"
+            )
+          ) %>% 
+          # setView(lat=0, lng=0 , zoom=1.7) %>%
+          setView(lat=centroid$y, lng=centroid$x , zoom=3) %>%
+          addLegend(pal=map_palette, title= unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+        # store palette, text, map object, and data
+        pop_map_list[[1]] <- map_palette
+        pop_map_list[[2]] <- map_text
+        pop_map_list[[3]] <- pop_map
+        pop_map_list[[4]] <- shp
+        pop_map_list[[5]] <- good_or_bad
+        pop_map_list[[6]] <- unit_of_measure
+        pop_map_list[[7]] <- year_title
+        
       }
-      
-      year_title = paste0(plot_years[1], ' - ', plot_years[2])
-      
-      
-      # Make tooltip
-      map_text <- paste(
-        "Indicator: ",  indicator,"<br>",
-        "Economy: ", as.character(shp@data$ADM1_NAME),"<br/>", 
-        "Value: ", paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'), "<br/>",
-        "Year: ", as.character(shp@data$year),"<br/>",
-        sep="") %>%
-        lapply(htmltools::HTML)
-      
-      # create map
-      carto= "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-      pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
-        addProviderTiles('OpenStreetMap.DE') %>%
-        # addTiles(carto) %>%
-        addPolygons( 
-          color = 'black',
-          fillColor = ~map_palette(value), 
-          stroke=TRUE, 
-          fillOpacity = 0.9, 
-          weight=1,
-          label = map_text,
-          highlightOptions = highlightOptions(
-            weight = 1,
-            fillOpacity = 0,
-            color = "black",
-            opacity = 1.0,
-            bringToFront = TRUE,
-            sendToBack = TRUE
-          ),
-          labelOptions = labelOptions( 
-            noHide = FALSE,
-            style = list("font-weight" = "normal", padding = "3px 8px"), 
-            textsize = "13px", 
-            direction = "auto"
-          )
-        ) %>% 
-        # setView(lat=0, lng=0 , zoom=1.7) %>%
-        setView(lat=centroid$y, lng=centroid$x , zoom=3) %>%
-        addLegend(pal=map_palette, title= unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
-      # store palette, text, map object, and data
-      pop_map_list[[1]] <- map_palette
-      pop_map_list[[2]] <- map_text
-      pop_map_list[[3]] <- pop_map
-      pop_map_list[[4]] <- shp
-      pop_map_list[[5]] <- good_or_bad
-      pop_map_list[[6]] <- unit_of_measure
-      pop_map_list[[7]] <- year_title
-      
+      return(pop_map_list)
     }
-   
-    return(pop_map_list)
+  
   })
   # ---- RENDER MAP TITLE ---- #
   output$map_title_ui <- renderUI({
@@ -232,7 +279,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
         year_title <- pop_map[[7]]
         
         
-        HTML(paste(h4(paste0('Most recent value - Population mean - ', indicator_name)), '\n',
+        HTML(paste(h4(paste0('Most recent value - Subnational mean - ', indicator_name)), '\n',
                    h4(year_title)))
         
         
@@ -304,7 +351,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                           
                                           this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                                                        maxZoom = 10)) %>% 
-                                            addProviderTiles('OpenStreetMap.DE') %>%
+                                            addProviderTiles('CartoDB.VoyagerNoLabels') %>%
                                             setView(lat=0, lng=0 , zoom=1.7) 
                                           mapview::mapshot( x = this_map,
                                                             file = file,
