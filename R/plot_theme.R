@@ -38,8 +38,8 @@ theme_gdocs <- function(base_size = 12, base_family="sans") {
           axis.text = element_text(face = "plain", colour = dkgray2,
                                    size = 12),
           # only axis line on the x-axis. black.
-          axis.line = element_line(colour = "black"),
-          # axis.line.y = element_blank(),
+          axis.line.x = element_line(colour = NA),
+          axis.line.y = element_line(colour = ltgray),
           # no axis ticks
           # axis.ticks = element_blank(),
           # grid lines on both x and y axes. light gray. no minor gridlines
