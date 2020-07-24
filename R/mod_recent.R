@@ -91,8 +91,6 @@ mod_recent_mean_server <- function(input, output, session){
     # create list to store results from reactive object
     pop_map_list <- list()
     
-    indicator = 'Overweight, men'
-    plot_years = c(1982, 1982)
     # get inputs
     plot_years <- input$date_range
     indicator <- input$indicator
@@ -123,25 +121,21 @@ mod_recent_mean_server <- function(input, output, session){
     if(nrow(pd)==0 | all(is.na(pd$value))){
       pop_map_list <- NA
     } else {
-      # get world map shape files
+      # get world map shape files and join to data
       shp <- world
-      
-      # join with data
       shp@data <- shp@data %>% left_join(pd)
       
-      # condition on unit of measure
+      # adjust value and color palette based indicator info
       if(unit_of_measure == '%'){
         shp@data$value <- shp@data$value*100
       } 
       if(good_or_bad == 'Good'){
-        # Make color palette
         map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="#CECECE")
       } else {
-        # Make color palette
         map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE")
       }
       
-      # Make tooltip
+      # Create map
       map_text <- paste(
         "Indicator: ",  indicator,"<br>",
         "Economy: ", as.character(shp@data$NAME),"<br/>", 
@@ -150,13 +144,8 @@ mod_recent_mean_server <- function(input, output, session){
         "Data source :", as.character(shp@data$data_source), "<br/>",
         sep="") %>%
         lapply(htmltools::HTML)
-      
-      
       year_title = paste0(plot_years[1], ' - ', plot_years[2])
-      
-      # create map
-      carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-      
+      # carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       pop_map <- leaflet(shp, 
                          options = leafletOptions(minZoom = 1, 
                                                   maxZoom = 10)) %>% 
@@ -187,16 +176,8 @@ mod_recent_mean_server <- function(input, output, session){
         setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend( pal=map_palette,title = unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
       # store palette, text, map object, and data in list
-      pop_map_list[[1]] <- map_palette
-      pop_map_list[[2]] <- map_text
-      pop_map_list[[3]] <- pop_map
-      pop_map_list[[4]] <- shp
-      pop_map_list[[5]] <- good_or_bad
-      pop_map_list[[6]] <- unit_of_measure
-      pop_map_list[[7]] <- year_title
+      pop_map_list<- list(pop_map, shp, unit_of_measure, good_or_bad, year_title)
     }
-    
-   
     return(pop_map_list)
   })
   
@@ -210,16 +191,11 @@ mod_recent_mean_server <- function(input, output, session){
         
         HTML(paste(h4('')))
       } else {
-        indicator_name = input$indicator
-        year_title <- pop_map[[7]]
-        
-        
+        indicator_name <- input$indicator
+        year_title <- pop_map[[5]]
         HTML(paste(h4(paste0('Most recent value - Population mean - ', indicator_name)), '\n',
                    h4(year_title)))
-        
-        
       }
-      
     }
   })
   
@@ -229,17 +205,14 @@ mod_recent_mean_server <- function(input, output, session){
     if(is.null(pop_map)){
       NULL
     } else {
-     
      if(is.na(pop_map)){
-       carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-       
        this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                    maxZoom = 10)) %>% 
          addProviderTiles('OpenStreetMap.DE') %>%
          setView(lat=0, lng=0 , zoom=1.7) 
        this_map
      } else {
-       this_map <- pop_map[[3]]
+       this_map <- pop_map[[1]]
        this_map
      }
     }
@@ -283,8 +256,8 @@ mod_recent_mean_server <- function(input, output, session){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
-          this_map <- pop_map[[4]]
-          temp <- this_map@data
+          temp <- pop_map[[2]]
+          temp <- temp@data
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
           temp <- temp %>% select(year, region, subregion, name, lat, lon,indicator_short_name, indicator_description, unit_of_measure, value)
@@ -296,17 +269,14 @@ mod_recent_mean_server <- function(input, output, session){
   )
 
   # ---- DOWNLOAD MAP IMAGE ---- #
-  # DO THE SAME HERE
   output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".png"),
                                     content = function(file) {
                                       pop_map <- get_pop_map()
                                       if(is.null(pop_map)){
                                         NULL
                                       } else {
-                                        
                                         if(is.na(pop_map)){
-                                          carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-                                          
+                                         
                                           this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                                                        maxZoom = 10)) %>% 
                                             addProviderTiles('OpenStreetMap.DE') %>%
@@ -316,9 +286,7 @@ mod_recent_mean_server <- function(input, output, session){
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)
                                         } else {
-                                        # get map
-                                        this_map <- pop_map[[3]]
-                                        
+                                        this_map <- pop_map[[1]]
                                         mapview::mapshot( x = this_map,
                                                           file = file,
                                                           cliprect = "viewport",
@@ -339,6 +307,7 @@ mod_recent_mean_server <- function(input, output, session){
     if(is.null(pop_map)){
       NULL
     } else {
+      # create null plot if data is empty
       if(is.na(pop_map)){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -355,30 +324,21 @@ mod_recent_mean_server <- function(input, output, session){
           return(p)
         } 
         p <- empty_plot("No data available for the selected inputs")
-        
       } else {
-        shp <- pop_map[[4]]
-        good_or_bad = pop_map[[5]]
-        unit_of_measure <- pop_map[[6]]
-        
-        
-        # get data from shp and remove NA
+        # get data 
+        shp <- pop_map[[2]]
+        unit_of_measure <- pop_map[[3]]
+        good_or_bad = pop_map[[4]]
         temp <- shp@data
         temp <- temp %>% filter(!is.na(value))
         
-        # if data is null or all values are NA, generate empty plot with message
-        
-        
-        # get palette
+        # get plot
         if(good_or_bad == 'Good'){
           bar_palette = 'Greens'
         } else {
           bar_palette = 'Reds'
         }
-        
-        # order countries by value
         temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
-        
         plot_text <- paste(
           "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
           "Economy: ", as.character(temp$NAME),"<br>", 
@@ -387,16 +347,10 @@ mod_recent_mean_server <- function(input, output, session){
           "Data source :", as.character(temp$data_source), "<br>",
           sep="") %>%
           lapply(htmltools::HTML)
-        
-        
-        # create title and y axis label
         y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
         plot_title = 'Most recent value - population mean'
-        
-        # add highlight functionality, so hovering highlights bar.
         temp <- highlight_key(temp, key=~NAME)
         
-        # plotly plot
         p <- ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                         geom_bar(stat = 'identity', aes(fill = value)) +
                         scale_fill_distiller(palette = bar_palette, direction = 1) +
@@ -434,7 +388,6 @@ mod_recent_mean_server <- function(input, output, session){
 mod_recent_con_ui <- function(id){
   ns <- NS(id)
   # tagList(
-  
   fluidPage(
     fluidRow(
       column(8,
@@ -487,8 +440,7 @@ mod_recent_con_ui <- function(id){
 
 mod_recent_con_server <- function(input, output, session){
   
-
-    # Observe changes to inputs in order to generate changes to the map
+  # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
     observeEvent(input$plot_info, {
       # Show a modal when the button is pressed
       shinyalert(title = "Recent value- Concentration Index", 
@@ -499,22 +451,19 @@ mod_recent_con_server <- function(input, output, session){
                  showConfirmButton = FALSE)
     })
   
+  # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_con_map <- reactive({
-    indicator <- 'Inpatient care use, adults'
-    plot_years <- c(1982, 1982)
-    
     con_map_list <- list()
     plot_years <- input$date_range
     indicator <- input$indicator
 
-    # Get the variable
+    # generate data
     ind_info <- indicators %>%
       filter(indicator_short_name == indicator) %>%
       select(variable_name, unit_of_measure)
     variable_name <- ind_info$variable_name
     unit_of_measure <- ind_info$unit_of_measure
     
-    # Get the data to be plotted
     pd<- hefpi::df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
@@ -528,21 +477,15 @@ mod_recent_con_server <- function(input, output, session){
                 data_source = referenceid_list) %>%
       inner_join(indicators, by = c('indic'='variable_name'))
     
-    # get indicator short name joined to data
+    # fill result list with NA if data is null
     if(nrow(pd)==0 | all(is.na(pd$value))){
       con_map_list <- NA
     } else {
-      
       shp <- world
-      # save(shp, file = 'shp.rda')
       shp@data <- shp@data %>% left_join(pd)
       
-      # Make color palette
+      # generate map
       map_palette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="#CECECE")
-      
-      
-      
-      # Make tooltip
       map_text <- paste(
         "Indicator: ",  indicator,"<br>",
         "Economy: ", as.character(shp@data$NAME),"<br/>", 
@@ -553,13 +496,7 @@ mod_recent_con_server <- function(input, output, session){
         lapply(htmltools::HTML)
       
       year_title = paste0(plot_years[1], ' - ', plot_years[2])
-      
-      
-      
-      
-      # get map
-      carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-      
+      # carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
         addProviderTiles('OpenStreetMap.DE') %>%
         # addTiles(carto) %>%
@@ -586,16 +523,9 @@ mod_recent_con_server <- function(input, output, session){
           )
         ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend( pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
-      con_map_list[[1]] <- map_palette
-      con_map_list[[2]] <- map_text
-      con_map_list[[3]] <- con_map
-      con_map_list[[4]] <- shp
-      con_map_list[[5]] <- unit_of_measure
-      con_map_list[[6]] <- year_title
+      con_map_list<- list(con_map, shp, unit_of_measure, good_or_bad, year_title)
     }
-
     return(con_map_list)
-    
   })
 
   # ---- RENDER MAP TITLE ---- #
@@ -605,19 +535,13 @@ mod_recent_con_server <- function(input, output, session){
       NULL
     } else {
       if(is.na(con_map)){
-        
         HTML(paste(h4('')))
       } else {
         indicator_name = input$indicator
-        year_title <- con_map[[6]]
-        
-        
+        year_title <- con_map[[5]]
         HTML(paste(h4(paste0('Most recent value - Concentration index - ', indicator_name)), '\n',
                    h4(year_title)))
-        
-        
       }
-      
     }
   })
   
@@ -625,16 +549,13 @@ mod_recent_con_server <- function(input, output, session){
   output$recent_con_leaf <- renderLeaflet({
     # Plotly hover capture
     mouse_event <- event_data("plotly_click", source = "subset")
-    
     print(mouse_event)
     con_map <- get_con_map()
     if(is.null(con_map)){
       NULL
     } else {
-      
       if(is.na(con_map)){
-        carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-        
+        # carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
         this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                      maxZoom = 10)) %>% 
           addProviderTiles('OpenStreetMap.DE') %>%
@@ -662,14 +583,13 @@ mod_recent_con_server <- function(input, output, session){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
-          this_map <- con_map[[4]]
+          map_dat <- con_map[[2]]
           temp <- this_map@data
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
           temp <- temp %>% select(year, region, subregion, name, lat, lon,indicator_short_name, indicator_description, unit_of_measure, value)
           write.csv(temp, file)
         }
-        
       }
     }
   )
@@ -682,10 +602,8 @@ mod_recent_con_server <- function(input, output, session){
                                       if(is.null(con_map)){
                                         NULL
                                       } else {
-                                        
                                         if(is.na(con_map)){
-                                          carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-                                          
+                                          # carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
                                           this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                                                        maxZoom = 10)) %>% 
                                             addProviderTiles('OpenStreetMap.DE') %>%
@@ -695,9 +613,7 @@ mod_recent_con_server <- function(input, output, session){
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)
                                         } else {
-                                          # get map
-                                          this_map <- con_map[[3]]
-                                          
+                                          this_map <- con_map[[1]]
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
@@ -705,19 +621,17 @@ mod_recent_con_server <- function(input, output, session){
                                         }
                                       }
                                     })
+  
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_con_plot <- renderPlotly({
-    # get reactive list
     con_map <- get_con_map()
-    
-    # get inputs
     plot_years <- input$date_range
     indicator <- input$indicator
     
-    # while map (generate from reactive object) is null, plot is null
     if(is.null(con_map)){
       NULL
     } else {
+      # create empty plot if data is null
       if(is.na(con_map)){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -734,18 +648,14 @@ mod_recent_con_server <- function(input, output, session){
           return(p)
         } 
         p <- empty_plot("No data available for the selected inputs")
-        
       } else {
-        shp <- con_map[[4]]
-        good_or_bad = con_map[[5]]
-        unit_of_measure <- con_map[[6]]
-        
-        
-        # get data from shp and remove NA
+        shp <- con_map[[2]]
+        unit_of_measure <- con_map[[3]]
+        good_or_bad = con_map[[4]]
         temp <- shp@data
         temp <- temp %>% filter(!is.na(value))
         
-        # if data is null or all values are NA, generate empty plot with message
+        # generate map
         plot_text <- paste(
           "Indicator: ", indicator,"<br>",
           "Economy: ", as.character(temp$NAME),"<br>", 
@@ -754,19 +664,15 @@ mod_recent_con_server <- function(input, output, session){
           "Data source :", as.character(temp$data_source), "<br>",
           sep="") %>%
           lapply(htmltools::HTML)
-        
-        # order NAME by value 
         ordered_names <- temp$NAME[order(temp$value, decreasing = TRUE)]
         temp$NAME <- factor(temp$NAME, levels = ordered_names)
         
-        
-        # create title and y axis label
         y_axis_text = paste0(indicator)
         plot_title = 'Most recent value - concentration index'
         
         plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
         temp <- highlight_key(temp, key=~NAME)
-        # plotly plot
+        
         p <- ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                         geom_bar(stat = 'identity', aes(fill = value)) +
                         scale_fill_distiller(palette = "BrBG", limit = plot_limit) +
@@ -786,14 +692,9 @@ mod_recent_con_server <- function(input, output, session){
                     opacityDim = 0.6)
         
       }
-      
     }
-    
-    
   })
-
 }
-
 
 ## To be copied in the UI
 # mod_recent_mean_ui("leaf1")
