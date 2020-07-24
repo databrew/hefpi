@@ -190,8 +190,8 @@ mod_trends_mean_server <- function(input, output, session){
         
        
           # get title and subtitle
-          plot_title <- paste0('Trends - Population mean - ', indicator)
-          y_axis_text <- paste0(' (', unit_of_measure, ')')
+          plot_title <- paste0('Trends - National mean')
+          y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
           
           # condition on unit of measure
           if(unit_of_measure == '%'){
@@ -231,11 +231,9 @@ mod_trends_mean_server <- function(input, output, session){
                                  title = plot_title) +
                             hefpi::theme_gdocs() +
                             theme(panel.grid.major.x = element_blank(),
-                                  axis.text.x = element_text(angle = 90, hjust = 1)) 
+                                  axis.text.x = element_text(angle = 90, 
+                                                             hjust = 1)) 
      
-              
-  
-            
           } else {
             # condition if we connect the dots
             p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
