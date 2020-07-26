@@ -71,6 +71,7 @@ mod_dots_country_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
 
+# HERE IMPLEMENT CORRECT DATA DOWNLOAD FOR DOT PLOTS AND THEN DATA AVAILABILITY
 mod_dots_country_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
