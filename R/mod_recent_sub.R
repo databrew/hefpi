@@ -103,7 +103,10 @@ mod_recent_mean_sub_server <- function(input, output, session){
       filter(year == max(year, na.rm = TRUE)) %>%
       # filter(referenceid_list == first(referenceid_list)) %>%
       summarise(value = first(value),
-                year = year) 
+                indic = indic,
+                year = year,
+                region_name = region,
+                survey_list = survey) 
     
     # get country_names 
     country_names <- sort(unique(pd$country))
@@ -137,7 +140,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     # indicator <- sort(unique(hefpi::sub_national$indicator_short_name))[1]
     # region = 'Latin America & Caribbean'
     # plot_years <- c(1982, 2018)
-    
+
     # get list to store map data
     pop_map_list <- list()
     
@@ -172,7 +175,16 @@ mod_recent_mean_sub_server <- function(input, output, session){
         filter(year == max(year, na.rm = TRUE)) %>%
         # filter(referenceid_list == first(referenceid_list)) %>%
         summarise(value = first(value),
-                  year = year) 
+                  indic = indic,
+                  year = year,
+                  region_name = region,
+                  survey_list = survey,
+                  country = country,
+                  iso3c = iso3c,
+                  indicator_name = indicator_name,
+                  indicator_short_name = indicator_short_name,
+                  indicator_description = indicator_description,
+                  unit_of_measure) 
       
       # get indicator short name joined to data
       if(nrow(pd)==0 | all(is.na(pd$value))){
@@ -330,6 +342,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
           temp <- this_map@data
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
+          temp$parameter <- 'Mean'
+          temp$level <- 'Subnational'
+          temp <- temp %>% select(region_name, country,adm1_name, iso3, year,  survey_list, indic, indicator_short_name,
+                                  indicator_description, parameter, level, value, unit_of_measure)
+          names(temp) <- c('Region', 'Country_name', 'Subregion','Country_iso3', 'Year', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
           write.csv(temp, file)
         }
         

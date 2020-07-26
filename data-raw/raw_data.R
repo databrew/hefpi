@@ -22,15 +22,20 @@ df$bin <-
          ifelse(df$level2 == 'h_cov', 'Healthcare Coverage',
                 ifelse(df$level2 == 'h_out', 'Health Outcomes', NA)))
 
+# get regioncode code for regioncode
+df$region_name <- ifelse(df$regioncode == 'LCN', 'Latin America & Caribbean', 
+                              ifelse(df$regioncode =='SAS', 'South Asia', 
+                                     ifelse(df$regioncode == 'SSF','Sub-Saharan Africa', 
+                                            ifelse(df$regioncode =='ECS', 'Europe & Central Asia', 
+                                                   ifelse(df$regioncode == 'MEA','Middle East & North Africa',  
+                                                          ifelse(df$regioncode == 'EAS','East Asia & Pacific',  'NAC'))))))
+
 year_list <- sort(unique(df$year))
 usethis::use_data(year_list, overwrite = T)
 
 # Get nicer indicator names in full database
-df <- df %>%
-  left_join(indicators %>%
-            dplyr::select(variable_name:unit_of_measure),
-            by = c('indic' = 'variable_name')) %>% 
-  select(-c(indicator_short_name, indicator_name, indicator_description, unit_of_measure))
+df <- left_join(df, indicators, by = c('indic' = 'variable_name')) 
+
 usethis::use_data(df, overwrite = T)
 
 # Get indicators in a form usable for the selectInput function
@@ -81,13 +86,13 @@ df_series <- inner_join(dat,country, by = c('country_name' = 'short_name'))
 # Read in sub-national data (sent June 10 2020)
 sub_national <- haven::read_dta('from_wb/GAULdata.dta')
 # Restructure
-x <- sub_national %>% dplyr::select(year, indic, country, iso3c, iso2c, Rp1:Rc37)
+x <- sub_national %>% dplyr::select(year, indic, survey, country, iso3c, iso2c, Rp1:Rc37)
 names(x) <- gsub('Rp', 'value_', names(x))
 names(x) <- gsub('Rc', 'key_', names(x))
 out_list <- list()
 for(i in 1:37){
-  sub_data <- x[,c('year', 'indic', 'country', 'iso3c', 'iso2c', paste0('value_', i), paste0('key_', i))]
-  names(sub_data)[6:7] <- c('value', 'gaul_code')
+  sub_data <- x[,c('year', 'indic','survey', 'country', 'iso3c', 'iso2c', paste0('value_', i), paste0('key_', i))]
+  names(sub_data)[7:8] <- c('value', 'gaul_code')
   sub_data <- sub_data %>% filter(!is.na(gaul_code))
   out_list[[i]] <- sub_data
 }

@@ -185,8 +185,7 @@ mod_trends_mean_server <- function(input, output, session){
         pd <- pd %>% filter(year >= min(date_range),
                             year <= max(date_range)) 
         pd <- pd %>% filter(pop >= min(value_range),
-                            pop <= max(value_range)) %>%
-          inner_join(indicators, by = c('indic'='variable_name'))
+                            pop <= max(value_range)) 
         
        
           # get title and subtitle
@@ -281,7 +280,19 @@ mod_trends_mean_server <- function(input, output, session){
             temp <- data_frame()
           } else {
             temp <- pd
+            # subset by  
+            temp$parameter <- 'Mean'
+            temp$level <- 'National'
+            temp <- temp %>% select(region_name, country, iso3c, 
+                                    year, referenceid_list, survey_list, 
+                                    indic, indicator_short_name,
+                                    indicator_description, parameter, 
+                                    level, pop, unit_of_measure)
+            names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                             'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                             'Value', 'Unit_of_measurement')
           }
+          
           write.csv(temp, file)
         }
       }
@@ -573,10 +584,12 @@ mod_trends_mean_sub_server <- function(input, output, session){
         group_by(ISO3 = iso3c, country,gaul_code) %>%
         filter(year >= min(date_range),
                year <= max(date_range)) 
+      names(pd)[names(pd)=='region'] <- 'region_name'
         
       
       # get shape files
       shp <- hefpi::gaul
+      
       
       # joine with data
       shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
@@ -675,15 +688,31 @@ mod_trends_mean_sub_server <- function(input, output, session){
       
       if(is.null(pop_list)){
         NULL
+      } else {
         pd <- pop_list[[2]]
         if(nrow(pd)==0){
           temp <- data_frame()
         } else {
           temp <- pd
+          temp <- temp %>% filter(!is.na(value))
+          names(temp) <- tolower(names(temp))
+          save(temp, file = 'trends_mean_sub.rda')
+          
+          names(temp)[which(names(temp)=='adm1_name')] <- 'level'
+          temp$parameter <- 'Mean'
+          # temp$level <- 'Subnational'
+          temp <- temp %>% select(region_name, country, iso3, year,  
+                                  survey, indic, indicator_short_name,
+                                  indicator_description, parameter, level, value, unit_of_measure)
+          names(temp) <- c('Region', 'Country_name','Country_iso3', 'Year', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
         }
-      } else {
-        
+       
         write.csv(temp, file)
+        # save(temp, file = 'trends_mean_sub.rda')
+        
+        
       }
     }
   )
@@ -841,6 +870,7 @@ mod_trends_con_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
 
+### HERE NEED TO IMPLEMENT CORRECT DATA DOWNLOAD FOR REST OF TREND DATA
 mod_trends_con_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -855,12 +885,9 @@ mod_trends_con_server <- function(input, output, session){
   })
   output$ui_outputs <- renderUI({
     
-    
-    
     # get inputs
     indicator <- input$indicator
     region <- input$region
-    
     
     # get region code
     region_list <- hefpi::region_list
@@ -913,7 +940,7 @@ mod_trends_con_server <- function(input, output, session){
     temp <- hefpi::df_series %>% filter(region %in% region_list$region[1])
     country_names <- unique(temp$country_name)
     date_range <- c(1982, 2017)
-    # value_range <- c(0,81)
+    value_range <- c(0,1)
     yn <- input$interpolate
     
     # get inputs
@@ -945,8 +972,7 @@ mod_trends_con_server <- function(input, output, session){
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
       pd <- pd %>% filter(year >= min(date_range),
-                          year <= max(date_range)) %>%
-        inner_join(indicators, by = c('indic'='variable_name'))
+                          year <= max(date_range)) 
       
         
         # get title and subtitle
@@ -1030,9 +1056,20 @@ mod_trends_con_server <- function(input, output, session){
          temp <- data_frame()
         } else {
           temp <- pd
+          # save(temp, file = 'trends_ci.rda')
+          temp <- temp %>% filter(!is.na(CI))
+          names(temp) <- tolower(names(temp))
+          # subset by  
+          temp$parameter <- 'Concentration Index'
+          temp$level <- 'National'
+          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
+                                  indicator_description, parameter, level, ci, unit_of_measure)
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
         }
+        write.csv(temp, file)
         
-        write.csv(pd, file)
       }
     }
   )
@@ -1271,9 +1308,7 @@ mod_trends_quin_server <- function(input, output, session){
         filter(country == country_names) %>%
         filter(indic == variable_name) %>%
         filter(year >= min(date_range),
-               year <= max(date_range))  %>%
-        select(year, referenceid_list, Q1:Q5, indic) %>%
-        inner_join(indicators, by = c('indic'='variable_name'))
+               year <= max(date_range))  
       
       df <- df[complete.cases(df),]
       
@@ -1287,9 +1322,8 @@ mod_trends_quin_server <- function(input, output, session){
           # save(df, file = 'df.rda')
         }
         
-        df <- melt(df, id.vars = c('referenceid_list','year', 'indic', 'level_1', 
-                                  'level_2', 'good_or_bad', 'indicator_short_name',
-                                   'indicator_name','indicator_description', 'unit_of_measure'))
+        id_vars <- names(df)[!grepl('Q1|Q2|Q3|Q4|Q5', names(df))]
+        df <- melt(df, id.vars = id_vars)
         
         # recode Quintiels
         df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
@@ -1366,9 +1400,21 @@ mod_trends_quin_server <- function(input, output, session){
           temp <- data_frame()
         } else {
           temp <- df
+          names(temp) <- tolower(names(temp))
+          names(temp)[names(temp)=='variable'] <- 'level'
+          # subset by  
+          temp$parameter <- 'Concentration Index'
+          # temp$level <- 'National'
+          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
+                                  indicator_description, parameter, level, ci, unit_of_measure)
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
         }
+       
+        write.csv(temp, file)
+        # save(temp, file = 'trends_quin.rda')
         
-        write.csv(df, file)
       }
     }
   )

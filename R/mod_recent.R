@@ -114,6 +114,8 @@ mod_recent_mean_server <- function(input, output, session){
       summarise(value = first(pop),
                 indic = indic,
                 year = year,
+                region_name = region_name,
+                survey_list = survey_list,
                 data_source = referenceid_list) %>%
       inner_join(indicators, by = c('indic'='variable_name'))
     
@@ -260,7 +262,14 @@ mod_recent_mean_server <- function(input, output, session){
           temp <- temp@data
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
-          temp <- temp %>% select(year, region, subregion, name, lat, lon,indicator_short_name, indicator_description, unit_of_measure, value)
+          # subset by  
+          temp$parameter <- 'Mean'
+          temp$level <- 'National'
+          temp <- temp %>% select(region_name, name, iso3, year, data_source, survey_list, indic, indicator_short_name,
+                                  indicator_description, parameter, level, value, unit_of_measure)
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
           write.csv(temp, file)
         }
         
@@ -476,6 +485,8 @@ mod_recent_con_server <- function(input, output, session){
       summarise(value = first(CI),
                 indic = indic,
                 year = year,
+                region_name = region_name,
+                survey_list = survey_list,
                 data_source = referenceid_list) %>%
       inner_join(indicators, by = c('indic'='variable_name'))
     
@@ -526,7 +537,7 @@ mod_recent_con_server <- function(input, output, session){
         ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend(pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
       con_map_list<- list(con_map, shp, unit_of_measure,year_title)
-      save(con_map_list, file = 'map.rda')
+      # save(con_map_list, file = 'map.rda')
     }
     return(con_map_list)
   })
@@ -582,15 +593,23 @@ mod_recent_con_server <- function(input, output, session){
       if(is.null(con_map)){
         NULL
       } else {
-        if(is.na(con_map)){
+        map_dat <- con_map[[2]]
+        
+        if(is.na(map_dat)){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
-          map_dat <- con_map[[2]]
-          temp <- this_map@data
+          temp <- map_dat@data
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
-          temp <- temp %>% select(year, region, subregion, name, lat, lon,indicator_short_name, indicator_description, unit_of_measure, value)
+          # subset by  
+          temp$parameter <- 'CI'
+          temp$level <- 'National'
+          temp <- temp %>% select(region_name, name, iso3, year, data_source, survey_list, indic, indicator_short_name,
+                                  indicator_description, parameter, level, value, unit_of_measure)
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
           write.csv(temp, file)
         }
       }
