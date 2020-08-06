@@ -120,16 +120,32 @@ body.hold-transition .content-wrapper,body.hold-transition .left-side,body.hold-
 }
 
 .h4,h4 {
-    font-weight: 300;
+    font-weight: 150;
     line-height: 30px;
-    font-size: 20pt;
+    font-size: 15pt;
+    color:#757575;
+    font-family:'MuseoSans-300', 'Helvetica', serif;
+    padding-bottom: 0;
+    padding-top: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+    margin-left:0
+
+
 }
 
+
 .h5,h5 {
-    font-weight: 400;
+    font-weight: 100;
     line-height: 30px;
-    font-size: 18pt;
-    text-transform: uppercase;
+    font-size: 9pt;
+    color:#757575;
+    font-family:'MuseoSans-300', 'Helvetica', sans-serif;
+    padding-bottom: 0;
+    padding-top: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+    margin-left:0
 }
 
 .h6,h6 {
@@ -179,8 +195,10 @@ a:active,a:focus,a:hover {
 .layout-top-nav .main-header .navbar {
     margin-left: 0}
 .main-header #navbar-search-input.form-control {
-    background: rgba(255,255,255,.2);
-    border-color: transparent}
+    border-color: transparent;
+    background: rgba(255,255,255,.9)
+
+}
 .main-header #navbar-search-input.form-control:active,.main-header #navbar-search-input.form-control:focus {
     border-color: rgba(0,0,0,.1);
     background: rgba(255,255,255,.9)}
@@ -551,8 +569,10 @@ a:active,a:focus,a:hover {
 .sidebar-mini.sidebar-collapse .main-header .logo>.logo-lg {
     display: none}
 .sidebar-mini.sidebar-collapse .main-header .navbar {
-    margin-left: 50px}
+    margin-left: 50px
+    
 }
+
 .main-sidebar .user-panel,.sidebar-menu,.sidebar-menu>li.header {
     white-space: nowrap;
     overflow: hidden}
