@@ -221,7 +221,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
           map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="white")
         }
         
-        year_title = paste0(plot_years[1], ' - ', plot_years[2])
+        year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
         
         
         # Make tooltip
@@ -285,14 +285,23 @@ mod_recent_mean_sub_server <- function(input, output, session){
     } else {
       if(is.na(pop_map)){
         
-        HTML(paste(h2('')))
+       fluidPage(
+         fluidRow(
+           h4('')
+         )
+       )
       } else {
-        indicator_name = input$indicator
+        indicator_name <- input$indicator
         year_title <- pop_map[[7]]
-        
-        
-        HTML(paste(h4(paste0('Most recent value - Subnational mean - ', indicator_name)), '\n',
-                   h4(year_title)))
+        # HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
+        #            h5(year_title)))
+        fluidPage(
+          fluidRow(
+            h4(paste0('Most recent value - Subational mean - ', indicator_name)),
+            h5(paste0(year_title))
+            
+          )
+        )
         
         
       }

@@ -62,6 +62,7 @@ mod_trends_mean_ui <- function(id){
   )
 }
 
+
 # Module Server
 #' @rdname mod_trends_mean_server
 #' @export
@@ -80,7 +81,7 @@ mod_trends_mean_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Trends - Population mean", 
+    shinyalert(title = "Trends - National mean", 
                text = "This chart allows tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
@@ -90,12 +91,9 @@ mod_trends_mean_server <- function(input, output, session){
   
     output$ui_outputs <- renderUI({
       
-      
-      
       # get inputs
       indicator <- input$indicator
       region <- input$region
-
 
       # get region code
       region_list <- hefpi::region_list
@@ -150,7 +148,7 @@ mod_trends_mean_server <- function(input, output, session){
       indicator <- "Inpatient care use, adults"
       region <- region_list$region[c(1,3)]
       temp <- hefpi::df_series %>% filter(region %in% region)
-      country_names <- unique(temp$country_name)
+      country_names <- unique(temp$country_name)[1:15]
       date_range <- c(1982, 2017)
       value_range <- c(0,1)
       # get inputs
@@ -189,8 +187,9 @@ mod_trends_mean_server <- function(input, output, session){
         
        
           # get title and subtitle
-          plot_title <- paste0('Trends - National mean')
+          plot_title <- paste0('Trends - National mean - ', indicator)
           y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
+          x_axis_text <- paste0('', '\n', 'Year')
           
           # condition on unit of measure
           if(unit_of_measure == '%'){
@@ -219,20 +218,20 @@ mod_trends_mean_server <- function(input, output, session){
             
             # condition if we connect the dots
             p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
-                            geom_point() + 
-                            geom_line(aes(group = country)) +
-                            scale_color_manual(name = '',
-                                               values = trend_palette) +
-                            scale_y_continuous(limits = c(value_range[1], value_range[2]))+
-              scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
-                            labs(x='Year',
-                                 y = y_axis_text,
-                                 title = plot_title) +
-                            hefpi::theme_gdocs() +
-                            theme(panel.grid.major.x = element_blank(),
-                                  axis.text.x = element_text(angle = 90, 
-                                                             hjust = 1)) 
-     
+              geom_point() + 
+              geom_line(aes(group = country)) +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0))+
+              scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(x=x_axis_text,
+                   y = y_axis_text,
+                   title = plot_title)
+                            
+     p
           } else {
             # condition if we connect the dots
             p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
@@ -243,10 +242,7 @@ mod_trends_mean_server <- function(input, output, session){
               scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
                             labs(x='Year',
                                  y = y_axis_text,
-                                 title = plot_title) +
-                            hefpi::theme_gdocs() +
-                            theme(panel.grid.major.x = element_blank(),
-                                  axis.text.x = element_text(angle = 90, hjust = 1))
+                                 title = plot_title) 
             
             
           }
@@ -329,10 +325,15 @@ mod_trends_mean_server <- function(input, output, session){
                                             ggsave(file, width = 8, height = 8)
                                           } else {
                                             p <- pop_list[[1]]
-                                            p =  p + theme(axis.text = element_text(size = rel(18/12))) +
-                                              theme(legend.position = "top") +
-                                              theme(legend.direction = "horizontal", 
-                                                    legend.text=element_text(size=7)) 
+                                            p <- p + ggtitle('') +
+                                              hefpi::theme_hefpi(grid_major_x = NA,
+                                                                 x_axis_angle = 90,
+                                                                 x_axis_hjust = 0,
+                                                                 x_axis_size = 12,
+                                                                 legend_position = 'top',
+                                                                 legend_direction = 'horizontal',
+                                                                 legend_text_size = 1)
+                                            
                                             p
                                             ggsave(file, width = 8, height = 8)
                                           }
@@ -374,6 +375,10 @@ mod_trends_mean_server <- function(input, output, session){
           # col_vec <- dot_list[[3]][[3]]
           # mytext <- dot_list[[3]][[4]]
           p <- pop_list[[1]]
+          p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                               x_axis_angle = 90,
+                               x_axis_hjust = 1)
+          
           fig <- ggplotly(p, 
                           tooltip = 'text') %>%
             config(displayModeBar = F)
@@ -448,7 +453,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Trends - Population mean", 
+    shinyalert(title = "Trends - Subnational mean", 
                text = "This chart allows tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
@@ -461,7 +466,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     
     
     indicator <- sort(unique(sub_national$indicator_short_name))[1]
-    country_name <- 'Argentina'
+    country_name <- 'Belize'
     
     
     # get inputs
@@ -550,7 +555,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     # sub_regions<- sub_regions
     # date_range <- c(1982, 2017)
     # value_range <- c(0,1)
-    # country_names <- 'Argentina'
+    # country_names <- 'Belize'
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -590,7 +595,6 @@ mod_trends_mean_sub_server <- function(input, output, session){
       # get shape files
       shp <- hefpi::gaul
       
-      
       # joine with data
       shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
       
@@ -601,12 +605,17 @@ mod_trends_mean_sub_server <- function(input, output, session){
       pd <- shp@data
       
       pd <- pd %>% filter(ADM1_NAME %in% sub_regions)
-      
-     
+
+      pd <- pd %>% mutate_all(as.character)
+      pd$value <- as.numeric(pd$value)
+      drop_cols <- c("G2008_1_", "G2008_1_ID", "ADM0_NAME", "ADM0_CODE", "AREA", "PERIMETER")
+      pd <- pd %>% select(-one_of(drop_cols)) %>% group_by_if(is.character) %>% summarise_if(is.numeric, funs(mean))
         
+      # FINISHED FIXING DOT LINE ISSUE, MOVING ON IN SUBNATIONAL TAB
         # get title and subtitle
         plot_title <- paste0('Trends - Population mean - ', indicator)
-        y_axis_text <- paste0(' (', unit_of_measure, ')')
+        y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
+        x_axis_text <- paste0('', '\n', 'Year')
         
         # condition on unit of measure
         if(unit_of_measure == '%'){
@@ -618,10 +627,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
         # text for plot
         mytext <- paste(
           "Indicator: ", indicator,"<br>", 
-          "Economy: ", as.character(pd$country),"<br>", 
+          "Economy: ", as.character(pd$country), '<br>',
+          "Subregion: ", as.character(pd$ADM1_NAME),"<br>", 
           "Value: ", paste0(round(pd$value, digits = 2), ' (', unit_of_measure, ')'), "<br>",
           "Year: ", as.character(pd$year),"<br>",
-          "Data source: ", as.character(pd$referenceid_list), "<br>",
           sep="") %>%
           lapply(htmltools::HTML)
         
@@ -632,37 +641,41 @@ mod_trends_mean_sub_server <- function(input, output, session){
         
         yn <- input$interpolate
         if(yn){
-          
           # condition if we connect the dots
-          p <-  ggplot(data = pd, aes(year, value, color= ADM1_NAME, text=mytext)) +
+          p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME)) +
                           geom_point() + 
-                          geom_line(aes(group = ADM1_NAME)) +
+                          geom_line() +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
-                          scale_y_continuous(limits = c(value_range[1], value_range[2]))+
-            scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
-                          labs(x='Year',
+            scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                               expand = c(0,0))+
+            scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                               expand = c(0,0)) +
+                          labs(x=x_axis_text,
                                y = y_axis_text,
-                               title = plot_title) +
-                          hefpi::theme_gdocs() +
-                          theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 90, hjust = 1))
+                               title = plot_title) 
+                          
           
         } else {
           # condition if we connect the dots
-          p <- ggplot(data = pd, aes(year, value, color= ADM1_NAME, text=mytext)) +
+          p <- ggplot(data = pd, aes(as.numeric(year), value, color= ADM1_NAME, text=mytext)) +
                           geom_point() + 
                           # geom_line(aes(group = ADM1_NAME)) +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
-                          scale_y_continuous(labels = function(x) paste0(x, unit_of_measure), limits = c(value_range[1], value_range[2]))+
-            scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
-                          labs(x='Year',
-                               y = y_axis_text,
-                               title = plot_title) +
-                          hefpi::theme_gdocs() +
-                          theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 90, hjust = 1))
+            scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                               expand = c(0,0))+
+            scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                               expand = c(0,0)) +
+                          labs(x=x_axis_text,
+                               y=y_axis_text,
+                               title = plot_title) 
+          p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                      x_axis_angle = 90,
+                                      x_axis_hjust = 1)
+          
         }
         
         
@@ -694,23 +707,24 @@ mod_trends_mean_sub_server <- function(input, output, session){
           temp <- data_frame()
         } else {
           temp <- pd
+          # save(temp, file = 'trends_mean_sub.rda')
+          
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
-          save(temp, file = 'trends_mean_sub.rda')
+          # save(temp, file = 'trends_mean_sub.rda')
           
           names(temp)[which(names(temp)=='adm1_name')] <- 'level'
           temp$parameter <- 'Mean'
           # temp$level <- 'Subnational'
-          temp <- temp %>% select(region_name, country, iso3, year,  
+          temp <- temp %>% ungroup %>% select(region_name, country, iso3, year,  
                                   survey, indic, indicator_short_name,
                                   indicator_description, parameter, level, value, unit_of_measure)
           names(temp) <- c('Region', 'Country_name','Country_iso3', 'Year', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
         }
-       
-        write.csv(temp, file)
-        # save(temp, file = 'trends_mean_sub.rda')
+        
+        write.csv(x = temp, file)
         
         
       }
@@ -749,12 +763,18 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                           ggsave(file, width = 8, height = 8)
                                         } else {
                                           p <- pop_list[[1]]
-                                          p =  p + theme(axis.text = element_text(size = rel(18/12))) +
-                                            theme(legend.position = "top") +
-                                            theme(legend.direction = "horizontal", 
-                                                  legend.text=element_text(size=7)) 
+                                          p <- p + ggtitle('') +
+                                          hefpi::theme_hefpi(grid_major_x = NA,
+                                                             x_axis_angle = 90,
+                                                             x_axis_hjust = 0,
+                                                             x_axis_size = 12,
+                                                             legend_position = 'top',
+                                                             legend_direction = 'horizontal',
+                                                             legend_text_size = 1)
+                                          
                                           p
                                           ggsave(file, width = 8, height = 8)
+                                          
                                         }
                                       }
                                       
@@ -791,6 +811,9 @@ mod_trends_mean_sub_server <- function(input, output, session){
         # col_vec <- dot_list[[3]][[3]]
         # mytext <- dot_list[[3]][[4]]
         p <- pop_list[[1]]
+        p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                    x_axis_angle = 90,
+                                    x_axis_hjust = 1)
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
           config(displayModeBar = F)
@@ -877,7 +900,7 @@ mod_trends_con_server <- function(input, output, session){
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
     shinyalert(title = "Trends - Concentration Index", 
-               text = "This chart allows users to track the over-time dynamics in an indicator’s concentration index. tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+               text = "This chart allows users to track the over-time dynamics in an indicator’s concentration index. The concentration index is based on a measure of household wealth and bounded between -1 and 1. How wealth is measured for a data point – by a wealth index, consumption, or income – depends on the underlying survey. Negative values of the concentration index indicate disproportionate concentration of an indicator among the poor, and positive values disproportionate concentration among the rich. For instance, a negative value for infant mortality in a country means infant mortality is higher among the poor there. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -925,6 +948,7 @@ mod_trends_con_server <- function(input, output, session){
                     'Y axis range',
                     min = min_value,
                     max = max_value,
+                    step = 0.1, 
                     value = c(min_value, max_value),
                     sep = '')
         
@@ -976,9 +1000,9 @@ mod_trends_con_server <- function(input, output, session){
       
         
         # get title and subtitle
-        plot_title <- paste0('Trends - Concentration index - ', indicator)
-        y_axis_text <- 'Value'
-        
+       
+        y_axis_text <- paste0(indicator, ' (CI) ')
+        x_axis_text <- paste0('', '\n', 'Year')
       
         # text for plot
         mytext <- paste(
@@ -1002,14 +1026,14 @@ mod_trends_con_server <- function(input, output, session){
                           geom_line(aes(group = country)) +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
-            scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
-            scale_y_continuous(limits = c(value_range[1], value_range[2])) +
-                          labs(x='Year',
-                               y = y_axis_text,
-                               title = plot_title) +
-                          hefpi::theme_gdocs() +
-                          theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 90, hjust = 1))
+            scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                               expand = c(0,0))+
+            scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                               expand = c(0,0)) +
+            labs(x=x_axis_text,
+                 y = y_axis_text) 
+                          
 
         } else {
           # condition if we connect the dots
@@ -1017,17 +1041,16 @@ mod_trends_con_server <- function(input, output, session){
                           geom_point() +
                           scale_color_manual(name = '',
                                              values = trend_palette) +
-                          labs(x='Year',
-                               y = y_axis_text,
-                               title = plot_title) +
-            scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1))+
-            scale_y_continuous(limits = c(value_range[1], value_range[2])) +
-                          hefpi::theme_gdocs() +
-                          theme(panel.grid.major.x = element_blank(),
-                                axis.text.x = element_text(angle = 90, hjust = 1))
+            scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                               expand = c(0,0))+
+            scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                               expand = c(0,0)) +
+            labs(x=x_axis_text,
+                 y = y_axis_text) 
         }
         
-        
+        plot_title = 'a'
         con_list[[1]] <- p
         con_list[[2]] <- pd
         con_list[[3]] <- list(plot_title, mytext, y_axis_text, trend_palette)
@@ -1105,13 +1128,19 @@ mod_trends_con_server <- function(input, output, session){
                                           p
                                           ggsave(file, width = 8, height = 8)
                                         } else {
-                                          p <- con_list[[1]]
-                                          p =  p + theme(axis.text = element_text(size = rel(18/12))) +
-                                            theme(legend.position = "top") +
-                                            theme(legend.direction = "horizontal", 
-                                                  legend.text=element_text(size=7)) 
+                                          p <- pop_list[[1]]
+                                          p <- p + ggtitle('') +
+                                            hefpi::theme_hefpi(grid_major_x = NA,
+                                                               x_axis_angle = 90,
+                                                               x_axis_hjust = 0,
+                                                               x_axis_size = 12,
+                                                               legend_position = 'top',
+                                                               legend_direction = 'horizontal',
+                                                               legend_text_size = 1)
+                                          
                                           p
                                           ggsave(file, width = 8, height = 8)
+                                          
                                         }
                                         
                                       }
@@ -1148,11 +1177,36 @@ mod_trends_con_server <- function(input, output, session){
         # sub_title <- dot_list[[3]][[2]]
         # col_vec <- dot_list[[3]][[3]]
         # mytext <- dot_list[[3]][[4]]
+        date_range <- input$date_range
+        indicator <- input$indicator
         p <- con_list[[1]]
+        p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                    x_axis_angle = 90,
+                                    x_axis_hjust = 1)
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
-          config(displayModeBar = F)
+          config(displayModeBar = F) %>%
+          add_annotations(
+            yref="paper", 
+            xref="paper", 
+            y=1.15, 
+            x=0, 
+            text=paste0(paste0('Concentration index - Trends  - ', indicator),
+                        '<br>',
+                        '<sup>',
+                        paste0('From ', date_range[1], ' to ', date_range[2]),
+                        '</sup>'), 
+            showarrow=F, 
+            font=list(size=17)
+          ) %>% 
+          layout(title=FALSE)
+          layout(title = list(text = paste0(paste0('Concentration index - Trends  - ', indicator),
+                                            '<br>',
+                                            '<sup>',
+                                            paste0('From ', date_range[1], ' to ', date_range[2]),
+                                            '</sup>')))
         fig
+      
       }
       
     }
@@ -1160,6 +1214,8 @@ mod_trends_con_server <- function(input, output, session){
   
   
 }
+
+
 
 #-----------------------------------------------------------------------------------------------------
 #' @rdname mod_trends_quin_ui
@@ -1193,8 +1249,8 @@ mod_trends_quin_ui <- function(id){
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
-                         max = 2017,
-                         value = c(1982, 2017),
+                         max = 2018,
+                         value = c(1982, 2018),
                          step = 1,
                          sep = ''),
              pickerInput(ns('view_as'), 'View as',
@@ -1229,8 +1285,8 @@ mod_trends_quin_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Trends - Quintile", 
-               text = "This chart shows HEFPI health outcome and health service coverage indicator trends at the wealth quintile level, revealing if any inequalities have reduced, remained stable, or increased over time. Users can tailor the charts to their time period of interest.", 
+    shinyalert(title = "Quintile - Trends", 
+               text = "This chart shows HEFPI indicator trends at the wealth quintile level, revealing if any inequalities have reduced, remained stable, or increased over time. How wealth is measured for a data point – by a wealth index, consumption, or income – depends on the underlying survey. Users can tailor the charts to their time period of interest.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -1277,7 +1333,7 @@ mod_trends_quin_server <- function(input, output, session){
                 value = c(min_value, max_value),
                 sep = '')
   })
-  
+  # HERE TEST IF Helvetica serif WORKS AND IF OVERRIDING IT HAPPENS
   get_quin_data <- reactive({
     country_names <- 'United States'
     indicator <- 'Inpatient care use, adults'
@@ -1344,8 +1400,9 @@ mod_trends_quin_server <- function(input, output, session){
         col_vec <- col_vec[-1]
         
         # make plot title
-        plot_title = paste0('Quintile Trends - ',indicator)
-        y_axis_text = paste0(' (', unit_of_measure, ')')
+        plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
+        y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+        x_axis_text = paste0('', '\n', 'Year')
         # subset by y axis
         
         # text for plot
@@ -1363,13 +1420,15 @@ mod_trends_quin_server <- function(input, output, session){
           geom_line(aes(group = as.character(variable))) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1))  +
-          scale_y_continuous(limits = c(value_range[1], value_range[2])) +
+          scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                             expand = c(0,0))+
+          scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+                             breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                             expand = c(0,0)) +
           labs(x='Year',
                y = y_axis_text,
-               title = plot_title) +
-          hefpi::theme_gdocs() +
-          theme(axis.text.x = element_text(angle = 90, hjust = 1))
+               x = x_axis_text,
+               title = plot_title) 
         
         
         quin_list[[1]] <- p
@@ -1403,7 +1462,7 @@ mod_trends_quin_server <- function(input, output, session){
           names(temp) <- tolower(names(temp))
           names(temp)[names(temp)=='variable'] <- 'level'
           # subset by  
-          temp$parameter <- 'Concentration Index'
+          temp$parameter <- 'Mean'
           # temp$level <- 'National'
           temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
                                   indicator_description, parameter, level, ci, unit_of_measure)
@@ -1450,12 +1509,15 @@ mod_trends_quin_server <- function(input, output, session){
                                           p
                                           ggsave(file, width = 8, height = 8)
                                         } else {
-                                          p <- quin_list[[1]]
+                                          p <- pop_list[[1]]
+                                          p <- p + ggtitle('') +
+                                            hefpi::theme_hefpi(x_axis_angle = 90,
+                                                               x_axis_hjust = 0,
+                                                               x_axis_size = 12,
+                                                               legend_position = 'top',
+                                                               legend_direction = 'horizontal',
+                                                               legend_text_size = 1)
                                           
-                                          p =  p + theme(axis.text = element_text(size = rel(18/12))) +
-                                            theme(legend.position = "top") +
-                                            theme(legend.direction = "horizontal", 
-                                                  legend.text=element_text(size=7)) 
                                           p
                                           ggsave(file, width = 8, height = 8)
                                         }
@@ -1496,6 +1558,9 @@ mod_trends_quin_server <- function(input, output, session){
         # col_vec <- dot_list[[3]][[3]]
         # mytext <- dot_list[[3]][[4]]
         p <- quin_list[[1]]
+        p <- p + hefpi::theme_hefpi(x_axis_angle = 90,
+                                    x_axis_hjust = 1,
+                                    grid_major_x = NA)
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
           config(displayModeBar = F)

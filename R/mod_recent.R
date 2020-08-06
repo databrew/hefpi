@@ -116,8 +116,10 @@ mod_recent_mean_server <- function(input, output, session){
                 year = year,
                 region_name = region_name,
                 survey_list = survey_list,
-                data_source = referenceid_list) %>%
-      inner_join(indicators, by = c('indic'='variable_name'))
+                data_source = referenceid_list,
+                indicator_short_name = indicator_short_name,
+                indicator_description = indicator_description,
+                unit_of_measure = unit_of_measure) 
     
     # get indicator short name joined to data
     if(nrow(pd)==0 | all(is.na(pd$value))){
@@ -146,7 +148,7 @@ mod_recent_mean_server <- function(input, output, session){
         "Data source :", as.character(shp@data$data_source), "<br/>",
         sep="") %>%
         lapply(htmltools::HTML)
-      year_title = paste0(plot_years[1], ' - ', plot_years[2])
+      year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
       # carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       pop_map <- leaflet(shp, 
                          options = leafletOptions(minZoom = 1, 
@@ -195,8 +197,16 @@ mod_recent_mean_server <- function(input, output, session){
       } else {
         indicator_name <- input$indicator
         year_title <- pop_map[[5]]
-        HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
-                   h4(year_title)))
+        # HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
+        #            h5(year_title)))
+        fluidPage(
+          fluidRow(
+            h4(paste0('Most recent value - National mean - ', indicator_name)),
+            h5(paste0(year_title))
+            
+          )
+        )
+        
       }
     }
   })
@@ -359,21 +369,22 @@ mod_recent_mean_server <- function(input, output, session){
         y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
         temp <- highlight_key(temp, key=~NAME)
         
-        p <- ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
-                        geom_bar(stat = 'identity', aes(fill = value)) +
-                        scale_fill_distiller(palette = bar_palette, direction = 1) +
-                        labs(x='Country',
-                             y = y_axis_text) +
-                        hefpi::theme_gdocs() +
-                        theme(panel.grid.major.x = element_blank(),
-                              axis.text.x = element_blank(),
-                              axis.ticks = element_blank(),
-                              legend.position = 'none') + 
-                        theme(axis.line.x = element_blank(),
-                              axis.line.y = element_line(colour = "lightgrey")),
-                        
-                        
-                      tooltip = 'text')   
+        p <- ggplotly(
+          ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
+                     geom_bar(stat = 'identity', aes(fill = value)) +
+                     scale_fill_distiller(palette = bar_palette, direction = 1) +
+                     labs(x='Country',
+                          y = y_axis_text) +
+                     hefpi::theme_hefpi(grid_major_x=NA,
+                                 x_axis_angle = 90,
+                                 x_axis_line = NA,
+                                 legend_position = 'none') +
+                     theme(axis.text.x = element_blank(),
+                           axis.ticks.x = element_blank()),
+                   tooltip = 'text'))   
+        
+        
+        
         p <- p %>% 
           config(displayModeBar = F) %>%
           highlight(on='plotly_hover',
@@ -403,6 +414,12 @@ mod_recent_con_ui <- function(id){
     fluidRow(
       column(8,
              uiOutput(ns('map_title_ui')),
+             # tags$head(tags$style("#shiny-text-output{color: #757575;
+             #                     font-size: 400px;
+             #                     font-family:'MuseoSans-300', 'Helvetica', sans-serif
+             #                     }"
+             #    )
+             # ),
              leafletOutput(
                ns('recent_con_leaf')),
              ),
@@ -508,7 +525,7 @@ mod_recent_con_server <- function(input, output, session){
         sep="") %>%
         lapply(htmltools::HTML)
       
-      year_title = paste0(plot_years[1], ' - ', plot_years[2])
+      year_title = paste0('From ',plot_years[1], ' to ', plot_years[2])
       # carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
         addProviderTiles('CartoDB.VoyagerNoLabels') %>%
@@ -549,12 +566,24 @@ mod_recent_con_server <- function(input, output, session){
       NULL
     } else {
       if(is.na(con_map)){
-        HTML(paste(h4('')))
+        fluidPage(
+          fluidRow(
+            h4('')
+          )
+        )
       } else {
-        indicator_name = input$indicator
+        indicator_name <- input$indicator
         year_title <- con_map[[4]]
-        HTML(paste(h4(paste0('Concentration index - Most recent value - ', indicator_name)), '\n',
-                   h4(year_title)))
+        # HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
+        #            h5(year_title)))
+        fluidPage(
+          fluidRow(
+            h4(paste0('Most recent value - Concentration index - ', indicator_name)),
+            h5(paste0(year_title))
+            
+          )
+        )
+     
       }
     }
   })
@@ -699,13 +728,12 @@ mod_recent_con_server <- function(input, output, session){
                         scale_fill_distiller(palette = "BrBG", limit = plot_limit) +
                         labs(x='Country',
                              y = y_axis_text) +
-                        hefpi::theme_gdocs() +
-                        theme(panel.grid.major.x = element_blank(),
-                              axis.text.x = element_blank(),
-                              axis.ticks = element_blank(),
-                              legend.position = 'none') + 
-                        theme(axis.line.x = element_blank(),
-                              axis.line.y = element_line(colour = "lightgrey")),
+                        hefpi::theme_hefpi(grid_major_x=NA,
+                                           x_axis_angle = 90,
+                                           x_axis_line = NA,
+                                           legend_position = 'none') +
+                        theme(axis.text.x = element_blank(),
+                              axis.ticks.x = element_blank()),
                       tooltip = 'text')
         p <- p %>% 
           config(displayModeBar = F) %>%

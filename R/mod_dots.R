@@ -77,8 +77,8 @@ mod_dots_country_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Quintile Dotpot for countries", 
-               text = "This chart enables users to compare inequalities in health and service coverage outcomes both within and across countries. For a set of countries and an indicator the user specifies, the dot plot shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
+    shinyalert(title = "Quintiles - Most recent value by country", 
+               text = "This chart enables users to compare inequalities in HEFPI indicators by household wealth, both within and across countries. How wealth is measured for a data point – by a wealth index, consumption, or income – depends on the underlying survey. For a set of countries and an indicator the user specifies, the chart shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -185,8 +185,7 @@ mod_dots_country_server <- function(input, output, session){
       df <- temp %>%
         group_by(country) %>%
         arrange(desc(year)) %>%
-        dplyr::filter(year == dplyr::first(year)) %>%
-        left_join(indicators, by = c('indic' = 'variable_name'))
+        dplyr::filter(year == dplyr::first(year)) 
       
       # made data long form
       id_vars <- names(df)[!grepl('Q', names(df))]
@@ -208,7 +207,7 @@ mod_dots_country_server <- function(input, output, session){
       col_vec <- col_vec[-1]
       
       # make plot title 
-      plot_title = paste0('Quintile Dot Plots for Economies', ' - ', indicator)
+      plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
       y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
       
@@ -244,11 +243,10 @@ mod_dots_country_server <- function(input, output, session){
           geom_line(aes(group = country)) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          scale_y_continuous(limits = c(value_range[1], value_range[2])) +
+          scale_y_continuous(limits = c(value_range[1], value_range[2]), expand = c(0,0)) +
           labs(title=plot_title,
                subtitle = sub_title, x= '', y = y_axis_text) +
-          coord_flip() +
-          theme_gdocs() 
+          coord_flip() 
        
         
         dot_list[[1]] <- p
@@ -276,8 +274,17 @@ mod_dots_country_server <- function(input, output, session){
         NULL
       } else {
         df <- dot_list[[2]]
-        
-        write.csv(df, file)
+        temp <- df
+        names(temp) <- tolower(names(temp))
+        names(temp)[names(temp)=='variable'] <- 'level'
+        # subset by  
+        temp$parameter <- 'Mean'
+        # temp$level <- 'National'
+        temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
+                                indicator_description, parameter, level, ci, unit_of_measure)
+        names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                         'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                         'Value', 'Unit_of_measurement')
       }
     }
   )
@@ -292,9 +299,7 @@ mod_dots_country_server <- function(input, output, session){
                                         NULL
                                       } else {
                                         p <- dot_list[[1]]
-                                        
-                                        p =  p + theme(axis.text = element_text(size = rel(1/2))) 
-                                         
+                                        p <- p + hefpi::theme_hefpi() 
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -333,6 +338,7 @@ mod_dots_country_server <- function(input, output, session){
         # mytext <- dot_list[[3]][[4]]
         p <- dot_list[[1]]
         plot_height <- dot_list[[3]][[5]]
+        p <- p + hefpi::theme_hefpi(grid_major_x = NA)
         fig <- ggplotly(p, 
                         tooltip = 'text', 
                         height = plot_height) %>%
@@ -418,8 +424,8 @@ mod_dots_ind_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Quintile Dotpot for indicators", 
-               text = "This chart allows users to shed light on overall health and service coverage inequality in a country and to explore differences in inequalities across indicators. For instance, the chart reveals if a country achieves universal coverage of maternal and child health services while failing to enable equitable access to inpatient care. For every health and service coverage indicator in the HEFPI database and a country the user selects, the dot plot shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality.", 
+    shinyalert(title = "Quintiles - Most recent value by indicator", 
+               text = "This chart allows users to explore differences in inequalities by household wealth across HEFPI indicators within a country. For instance, the chart reveals if a country achieves universal coverage of maternal and child health services while failing to enable equitable access to inpatient care. For every HEFPI indicators and country the user selects, the chart shows mean indicator values for each wealth quintile. Greater distance between the poor and rich on the chart’s horizontal axis indicates more severe inequality. How wealth is measured for a data point – by a wealth index, consumption, or income – depends on the underlying survey.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -445,9 +451,8 @@ mod_dots_ind_server <- function(input, output, session){
       filter(country == country_names) %>%
       filter(indic %in% variable) %>%
       filter(year >= date_range[1],
-             year <= date_range[2]) %>%
-      left_join(indicators, by = c('indic' = 'variable_name'))
-    
+             year <= date_range[2]) 
+
     # get year and keep only necessary columns
     df <- temp %>%
       group_by(indicator_short_name) %>%
@@ -513,8 +518,7 @@ mod_dots_ind_server <- function(input, output, session){
         filter(country == country_names) %>%
         filter(indic %in% variable_name) %>%
         filter(year >= date_range[1],
-               year <= date_range[2]) %>%
-        left_join(indicators, by = c('indic' = 'variable_name'))
+               year <= date_range[2]) 
       
       # get year and keep only necessary columns
       df <- temp %>%
@@ -540,7 +544,7 @@ mod_dots_ind_server <- function(input, output, session){
       col_vec <- col_vec[-1]
       
       # make plot title 
-      plot_title = paste0('Quintile Dot Plots for Indicators', ' - ', country_names)
+      plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', country_names)
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
       y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
       
@@ -574,12 +578,10 @@ mod_dots_ind_server <- function(input, output, session){
           geom_line(aes(group = indicator_short_name)) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          scale_y_continuous(limits = c(value_range[1], value_range[2])) +
+          scale_y_continuous(limits = c(value_range[1], value_range[2]), expand = c(0,0)) +
           labs(title=plot_title, x= '', y = '',
                subtitle = sub_title) +
-          coord_flip() +
-          theme_gdocs() +
-          theme(axis.text = element_text(size = 8,  family = 'sans'))
+          coord_flip() 
        
         
         dot_list[[1]] <- p
@@ -605,7 +607,17 @@ mod_dots_ind_server <- function(input, output, session){
         NULL
       } else {
         df <- dot_list[[2]]
-        
+        temp <- df
+        names(temp) <- tolower(names(temp))
+        names(temp)[names(temp)=='variable'] <- 'level'
+        # subset by  
+        temp$parameter <- 'Mean'
+        # temp$level <- 'National'
+        temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
+                                indicator_description, parameter, level, ci, unit_of_measure)
+        names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                         'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                         'Value', 'Unit_of_measurement')
         write.csv(df, file)
       }
     }
@@ -662,6 +674,7 @@ mod_dots_ind_server <- function(input, output, session){
         # mytext <- dot_list[[3]][[4]]
         p <- dot_list[[1]]
         plot_height <- dot_list[[3]][[5]]
+        p <- p + hefpi::theme_hefpi(grid_major_x = NA) 
         fig <- ggplotly(p, 
                         tooltip = 'text', 
                         height = plot_height) %>%
