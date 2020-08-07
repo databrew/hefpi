@@ -346,9 +346,9 @@ mod_recent_mean_server <- function(input, output, session){
         p <- empty_plot("No data available for the selected inputs")
       } else {
         # get data 
-        shp <- pop_map_[[2]]
+        shp <- pop_map[[2]]
         unit_of_measure <- pop_map[[3]]
-        good_or_bad = pop_map_[[4]]
+        good_or_bad = pop_map[[4]]
         temp <- shp@data
         temp <- temp %>% filter(!is.na(value))
         
