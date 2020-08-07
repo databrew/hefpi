@@ -153,7 +153,7 @@ mod_recent_mean_server <- function(input, output, session){
       pop_map <- leaflet(shp, 
                          options = leafletOptions(minZoom = 1, 
                                                   maxZoom = 10)) %>% 
-        addProviderTiles('CartoDB.VoyagerNoLabels') %>%
+        addProviderTiles('Esri.WorldShadedRelief') %>%
         # addTiles(carto) %>%
         addPolygons( 
           color = 'black',
@@ -164,8 +164,9 @@ mod_recent_mean_server <- function(input, output, session){
           label = map_text,
           highlightOptions = highlightOptions(
             weight = 1,
-            fillOpacity = 0,
-            color = "black",
+            fillColor = 'white',
+            fillOpacity = 1,
+            color = "white",
             opacity = 1.0,
             bringToFront = TRUE,
             sendToBack = TRUE
@@ -193,7 +194,7 @@ mod_recent_mean_server <- function(input, output, session){
     } else {
       if(is.na(pop_map)){
         
-        HTML(paste(h4('')))
+        h4('')
       } else {
         indicator_name <- input$indicator
         year_title <- pop_map[[5]]
@@ -345,9 +346,9 @@ mod_recent_mean_server <- function(input, output, session){
         p <- empty_plot("No data available for the selected inputs")
       } else {
         # get data 
-        shp <- pop_map[[2]]
+        shp <- pop_map_[[2]]
         unit_of_measure <- pop_map[[3]]
-        good_or_bad = pop_map[[4]]
+        good_or_bad = pop_map_[[4]]
         temp <- shp@data
         temp <- temp %>% filter(!is.na(value))
         
@@ -388,6 +389,7 @@ mod_recent_mean_server <- function(input, output, session){
         p <- p %>% 
           config(displayModeBar = F) %>%
           highlight(on='plotly_hover',
+                    persistent = FALSE,
                     color = 'white',
                     opacityDim = 0.6)
         p
@@ -528,7 +530,7 @@ mod_recent_con_server <- function(input, output, session){
       year_title = paste0('From ',plot_years[1], ' to ', plot_years[2])
       # carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
-        addProviderTiles('CartoDB.VoyagerNoLabels') %>%
+        addProviderTiles('Esri.WorldShadedRelief') %>%
         # addTiles(carto) %>%
         addPolygons( 
           color = 'black',
@@ -539,8 +541,9 @@ mod_recent_con_server <- function(input, output, session){
           label = map_text,
           highlightOptions = highlightOptions(
             weight = 1,
-            fillOpacity = 0,
-            color = "black",
+            fillColor = 'white',
+            fillOpacity = 1,
+            color = "white",
             opacity = 1.0,
             bringToFront = TRUE,
             sendToBack = TRUE
@@ -738,6 +741,7 @@ mod_recent_con_server <- function(input, output, session){
         p <- p %>% 
           config(displayModeBar = F) %>%
           highlight(on='plotly_hover',
+                    persistent = FALSE,
                     color = 'white',
                     opacityDim = 0.6)
         

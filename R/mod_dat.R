@@ -139,7 +139,7 @@ mod_dat_country_server <- function(input, output, session){
     
     # plot
     p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
-      geom_tile(alpha = 0.8, color = 'darkgrey') +
+      geom_tile(alpha = 0.8, color = 'lightgrey') +
       scale_x_continuous(limits = c(date_range[1], date_range[2]), 
                          breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                          expand = c(0,0)) +
@@ -211,6 +211,8 @@ mod_dat_country_server <- function(input, output, session){
                                      x_axis_hjust = 1, 
                                      x_axis_size = 8, 
                                      y_axis_size = 8, 
+                                     grid_major_x = NA,
+                                     grid_major_y = NA,
                                      legend_text_size = 2/3)
         # p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 9, 
         #                                           family = "Helveticaserif"),
@@ -241,17 +243,16 @@ mod_dat_ind_ui <- function(id){
     
     fluidPage(
       column(8,
-             plotlyOutput(
-               ns('dat_ind'), height = '700px'
-             )),
+             tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '1000px') )
+             ),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected ='Catastrophic health spending, 10%',
+                         selected =indicators$indicator_short_name[1],
                          options = list(`style` = "btn-primary")),
              pickerInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
-                         selected = 'Europe & Central Asia',
+                         selected = as.character(region_list$region),
                          options = list( `actions-box`=TRUE,
                                          `style` = "btn-primary",
                                          `selected-text-format` = "count > 2",
@@ -287,8 +288,8 @@ mod_dat_ind_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Data availability by Indicator", 
-               text = "This chart allows user to compare data availability for an indicator across countries, regions, and over time. The units on the chart’s vertical axis represent countries (sorted by regions), and the chart’s horizontal axis represents time. Years for which data are available for a country are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s indicator of interest.", 
+    shinyalert(title = "Data availability - By indicator", 
+               text = "This chart allows user to compare data availability for an indicator across countries and over time. Years for which data are available for a country are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s indicator of interest.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -323,7 +324,7 @@ mod_dat_ind_server <- function(input, output, session){
         pickerInput(inputId = session$ns("country"), 
                     label = 'Countries', 
                     choices = country_names, 
-                    selected = country_names[1:4],
+                    selected = country_names,
                     options = list( `actions-box`=TRUE,
                                     `style` = "btn-primary",
                                     `selected-text-format` = "count > 2",
@@ -343,10 +344,10 @@ mod_dat_ind_server <- function(input, output, session){
   })
   
   get_dat <- reactive({
-    region <- 'Europe & Central Asia'
-    indicator <- 'Catastrophic health spending, 10%'
+    region <- as.character(region_list$region)
+    indicator <- indicators$indicator_short_name
     # country_names <- top_countries[1:3]
-    date_range <- c(1982, 2017)
+    date_range <- c(1982, 2018)
     # country_name = c('Argentina', 'Brazil', 'Chile', 'Ecuador')
     # country_name <- input$country
     indicator <- input$indicator
@@ -369,7 +370,7 @@ mod_dat_ind_server <- function(input, output, session){
       
       # subset data by variable and region code - HERE need to get level2 for plot
       df<- hefpi::df %>%
-        filter(indic == variable) %>%
+        filter(indic %in% variable) %>%
         filter(regioncode %in% region_code) %>%
         filter(country %in% country_names) %>%
         select(year,country, indic, regioncode, referenceid_list, level2, indicator_short_name) 
@@ -380,7 +381,7 @@ mod_dat_ind_server <- function(input, output, session){
       # create a region year country data
       country_data <- hefpi::df %>% 
         # filter(indic == variable) %>%
-        filter(regioncode == region_code) %>% # consider removing this, to show all years, not just the years where a region has any data
+        filter(regioncode %in% region_code) %>% # consider removing this, to show all years, not just the years where a region has any data
         select(year, country,regioncode, indic) 
       all_years <- sort(unique(country_data$year))
       all_countries <- sort(unique(country_data$country))
@@ -392,9 +393,7 @@ mod_dat_ind_server <- function(input, output, session){
       # subset by country_names
       temp_data <- temp_data %>% filter(country %in% country_names)
       
-      # subset by year 
-      temp_data <- temp_data %>%filter(year >= min(date_range),
-                                       year <= max(date_range)) 
+      
       
       col_data <- data_frame(level_2 = c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
                              color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'transparent'))
@@ -414,22 +413,30 @@ mod_dat_ind_server <- function(input, output, session){
       
       # order level2
       temp_data$level2 <- factor(temp_data$level2, levels =level2_levels )
+      temp_data$country <- factor(temp_data$country, levels = sort(unique(temp_data$country), decreasing = TRUE))
       
     
         # make plot title 
         plot_title = paste0('Missing data profile',' - ', indicator)
         
         mytext <- paste(
-          "Indicator: ", as.character(temp_data$indicator_short_name), "\n",
           "Economy: ", as.character(temp_data$country), "\n",
-          "Year: ", as.character(temp_data$year),"\n",
-          "Data source: ", as.character(temp_data$referenceid_list),
+          "Indicator class: ", as.character(temp_data$level2), "\n",
           sep="") %>%
           lapply(htmltools::HTML)
         
+        # number of countries
+        plot_height <- ceiling(((length(unique(temp$country))* 100) + 100)/3)
+        if(plot_height < 250){
+          plot_height <- 250
+        }
+        
 
-        p <- ggplot(temp_data, aes(country, as.character(year), fill =level2, text =mytext)) + 
-                        geom_tile(size = 2.5, alpha = 0.8) +
+        p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
+                        geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
+          scale_y_continuous(limits = c(date_range[1], date_range[2]), 
+                             breaks = seq(from = date_range[1],to = date_range[2], by = 1),
+                             expand = c(0,0)) +
                         scale_fill_manual(name = '',
                                           values = col_vec) +
                         labs(x = '',
@@ -442,7 +449,7 @@ mod_dat_ind_server <- function(input, output, session){
                        
         dat_list[[1]] <- p
         dat_list[[2]] <- df
-        dat_list[[3]] <- list(plot_title, col_vec, mytext)
+        dat_list[[3]] <- list(plot_title, col_vec, mytext, plot_height)
         return(dat_list)
     }
     
@@ -478,6 +485,7 @@ mod_dat_ind_server <- function(input, output, session){
       NULL
     } else {
       pd <- dat_list[[2]]
+      save(pd, file = 'full.rda')
       if(nrow(pd)==0){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -502,14 +510,18 @@ mod_dat_ind_server <- function(input, output, session){
         # col_vec <- dot_list[[3]][[3]]
         # mytext <- dot_list[[3]][[4]]
         p <- dat_list[[1]]
+        plot_height <- dat_list[[3]][[4]]
         p <- p +
           hefpi::theme_hefpi(x_axis_angle = 90,
                              x_axis_hjust = 1, 
                              x_axis_size = 10,
                              y_axis_size = 10,
+                             grid_major_x = NA,
+                             grid_major_y = NA,
                              legend_position = 'none') 
         fig <- ggplotly(p, 
-                        tooltip = 'text') %>%
+                        tooltip = 'text',
+                        height = plot_height) %>%
           config(displayModeBar = F)
         fig
       }
