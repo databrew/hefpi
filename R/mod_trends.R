@@ -44,8 +44,8 @@ mod_trends_mean_ui <- function(id){
           sliderInput(ns('date_range'),
                                   'Date range',
                                   min = 1982,
-                                  max = 2017,
-                                  value = c(1982, 2017),
+                                  max = 2018,
+                                  value = c(1982, 2018),
                                   step = 1,
                                   sep = ''),
           checkboxInput(ns('interpolate'), 'Interpolate missing values',
@@ -149,7 +149,7 @@ mod_trends_mean_server <- function(input, output, session){
       region <- region_list$region[c(1,3)]
       temp <- hefpi::df_series %>% filter(region %in% region)
       country_names <- unique(temp$country_name)[1:15]
-      date_range <- c(1982, 2017)
+      date_range <- c(1982, 2018)
       value_range <- c(0,1)
       # get inputs
       pop_list <- list()
@@ -198,6 +198,8 @@ mod_trends_mean_server <- function(input, output, session){
             value_range[1] <- value_range[1]*100
             
           }
+          
+         
           # text for plot
           mytext <- paste(
             "Indicator: ", indicator,"<br>", 
@@ -224,7 +226,7 @@ mod_trends_mean_server <- function(input, output, session){
                                  values = trend_palette) +
               scale_y_continuous(limits = c(value_range[1], value_range[2]), 
                                  expand = c(0,0))+
-              scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] +1)), 
                                  breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                  expand = c(0,0)) +
               labs(x=x_axis_text,
@@ -238,8 +240,11 @@ mod_trends_mean_server <- function(input, output, session){
                             geom_point() +
                             scale_color_manual(name = '',
                                                values = trend_palette) +
-                            scale_y_continuous(labels = function(x) paste0(x, "%"))+
-              scale_x_continuous(limits = c(date_range[1], date_range[2]), breaks = seq(from = date_range[1],to = date_range[2], by = 1)) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0))+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] +1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1),
+                                 expand = c(0,0)) +
                             labs(x='Year',
                                  y = y_axis_text,
                                  title = plot_title) 
@@ -332,7 +337,7 @@ mod_trends_mean_server <- function(input, output, session){
                                                                  x_axis_size = 12,
                                                                  legend_position = 'top',
                                                                  legend_direction = 'horizontal',
-                                                                 legend_text_size = 1)
+                                                                 legend_text_size = 2/3)
                                             
                                             p
                                             ggsave(file, width = 8, height = 8)
@@ -535,8 +540,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
         sliderInput(session$ns('date_range'),
                     'Date range',
                     min = 1982,
-                    max = 2017,
-                    value = c(1982, 2017),
+                    max = 2018,
+                    value = c(1982, 2018),
                     step = 1,
                     sep = ''),
         checkboxInput(session$ns('interpolate'), 
@@ -617,6 +622,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
         x_axis_text <- paste0('', '\n', 'Year')
         
+       
         # condition on unit of measure
         if(unit_of_measure == '%'){
           pd$value<- pd$value*100
@@ -649,7 +655,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                              values = trend_palette) +
             scale_y_continuous(limits = c(value_range[1], value_range[2]), 
                                expand = c(0,0))+
-            scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
                           labs(x=x_axis_text,
@@ -666,7 +672,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                              values = trend_palette) +
             scale_y_continuous(limits = c(value_range[1], value_range[2]), 
                                expand = c(0,0))+
-            scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
                           labs(x=x_axis_text,
@@ -770,7 +776,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                                              x_axis_size = 12,
                                                              legend_position = 'top',
                                                              legend_direction = 'horizontal',
-                                                             legend_text_size = 1)
+                                                             legend_text_size = 2/3)
                                           
                                           p
                                           ggsave(file, width = 8, height = 8)
@@ -863,8 +869,8 @@ mod_trends_con_ui <- function(id){
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
-                         max = 2017,
-                         value = c(1982, 2017),
+                         max = 2018,
+                         value = c(1982, 2018),
                          step = 1,
                          sep = ''),
              checkboxInput(ns('interpolate'), 'Interpolate missing values',
@@ -997,10 +1003,10 @@ mod_trends_con_server <- function(input, output, session){
       pd <- df[df$country %in% country_names,]
       pd <- pd %>% filter(year >= min(date_range),
                           year <= max(date_range)) 
-      
+  
         
         # get title and subtitle
-       
+      plot_title <- paste0('Trends - Concentration index - ', indicator)
         y_axis_text <- paste0(indicator, ' (CI) ')
         x_axis_text <- paste0('', '\n', 'Year')
       
@@ -1028,10 +1034,11 @@ mod_trends_con_server <- function(input, output, session){
                                              values = trend_palette) +
             scale_y_continuous(limits = c(value_range[1], value_range[2]), 
                                expand = c(0,0))+
-            scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
-            labs(x=x_axis_text,
+            labs(title = plot_title,
+                 x=x_axis_text,
                  y = y_axis_text) 
                           
 
@@ -1043,7 +1050,7 @@ mod_trends_con_server <- function(input, output, session){
                                              values = trend_palette) +
             scale_y_continuous(limits = c(value_range[1], value_range[2]), 
                                expand = c(0,0))+
-            scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
             labs(x=x_axis_text,
@@ -1136,7 +1143,7 @@ mod_trends_con_server <- function(input, output, session){
                                                                x_axis_size = 12,
                                                                legend_position = 'top',
                                                                legend_direction = 'horizontal',
-                                                               legend_text_size = 1)
+                                                               legend_text_size = 2/3)
                                           
                                           p
                                           ggsave(file, width = 8, height = 8)
@@ -1185,26 +1192,25 @@ mod_trends_con_server <- function(input, output, session){
                                     x_axis_hjust = 1)
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
-          config(displayModeBar = F) %>%
-          add_annotations(
-            yref="paper", 
-            xref="paper", 
-            y=1.15, 
-            x=0, 
-            text=paste0(paste0('Concentration index - Trends  - ', indicator),
-                        '<br>',
-                        '<sup>',
-                        paste0('From ', date_range[1], ' to ', date_range[2]),
-                        '</sup>'), 
-            showarrow=F, 
-            font=list(size=17)
-          ) %>% 
-          layout(title=FALSE)
-          layout(title = list(text = paste0(paste0('Concentration index - Trends  - ', indicator),
-                                            '<br>',
-                                            '<sup>',
-                                            paste0('From ', date_range[1], ' to ', date_range[2]),
-                                            '</sup>')))
+          config(displayModeBar = F) 
+        # %>%
+          # add_annotations(
+          #   yref="paper", 
+          #   xref="paper", 
+          #   y=1.15, 
+          #   x=0, 
+          #   text=paste0(paste0('Concentration index - Trends  - ', indicator),
+          #               '<br>',
+          #               paste0('From ', date_range[1], ' to ', date_range[2])), 
+          #   showarrow=F, 
+          #   font=list(size=17)
+          # ) %>% 
+          # layout(title=FALSE)
+          # layout(title = list(text = paste0(paste0('Concentration index - Trends  - ', indicator),
+          #                                   '<br>',
+          #                                   '<sup>',
+          #                                   paste0('From ', date_range[1], ' to ', date_range[2]),
+          #                                   '</sup>')))
         fig
       
       }
@@ -1387,6 +1393,7 @@ mod_trends_quin_server <- function(input, output, session){
                                      ifelse(df$variable == 'Q3', 'Q3: Middle',
                                             ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
         
+       
         # condition on unit of measure
         if(unit_of_measure == '%'){
           df$value <- df$value*100
@@ -1422,7 +1429,7 @@ mod_trends_quin_server <- function(input, output, session){
                              values = col_vec) +
           scale_y_continuous(limits = c(value_range[1], value_range[2]), 
                              expand = c(0,0))+
-          scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+          scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                              breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                              expand = c(0,0)) +
           labs(x='Year',
@@ -1509,14 +1516,14 @@ mod_trends_quin_server <- function(input, output, session){
                                           p
                                           ggsave(file, width = 8, height = 8)
                                         } else {
-                                          p <- pop_list[[1]]
+                                          p <- quin_list[[1]]
                                           p <- p + ggtitle('') +
                                             hefpi::theme_hefpi(x_axis_angle = 90,
                                                                x_axis_hjust = 0,
                                                                x_axis_size = 12,
                                                                legend_position = 'top',
                                                                legend_direction = 'horizontal',
-                                                               legend_text_size = 1)
+                                                               legend_text_size = 2/3)
                                           
                                           p
                                           ggsave(file, width = 8, height = 8)

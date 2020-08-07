@@ -42,8 +42,8 @@ mod_dots_country_ui <- function(id){
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
-                         max = 2017,
-                         value = c(1982, 2017),
+                         max = 2018,
+                         value = c(1982, 2018),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -211,7 +211,9 @@ mod_dots_country_server <- function(input, output, session){
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
       y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
       
-
+      df <- df %>% filter(value >= value_range[1],
+                          value <= value_range[2])
+      
       if(unit_of_measure == '%'){
         df$value <- df$value*100
         value_range[2] <- value_range[2]*100
@@ -243,7 +245,9 @@ mod_dots_country_server <- function(input, output, session){
           geom_line(aes(group = country)) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          scale_y_continuous(limits = c(value_range[1], value_range[2]), expand = c(0,0)) +
+          scale_y_continuous(limits = c((value_range[1] -5), (value_range[2] +10)), 
+                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                             expand = c(0,0)) +
           labs(title=plot_title,
                subtitle = sub_title, x= '', y = y_axis_text) +
           coord_flip() 
@@ -564,6 +568,8 @@ mod_dots_ind_server <- function(input, output, session){
       
       # if the dataframe is null of empty make plot null
      
+      df <- df %>% filter(value >= value_range[1],
+                          value <= value_range[2])
       
         # number of countries
         plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
@@ -578,7 +584,9 @@ mod_dots_ind_server <- function(input, output, session){
           geom_line(aes(group = indicator_short_name)) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          scale_y_continuous(limits = c(value_range[1], value_range[2]), expand = c(0,0)) +
+          scale_y_continuous(limits = c((value_range[1] -5), (value_range[2] +5)), 
+                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                             expand = c(0,0)) +
           labs(title=plot_title, x= '', y = '',
                subtitle = sub_title) +
           coord_flip() 
