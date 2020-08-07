@@ -236,7 +236,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
         # create map
         carto= "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
         pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
-          addProviderTiles('CartoDB.VoyagerNoLabels') %>%
+          addProviderTiles('Esri.WorldShadedRelief') %>%
           # addTiles(carto) %>%
           addPolygons( 
             color = 'black',
@@ -247,8 +247,9 @@ mod_recent_mean_sub_server <- function(input, output, session){
             label = map_text,
             highlightOptions = highlightOptions(
               weight = 1,
-              fillOpacity = 0,
-              color = "black",
+              fillColor = 'white',
+              fillOpacity = 1,
+              color = "white",
               opacity = 1.0,
               bringToFront = TRUE,
               sendToBack = TRUE
