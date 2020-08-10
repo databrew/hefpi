@@ -84,24 +84,20 @@ mod_dots_country_server <- function(input, output, session){
                showCancelButton = FALSE, 
                showConfirmButton = FALSE)
   })
+  
+  # ---- GET UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
-    indicator <- "BMI, adults"
-    region <-as.character(region_list$region)
-    date_range = c(1982,2016)
     # get inputs
     indicator <- input$indicator
     region <- input$region
     date_range <- input$date_range
-    
     # get region code
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
-    
     # Get the variable
     variable <- indicators %>%
       dplyr::filter(indicator_short_name == indicator) %>%
       .$variable_name
-    
     # subset data by variable and region code
     df <- hefpi::df
     df <- df[df$indic == variable,]
@@ -110,7 +106,6 @@ mod_dots_country_server <- function(input, output, session){
                         year<=date_range[2]) %>% 
       filter(!is.na(Q1) & !is.na(Q2) & !is.na(Q3) & !is.na(Q4) & !is.na(Q5)) %>%
       select(year, country, referenceid_list,indic, Q1:Q5) 
-    
     # made data long form
     df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indic'))
     max_value <- round(max(df$value), 2)
@@ -124,7 +119,7 @@ mod_dots_country_server <- function(input, output, session){
     }
     # create select input for country
     countries <- unique(df$country)
-    
+    # ui inputs
     fluidPage(
       fluidRow(
         pickerInput(inputId = session$ns("country"),
@@ -143,35 +138,25 @@ mod_dots_country_server <- function(input, output, session){
                     value = c(min_value, max_value),
                     sep = '')
       )
-      
     )
-    
   })
   
   get_dot_data <- reactive({
-    # last_date <- '2018'
-    indicator <- "Inpatient care use, adults"
-    region <- "Latin America & Caribbean"
-    temp <- hefpi::df_series %>% filter(region == 'Latin America & Caribbean')
-    country_names <- unique(temp$country_name)
-    value_range = c(0,28)
-    date_range = c(1982,2018)
-    last_date <- input$last_date
+    # get input data
     region <- input$region
     indicator <- input$indicator
     country_names <- input$country
     value_range <- input$value_range
     date_range <- input$date_range
+    # condition for ui being temorarily null
     if(is.null(value_range)){
       NULL
     } else {
       dot_list <- list()
-      
       # Get the variable
       ind_info <- indicators %>%
         dplyr::filter(indicator_short_name == indicator) %>%
         select(variable_name, unit_of_measure)
-      
       variable_name <- ind_info$variable_name
       unit_of_measure <- ind_info$unit_of_measure
       # subset by country and variable
@@ -180,13 +165,11 @@ mod_dots_country_server <- function(input, output, session){
         filter(indic == variable_name) %>%
         filter(year >= date_range[1],
                year <= date_range[2]) 
-      
       # get year and keep only necessary columns
       df <- temp %>%
         group_by(country) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) 
-      
       # made data long form
       id_vars <- names(df)[!grepl('Q', names(df))]
       df <- melt(df, id.vars = id_vars)
@@ -195,32 +178,24 @@ mod_dots_country_server <- function(input, output, session){
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
                                    ifelse(df$variable == 'Q3', 'Q3: Middle',
                                           ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
-      
       # only keep data with no NAs
       df <- df[complete.cases(df),]
-      
       # order country
       df$country <- factor(df$country,levels= sort(unique(df$country), decreasing = TRUE ))
-      
       # get color graident 
       col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
       col_vec <- col_vec[-1]
-      
       # make plot title 
       plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
       y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
-      
       df <- df %>% filter(value >= value_range[1],
                           value <= value_range[2])
-      
       if(unit_of_measure == '%'){
         df$value <- df$value*100
         value_range[2] <- value_range[2]*100
         value_range[1] <- value_range[1]*100
-        
       }
-      # # # text for plot
       mytext <- paste(
         "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
         "Year: ", as.character(df$year),"\n",
@@ -228,16 +203,11 @@ mod_dots_country_server <- function(input, output, session){
         "Data source: ", as.character(df$referenceid_list),
         sep="") %>%
         lapply(htmltools::HTML)
-      
-      
-
-        
         # number of countries
         plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
         if(plot_height < 250){
           plot_height <- 250
         }
-        
         p <- ggplot(df, aes(x=country,
                             y=value,
                             text = mytext)) +
@@ -251,18 +221,11 @@ mod_dots_country_server <- function(input, output, session){
           labs(title=plot_title,
                subtitle = sub_title, x= '', y = y_axis_text) +
           coord_flip() 
-       
-        
         dot_list[[1]] <- p
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
         return(dot_list)
-      
-      
-      
-      
     }
-    
   })
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
@@ -273,7 +236,6 @@ mod_dots_country_server <- function(input, output, session){
     content = function(file) {
       # get map
       dot_list <- get_dot_data()
-      
       if(is.null(dot_list)){
         NULL
       } else {
@@ -307,10 +269,9 @@ mod_dots_country_server <- function(input, output, session){
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
-                                      
-                                      
                                     })
   
+  # ---- GENERATE PLOT ---- #
   output$dots_country <- renderPlotly({
     dot_list <- get_dot_data()
     if(is.null(dot_list)){
@@ -330,16 +291,9 @@ mod_dots_country_server <- function(input, output, session){
                 y = 0.5
               )
             )
-          
         } 
         fig <- empty_plot("No data available for the selected inputs")
-        
       } else {
-        # df <- dot_list[[2]]
-        # plot_title <- dot_list[[3]][[1]]
-        # sub_title <- dot_list[[3]][[2]]
-        # col_vec <- dot_list[[3]][[3]]
-        # mytext <- dot_list[[3]][[4]]
         p <- dot_list[[1]]
         plot_height <- dot_list[[3]][[5]]
         p <- p + hefpi::theme_hefpi(grid_major_x = NA)
@@ -349,13 +303,9 @@ mod_dots_country_server <- function(input, output, session){
           config(displayModeBar = F)
         fig
       }
-      
     }
-    
   })
-  
 }
-
 
 # -----------------------------------------------------------------------------------------------------------------------------
 #' @rdname mod_dots_ind_ui
@@ -369,7 +319,6 @@ mod_dots_country_server <- function(input, output, session){
 mod_dots_ind_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
     fluidPage(
       column(8,
              tags$div(style='overflow-y: scroll; position: relative', 
@@ -394,7 +343,7 @@ mod_dots_ind_ui <- function(id){
                          'Date range',
                          min = 1982,
                          max = 2017,
-                         value = c(1982, 2017),
+                         value = c(1982, 2018),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -422,7 +371,6 @@ mod_dots_ind_ui <- function(id){
 #' @import htmltools
 #' @keywords internal
 
-# HERE NEED TO HAVE UNIT OF MEASURE IN HOVER OVER FOR EACH INDICATOR (JOIN TO DATA?). ANYTHING WITH PERCENT SHOULD BE MULTIPLIED BY 100
 mod_dots_ind_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -436,33 +384,30 @@ mod_dots_ind_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  # ---- GENERATE UI OUTPUTS---- #
   output$ui_outputs <- renderUI({
-    date_range = c(1982,2016)
-    indicator <- indicators_list[[1]]
-    country_names <- 'United States'
+    date_range <- c(1982, 2018)
+    indicator <- indicators$indicator_short_name
+    country_names = 'United States'
     date_range <- input$date_range
     indicator <- input$indicator
     country_names <- input$country
-    
     
     # Get the variable
     variable <- indicators %>%
       filter(indicator_short_name %in% indicator) %>%
       .$variable_name
-    
     # subset by country and variable
     temp <- hefpi::df %>%
       filter(country == country_names) %>%
       filter(indic %in% variable) %>%
       filter(year >= date_range[1],
-             year <= date_range[2]) 
-
+             year <= date_range[2])
     # get year and keep only necessary columns
     df <- temp %>%
       group_by(indicator_short_name) %>%
       arrange(desc(year)) %>%
       dplyr::filter(year == dplyr::first(year)) 
-    
     # made data long form
     id_vars <- names(df)[!grepl('Q', names(df))]
     df <- melt(df, id.vars = id_vars)
@@ -471,10 +416,8 @@ mod_dots_ind_server <- function(input, output, session){
                           ifelse(df$variable == 'Q2', 'Q2: Poor',
                                  ifelse(df$variable == 'Q3', 'Q3: Middle',
                                         ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
-    
     # only keep data with no NAs
     df <- df[complete.cases(df),]
-    
     max_value <- round(max(df$value), 2)
     min_value <- round(min(df$value), 2)
     if(max_value<1){
@@ -490,24 +433,19 @@ mod_dots_ind_server <- function(input, output, session){
                 max = max_value,
                 value = c(min_value, max_value),
                 sep = '')
-    
   })
   
-  
+  # ---- GENERATE PLOT DATA ---- #
   get_dot_data <- reactive({
-    date_range = c(1982,2016)
-    indicator <- c('BMI, adults', 'BMI, men', 'BMI, women', 'Catastrophic health spending, 10%',
-                   'Catastrophic health spending, 25%', 'Height, adults', 'Height, men', 'Height, women')
-    country_names <- 'United States'
-    value_range <- c(0,30)
+    # get inputs 
     date_range <- input$date_range
     indicator <- input$indicator
     country_names <- input$country
     value_range <- input$value_range
+    # condition for temporarily null objects from render UI
     if(is.null(value_range)){
       NULL
     } else {
-      
       dot_list <- list()
       # Get the variable
       ind_info <- indicators %>%
@@ -515,21 +453,17 @@ mod_dots_ind_server <- function(input, output, session){
         select(variable_name, unit_of_measure)
       variable_name <- ind_info$variable_name
       unit_of_measure <- ind_info$unit_of_measure
-     
-      
       # subset by country and variable
       temp <- hefpi::df %>%
         filter(country == country_names) %>%
         filter(indic %in% variable_name) %>%
         filter(year >= date_range[1],
                year <= date_range[2]) 
-      
       # get year and keep only necessary columns
       df <- temp %>%
         group_by(indicator_short_name) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) 
-      
       # made data long form
       id_vars <- names(df)[!grepl('Q', names(df))]
       df <- melt(df, id.vars = id_vars)
@@ -538,26 +472,24 @@ mod_dots_ind_server <- function(input, output, session){
                             ifelse(df$variable == 'Q2', 'Q2: Poor',
                                    ifelse(df$variable == 'Q3', 'Q3: Middle',
                                           ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
-      
-      
       # only keep data with no NAs
       df <- df[complete.cases(df),]
-      
       # get color graident 
       col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
       col_vec <- col_vec[-1]
-      
+      # get length of variable 
+      col_length <- length(unique(df$variable))
       # make plot title 
       plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', country_names)
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
-      y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
-      
+      y_axis_text = paste0(indicator)
       # make percent 
       df$value[df$unit_of_measure == '%'] <-    (df$value[df$unit_of_measure == '%'])*100
-      
+      # if the dataframe is null of empty make plot null
+      df <- df %>% filter(value >= value_range[1],
+                          value <= value_range[2])
       # order indicator alphabetically
       df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
-      
       mytext <- paste(
         "Value: ", paste0(round(df$value, digits = 2), ' (', df$unit_of_measure, ')'), "\n",
         "Year: ", as.character(df$year),"\n",
@@ -565,40 +497,30 @@ mod_dots_ind_server <- function(input, output, session){
         "Data source: ", as.character(df$referenceid_list),
         sep="") %>%
         lapply(htmltools::HTML)
-      
-      # if the dataframe is null of empty make plot null
-     
-      df <- df %>% filter(value >= value_range[1],
-                          value <= value_range[2])
-      
+
         # number of countries
         plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
         if(plot_height < 250){
           plot_height <- 250
         }
-        
         p <- ggplot(df, aes(x=indicator_short_name,
                             y=value,
-                            text = mytext)) +
-          geom_point(size=5, alpha = 0.7, aes(color = variable)) +
-          geom_line(aes(group = indicator_short_name)) +
+                            color = variable)) +
+          geom_point(size=5, alpha = 0.7) +
           scale_color_manual(name = '',
                              values = col_vec) +
+          geom_line(aes(group = indicator_short_name)) +
           scale_y_continuous(limits = c((value_range[1] -5), (value_range[2] +5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
           labs(title=plot_title, x= '', y = '',
                subtitle = sub_title) +
-          coord_flip() 
-       
-        
+          coord_flip()
         dot_list[[1]] <- p
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
-        # save(dot_list, file = 'dot_list.rda')
         return(dot_list)
-      
-      
+        
     }
   })
   
@@ -610,7 +532,6 @@ mod_dots_ind_server <- function(input, output, session){
     content = function(file) {
       # get map
       dot_list <- get_dot_data()
-      
       if(is.null(dot_list)){
         NULL
       } else {
@@ -634,23 +555,18 @@ mod_dots_ind_server <- function(input, output, session){
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("quintile_dot_plots_indicator_", Sys.Date(),".png"),
                                     content = function(file) {
-                                      
-                                      dot_list <- get_dot_data()
-                                      
+                                     dot_list <- get_dot_data()
                                       if(is.null(dot_list)){
                                         NULL
                                       } else {
                                         p <- dot_list[[1]]
-                                        
                                         p =  p + theme(axis.text = element_text(size = rel(1/2))) 
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
-                                      
-                                      
                                     })
   
-    
+  # ---- GENERATE PLOT ---- #
   output$dots_ind <- renderPlotly({
     dot_list <- get_dot_data()
     if(is.null(dot_list)){
@@ -670,16 +586,9 @@ mod_dots_ind_server <- function(input, output, session){
                 y = 0.5
               )
             )
-          
         } 
         fig <- empty_plot("No data available for the selected inputs")
-        
       } else {
-        # df <- dot_list[[2]]
-        # plot_title <- dot_list[[3]][[1]]
-        # sub_title <- dot_list[[3]][[2]]
-        # col_vec <- dot_list[[3]][[3]]
-        # mytext <- dot_list[[3]][[4]]
         p <- dot_list[[1]]
         plot_height <- dot_list[[3]][[5]]
         p <- p + hefpi::theme_hefpi(grid_major_x = NA) 
@@ -689,9 +598,7 @@ mod_dots_ind_server <- function(input, output, session){
           config(displayModeBar = F)
         fig
       }
-      
     }
-    
   })
 }
 
@@ -699,10 +606,6 @@ mod_dots_ind_server <- function(input, output, session){
 # mod_dots_country_ui("dots_country1")
 # mod_dots_country_ui("dots_ind1")
 
-
-
 ## To be copied in the server
 # callModule(mod_dots_country_server, 'dots_country1')
 # callModule(mod_dots_country_server, 'dots_ind1')
-
-

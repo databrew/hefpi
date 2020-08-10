@@ -5,8 +5,6 @@
 #' @inheritParams ggplot2::theme_grey
 #' @export
 
-
-
 theme_hefpi <- function(base_size = 12, 
                         base_family="Helveticaserif",
                         plot_title_size = 15,

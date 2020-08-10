@@ -19,8 +19,6 @@ mod_recent_mean_sub_ui <- function(id){
   
 
   ns <- NS(id)
-  # tagList(
-  
   fluidPage(
     fluidRow(
       column(8,
@@ -48,16 +46,7 @@ mod_recent_mean_sub_ui <- function(id){
              ))
     ),
     br(), br(),
-
-    # fluidRow(
-    #   column(8,
-    #          plotlyOutput(
-    #            ns('recent_mean_sub_plot')
-    #          ))
-    # )
-
   )
-  
 }
 
 # Module Server
@@ -83,20 +72,16 @@ mod_recent_mean_sub_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  # ---- REDNER UI OUTPUT ---- #
   output$ui_outputs <- renderUI({
-    
-    # to be used for testing 
-    #indicator <- sort(unique(hefpi::sub_national$indicator_short_name))[1]
-    #region <- as.character(region_list$region)[[1]]
+    # get inputs
     indicator <- input$indicator
     region <- input$region
     # get region code
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
-
-    # Get the data to be plotted
+    # get data
     pd <- hefpi::sub_national[sub_national$region_code == region_code,]
-    
     pd <- pd %>% 
       filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
@@ -107,7 +92,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
                 year = year,
                 region_name = region,
                 survey_list = survey) 
-    
     # get country_names 
     country_names <- sort(unique(pd$country))
     # get ui inputs
@@ -131,32 +115,22 @@ mod_recent_mean_sub_server <- function(input, output, session){
                     sep = '')
       )
     )
-    
   })
-  # HERE MAKE THIS LIKE THE NATIONAL DATA, SO IT HANDLES ERRORS (ITS ALREADY COPY AND PASTED IN)
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
-    # to be used for testing 
-    # indicator <- sort(unique(hefpi::sub_national$indicator_short_name))[1]
-    # region = 'Latin America & Caribbean'
-    # plot_years <- c(1982, 2018)
-
     # get list to store map data
     pop_map_list <- list()
-    
     # get input 
     plot_years <- input$date_range
     indicator <- input$indicator
     region  <- input$region
     country_names <- input$country
-    
     if(is.null(plot_years)){
       NULL
     } else {
       # get region code
       region_list <- hefpi::region_list
       region_code <- as.character(region_list$region_code[region_list$region %in% region])
-      # 
       # Get the variable from indicator input
       ind_info <- indicators %>%
         filter(indicator_short_name == indicator) %>%
@@ -164,7 +138,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
       # variable_name = ind_info$variable_name
       good_or_bad = ind_info$good_or_bad
       unit_of_measure = ind_info$unit_of_measure
-      
       # Get the data to be plotted
       temp <- hefpi::sub_national[sub_national$region_code == region_code,]
       pd <- temp %>% filter(year >= min(plot_years),
@@ -185,22 +158,18 @@ mod_recent_mean_sub_server <- function(input, output, session){
                   indicator_short_name = indicator_short_name,
                   indicator_description = indicator_description,
                   unit_of_measure) 
-      
       # get indicator short name joined to data
       if(nrow(pd)==0 | all(is.na(pd$value))){
         pop_map_list <- NA
       } else {
         # get shape files
         shp <- hefpi::gaul
-        
         # joine with data
         shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code'))
-        
         # remove polygons associated with NA - keeps only that region
         na_rows <- which(!is.na(shp@data$value))
         shp <- shp[na_rows,]
         shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
-        
         # Define centroid
         centroid <- coordinates(shp)
         centroid <- data.frame(centroid)
@@ -220,10 +189,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
           # Make color palette
           map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="white")
         }
-        
         year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
-        
-        
         # Make tooltip
         map_text <- paste(
           "Indicator: ",  indicator,"<br>",
@@ -232,9 +198,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
           "Year: ", as.character(shp@data$year),"<br/>",
           sep="") %>%
           lapply(htmltools::HTML)
-        
-        # create map
-        carto= "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
         pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
           addProviderTiles('Esri.WorldShadedRelief') %>%
           # addTiles(carto) %>%
@@ -272,11 +235,9 @@ mod_recent_mean_sub_server <- function(input, output, session){
         pop_map_list[[5]] <- good_or_bad
         pop_map_list[[6]] <- unit_of_measure
         pop_map_list[[7]] <- year_title
-        
       }
       return(pop_map_list)
     }
-  
   })
   # ---- RENDER MAP TITLE ---- #
   output$map_title_ui <- renderUI({
@@ -303,10 +264,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
             
           )
         )
-        
-        
       }
-      
     }
   })
   
@@ -316,10 +274,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     if(is.null(pop_map)){
       NULL
     } else {
-      
       if(is.na(pop_map)){
-       
-        
         this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                      maxZoom = 10)) %>% 
           addProviderTiles('OpenStreetMap.DE') %>%
@@ -328,7 +283,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
       } else {
         this_map <- pop_map[[3]]
         this_map
-        
       }
     }
   })
@@ -361,7 +315,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
                            'Value', 'Unit_of_measurement')
           write.csv(temp, file)
         }
-        
       }
     }
   )
@@ -377,7 +330,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                         
                                         if(is.na(pop_map)){
                                           carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-                                          
                                           this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                                                        maxZoom = 10)) %>% 
                                             addProviderTiles('CartoDB.VoyagerNoLabels') %>%
@@ -389,7 +341,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                         } else {
                                           # get map
                                           this_map <- pop_map[[3]]
-                                          
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
@@ -397,103 +348,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                         }
                                       }
                                     })
-  # STOP HERE
-# # 
-#   output$recent_mean_sub_plot <- renderPlotly({
-#     pop_map <- get_pop_map()
-#     # plot_years <- input$date_range
-#     indicator <- input$indicator
-#     if(is.null(pop_map)){
-#       NULL
-#     } else {
-#       shp <- pop_map[[4]]
-#       good_or_bad = pop_map[[5]]
-#       unit_of_measure <- pop_map[[6]]
-#     }
-# 
-#     # get data from shp and remove NA
-#     temp <- shp@data
-#     # temp <- temp %>% filter(!is.na(value))
-#     temp$ADM1_NAME <- as.character(temp$ADM1_NAME)
-# 
-#     if(all(is.na(temp$value))){
-#       empty_plot <- function(title = NULL){
-#         p <- plotly_empty(type = "scatter", mode = "markers") %>%
-#           config(
-#             displayModeBar = FALSE
-#           ) %>%
-#           layout(
-#             title = list(
-#               text = title,
-#               yref = "paper",
-#               y = 0.5
-#             )
-#           )
-#         return(p)
-#       }
-#       p <- empty_plot("No data available for the selected inputs")
-#     } else {
-# 
-#      
-#       # combine ADM0_NAME with ADM1_NAME
-#       temp$ADM1_NAME <- paste0(temp$ADM1_NAME, ' (', temp$ADM0_NAME, ')')
-#       # group by ADM1_NAME
-#       temp <- temp %>% group_by(ADM1_NAME, year) %>% summarise(value = mean(value)) 
-#       
-#       # condition on unit of measure
-#       if(unit_of_measure == '%'){
-#         ind_value <- temp$value*100
-#       } else {
-#         ind_value <- temp$value
-#       }
-#       # get palette
-#       if(good_or_bad == 'Good'){
-#         bar_palette = 'Greens'
-#       } else {
-#         bar_palette = 'Reds'
-#       }
-#       
-#       # get text for plotly
-#       # Make tooltip
-#       bar_text <- paste(
-#         "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
-#         "Economy: ", as.character(temp$ADM1_NAME),"<br>",
-#         "Value: ", round(temp$value, digits = 3), "<br>",
-#         "Year: ", as.character(temp$year),"<br>",
-#         sep="") %>%
-#         lapply(htmltools::HTML)
-#       # create title and y axis label
-#       y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
-#       plot_title = 'Most recent value - population mean'
-#       
-#       temp$ADM1_NAME <- factor(temp$ADM1_NAME, levels = unique(temp$ADM1_NAME)[order(temp$value, decreasing = TRUE)])
-#       # add highlight functionality, so hovering highlights bar.
-#       temp <- highlight_key(temp, key=~ADM1_NAME)
-#       
-#       # plotly plot
-#       p <- ggplotly(ggplot(temp, aes(ADM1_NAME, value, text = bar_text)) +
-#                       geom_bar(stat = 'identity', aes(fill = value)) +
-#                       scale_fill_distiller(palette =bar_palette , direction = 1) +
-#                       labs(x='Country',
-#                            y = y_axis_text,
-#                            title = plot_title) +
-#                       hefpi::theme_gdocs() +
-#                       theme(panel.grid.major.x = element_blank(),
-#                             axis.text.x = element_blank(),
-#                             axis.ticks = element_blank()),
-#                     tooltip = 'text')   
-#       p <- p %>% 
-#         config(displayModeBar = F) %>%
-#         highlight(on='plotly_hover',
-#                   color = 'white',
-#                   opacityDim = 0.6)
-#       p
-#       
-# 
-#     }
-# 
-#     return(p)
-#   })
 
 }
 

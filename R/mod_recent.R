@@ -358,7 +358,10 @@ mod_recent_mean_server <- function(input, output, session){
         } else {
           bar_palette = 'Reds'
         }
+        # relevel factor for chart
         temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
+        
+        # get plot objects
         plot_text <- paste(
           "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
           "Economy: ", as.character(temp$NAME),"<br>", 
@@ -369,7 +372,6 @@ mod_recent_mean_server <- function(input, output, session){
           lapply(htmltools::HTML)
         y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
         temp <- highlight_key(temp, key=~NAME)
-        
         p <- ggplotly(
           ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                      geom_bar(stat = 'identity', aes(fill = value)) +
@@ -383,9 +385,6 @@ mod_recent_mean_server <- function(input, output, session){
                      theme(axis.text.x = element_blank(),
                            axis.ticks.x = element_blank()),
                    tooltip = 'text'))   
-        
-        
-        
         p <- p %>% 
           config(displayModeBar = F) %>%
           highlight(on='plotly_hover',
@@ -394,10 +393,7 @@ mod_recent_mean_server <- function(input, output, session){
                     opacityDim = 0.6)
         p
       }
-     
     }
-    
-    
   })
 }
 
@@ -416,12 +412,6 @@ mod_recent_con_ui <- function(id){
     fluidRow(
       column(8,
              uiOutput(ns('map_title_ui')),
-             # tags$head(tags$style("#shiny-text-output{color: #757575;
-             #                     font-size: 400px;
-             #                     font-family:'MuseoSans-300', 'Helvetica', sans-serif
-             #                     }"
-             #    )
-             # ),
              leafletOutput(
                ns('recent_con_leaf')),
              ),
@@ -448,16 +438,13 @@ mod_recent_con_ui <- function(id){
              )
     ),
     br(), br(),
-    
     fluidRow(
       column(8,
              plotlyOutput(
                ns('recent_con_plot')
              ))
     )
-    
   )
-  
 }
 
 # Module Server
@@ -577,16 +564,12 @@ mod_recent_con_server <- function(input, output, session){
       } else {
         indicator_name <- input$indicator
         year_title <- con_map[[4]]
-        # HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
-        #            h5(year_title)))
         fluidPage(
           fluidRow(
             h4(paste0('Most recent value - Concentration index - ', indicator_name)),
             h5(paste0(year_title))
-            
           )
         )
-     
       }
     }
   })
@@ -601,7 +584,6 @@ mod_recent_con_server <- function(input, output, session){
       NULL
     } else {
       if(is.na(con_map)){
-        # carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
         this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                      maxZoom = 10)) %>% 
           addProviderTiles('CartoDB.VoyagerNoLabels') %>%
@@ -620,13 +602,11 @@ mod_recent_con_server <- function(input, output, session){
       paste0("most_recent_value_ci_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      # get map
       con_map <- get_con_map()
       if(is.null(con_map)){
         NULL
       } else {
         map_dat <- con_map[[2]]
-        
         if(is.na(map_dat)){
           temp <- data_frame()
           write.csv(temp, file)
@@ -657,7 +637,6 @@ mod_recent_con_server <- function(input, output, session){
                                         NULL
                                       } else {
                                         if(is.na(con_map)){
-                                          # carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
                                           this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                                                        maxZoom = 10)) %>% 
                                             addProviderTiles('OpenStreetMap.DE') %>%
@@ -681,7 +660,6 @@ mod_recent_con_server <- function(input, output, session){
     con_map <- get_con_map()
     plot_years <- input$date_range
     indicator <- input$indicator
-    
     if(is.null(con_map)){
       NULL
     } else {
@@ -719,13 +697,10 @@ mod_recent_con_server <- function(input, output, session){
           lapply(htmltools::HTML)
         ordered_names <- temp$NAME[order(temp$value, decreasing = TRUE)]
         temp$NAME <- factor(temp$NAME, levels = ordered_names)
-        
         y_axis_text = paste0('CI - ', indicator)
         plot_title = 'Most recent value - concentration index'
-        
         plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
         temp <- highlight_key(temp, key=~NAME)
-        
         p <- ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
                         geom_bar(stat = 'identity', aes(fill = value)) +
                         scale_fill_distiller(palette = "BrBG", limit = plot_limit) +
@@ -744,7 +719,6 @@ mod_recent_con_server <- function(input, output, session){
                     persistent = FALSE,
                     color = 'white',
                     opacityDim = 0.6)
-        
       }
     }
   })
