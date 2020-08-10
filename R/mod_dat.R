@@ -19,7 +19,6 @@
 mod_dat_country_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
     fluidPage(
       column(8,
              plotlyOutput(
@@ -83,11 +82,9 @@ mod_dat_country_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  # ---- GENERATE PLOT DATA---- #
   get_dat <- reactive({
-    country_name = 'United States'
-    indicator = NULL
     country_name <- input$country
-    date_range <- c(1982, 2015)
     indicator = input$indicator
     date_range = input$date_range
     dat_list <- list()
@@ -96,47 +93,36 @@ mod_dat_country_server <- function(input, output, session){
     all_years <- sort(unique(temp$year))
     all_ind <- unname(unlist(indicators_list))
     all_ind <- all_ind[all_ind %in% indicator]
-    
     # subset data by country and join to get indicator short name 
     country_data<- hefpi::df %>%
       filter(country == country_name) %>%
       filter(indicator_short_name %in% indicator) %>%
       filter(year >= date_range[1],
              year <= date_range[2]) 
-    
     # create data frame with year and indicator combinations
     df <- tidyr::expand_grid(year = all_years, indicator_short_name = all_ind) %>%
       left_join(country_data) %>%
       select(country, year, indicator_short_name, level2) 
-    
     # fill country NAs with United States and levle_2 NAs with "Missing Data"
     df$country[is.na(df$country)] <- country_name
     df$level2[is.na(df$level2)] <- 'Missing Data'
     df$year <- as.character(df$year)
-    
     col_data <- data_frame(level_2 = c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
                            color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'white'))
-    
-    
     # recode level2
     df$level2 <- ifelse(df$level2 == 'h_cov', 'Service Coverage',
                         ifelse(df$level2 == 'h_out', 'Health Outcomes',
                                ifelse(df$level2 == 'f_cata', 'Catastrophic OOP spending',
                                       ifelse(df$level2 == 'f_impov', 'Impoverishing OOP spending',
                                              ifelse(df$level2 == 'f_oop', 'OOP spending', 'Missing Data')))))
-    
     # subset col data by data selected
     level2_levels = col_data$level_2[col_data$level_2 %in% unique(df$level2)]
     col_vec = col_data$color[col_data$level_2 %in% unique(df$level2)]
-    
     # order level2
     df$level2 <- factor(df$level2, levels =level2_levels )
-    
     df$indicator_short_name <- factor(df$indicator_short_name, levels = rev(all_ind))
-    
     # make plot title 
     plot_title = paste0('Data availability', ' - ', country_name)
-    
     # plot
     p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
       geom_tile(alpha = 0.8, color = 'lightgrey') +
@@ -148,24 +134,16 @@ mod_dat_country_server <- function(input, output, session){
       labs(x = 'Year',
            y = '',
            title = plot_title) 
-      
-      
-    
     dat_list[[1]] <- p
     dat_list[[2]] <- df
     dat_list[[3]] <- list(plot_title, col_vec)
     return(dat_list)
-    
   })
-  
-
   
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_data_availability_country", ".png"),
                                     content = function(file) {
-                                      
                                       dat_list <- get_dat()
-                                      
                                       if(is.null(dat_list)){
                                         NULL
                                       } else {
@@ -175,13 +153,10 @@ mod_dat_country_server <- function(input, output, session){
                                           labs(title = '')
                                         p
                                         ggsave(file, width = 10, height = 8)
-                                        
                                       }
-                                      
-                                      
                                     })
   
-  # HERE FINISHING IMPLEMENTING NEW PLOT THEME
+  # ---- GENERATE PLOT ---- #
   output$dat_country <- renderPlotly({
     dat_list <- get_dat()
     if(is.null(dat_list)){
@@ -201,7 +176,6 @@ mod_dat_country_server <- function(input, output, session){
                 y = 0.5
               )
             )
-          
         } 
         fig <- empty_plot("No data available for the selected inputs")
         fig
@@ -214,18 +188,11 @@ mod_dat_country_server <- function(input, output, session){
                                      grid_major_x = NA,
                                      grid_major_y = NA,
                                      legend_text_size = 2/3)
-        # p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 9, 
-        #                                           family = "Helveticaserif"),
-        #                legend.position = 'top', legend.direction = 'horizontal')
         ggplotly(p, tooltip = 'none') %>%
           config(displayModeBar = F)
       }
-      
     }
-    
   })
-  
- 
 }
 
 #-------------------------------------------------------------------------------------------------------------
@@ -240,7 +207,6 @@ mod_dat_country_server <- function(input, output, session){
 mod_dat_ind_ui <- function(id){
   ns <- NS(id)
   tagList(
-    
     fluidPage(
       column(8,
              tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '1000px') )
@@ -284,7 +250,6 @@ mod_dat_ind_ui <- function(id){
 
 mod_dat_ind_server <- function(input, output, session){
   
-  
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
@@ -296,29 +261,21 @@ mod_dat_ind_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  # ---- GENERATE UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
-    
-    region <- c('Europe & Central Asia')
+    # get inputs
     region <- input$region
-    
-    
     # get region code
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
-    
     # subset data by variable and region code - HERE need to get level2 for plot
     df<- hefpi::df %>%
       # filter(indic == variable) %>%
       filter(regioncode %in% region_code) %>%
       # filter(country %in% country_name) %>%
       select(year,country, indic, regioncode, referenceid_list) 
-    
-    # top_countries <- df %>% group_by(regioncode, country) %>% summarise(counts = n()) %>%
-    #   arrange(desc(counts)) %>% 
-    #   top_n(3) %>%
-    #   .$country
     country_names <- sort(unique(df$country))
-
+    # get ui page
     fluidPage(
       fluidRow(
         pickerInput(inputId = session$ns("country"), 
@@ -337,19 +294,12 @@ mod_dat_ind_server <- function(input, output, session){
                     value = c(1982, 2018),
                     step = 1,
                     sep = '')
-        
       )
     )
-    
   })
   
   get_dat <- reactive({
-    region <- as.character(region_list$region)
-    indicator <- indicators$indicator_short_name
-    # country_names <- top_countries[1:3]
-    date_range <- c(1982, 2018)
-    # country_name = c('Argentina', 'Brazil', 'Chile', 'Ecuador')
-    # country_name <- input$country
+    # get inputs
     indicator <- input$indicator
     region <- input$region
     country_names <- input$country
@@ -361,23 +311,17 @@ mod_dat_ind_server <- function(input, output, session){
       # get region code
       region_list <- hefpi::region_list
       region_code <- as.character(region_list$region_code[region_list$region %in% region])
-      
       # Get the variable
       variable <- indicators %>%
         filter(indicator_short_name %in% indicator) %>%
         .$variable_name
-      
-      
       # subset data by variable and region code - HERE need to get level2 for plot
       df<- hefpi::df %>%
         filter(indic %in% variable) %>%
         filter(regioncode %in% region_code) %>%
         filter(country %in% country_names) %>%
         select(year,country, indic, regioncode, referenceid_list, level2, indicator_short_name) 
-      
       names(df)[names(df) == 'regioncode'] <- 'region'
-      
-      # HERE
       # create a region year country data
       country_data <- hefpi::df %>% 
         # filter(indic == variable) %>%
@@ -385,53 +329,37 @@ mod_dat_ind_server <- function(input, output, session){
         select(year, country,regioncode, indic) 
       all_years <- sort(unique(country_data$year))
       all_countries <- sort(unique(country_data$country))
-      
-      
       temp_data <- expand_grid(year = all_years, country = all_countries) %>%
         left_join(df)
-      
       # subset by country_names
       temp_data <- temp_data %>% filter(country %in% country_names)
-      
-      
-      
       col_data <- data_frame(level_2 = c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
                              color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'transparent'))
-      
-      
       # recode level2
       temp_data$level2 <- ifelse(temp_data$level2 == 'h_cov', 'Service Coverage',
                           ifelse(temp_data$level2 == 'h_out', 'Health Outcomes',
                                  ifelse(temp_data$level2 == 'f_cata', 'Catastrophic OOP spending',
                                         ifelse(temp_data$level2 == 'f_impov', 'Impoverishing OOP spending',
                                                ifelse(temp_data$level2 == 'f_oop', 'OOP spending', 'Missing Data')))))
-      
       temp_data$level2[is.na(temp_data$level2)] <- 'Missing Data'
       # subset col data by data selected
       level2_levels = col_data$level_2[col_data$level_2 %in% unique(temp_data$level2)]
       col_vec = col_data$color[col_data$level_2 %in% unique(temp_data$level2)]
-      
       # order level2
       temp_data$level2 <- factor(temp_data$level2, levels =level2_levels )
       temp_data$country <- factor(temp_data$country, levels = sort(unique(temp_data$country), decreasing = TRUE))
-      
-    
         # make plot title 
         plot_title = paste0('Missing data profile',' - ', indicator)
-        
         mytext <- paste(
           "Economy: ", as.character(temp_data$country), "\n",
           "Indicator class: ", as.character(temp_data$level2), "\n",
           sep="") %>%
           lapply(htmltools::HTML)
-        
         # number of countries
         plot_height <- ceiling(((length(unique(temp$country))* 100) + 100)/3)
         if(plot_height < 250){
           plot_height <- 250
         }
-        
-
         p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
                         geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
           scale_y_continuous(limits = c(date_range[1], date_range[2]), 
@@ -444,41 +372,28 @@ mod_dat_ind_server <- function(input, output, session){
                              title = plot_title) +
           coord_flip() +
           theme(legend.position = "none") 
-           
-        
-                       
         dat_list[[1]] <- p
         dat_list[[2]] <- df
         dat_list[[3]] <- list(plot_title, col_vec, mytext, plot_height)
         return(dat_list)
     }
-    
   })
-  
-
-  
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("data_indicators_",Sys.Date(), ".png"),
                                     content = function(file) {
-                                      
                                       dat_list <- get_dat()
-                                      
                                       if(is.null(dat_list)){
                                         NULL
                                       } else {
                                         p <- dat_list[[1]]
-                                      
                                         p =  p + theme(axis.text = element_text(size = rel(3/4))) +
                                           labs(title = '')
-                                          
                                         p
                                         ggsave(file, width = 8, height = 8)
-                                        
                                       }
-                                      
-                                      
                                     })
   
+  # ---- GENERATE PLOT ---- #
   output$dat_ind <- renderPlotly({
     dat_list <- get_dat()
     if(is.null(dat_list)){
@@ -499,16 +414,9 @@ mod_dat_ind_server <- function(input, output, session){
                 y = 0.5
               )
             )
-          
         } 
         fig <- empty_plot("No data available for the selected inputs")
-        
       } else {
-        # df <- dot_list[[2]]
-        # plot_title <- dot_list[[3]][[1]]
-        # sub_title <- dot_list[[3]][[2]]
-        # col_vec <- dot_list[[3]][[3]]
-        # mytext <- dot_list[[3]][[4]]
         p <- dat_list[[1]]
         plot_height <- dat_list[[3]][[4]]
         p <- p +
@@ -525,25 +433,14 @@ mod_dat_ind_server <- function(input, output, session){
           config(displayModeBar = F)
         fig
       }
-      
     }
   })
-  
-  
-  
 }
-
-
 
 ## To be copied in the UI
 # mod_dat_country_ui("dat_country1")
 # mod_dat_country_ui("dat_ind1")
 
-
 ## To be copied in the server
 # callModule(mod_dat_country_server, 'dat_country1')
 # callModule(mod_dat_ind_server, 'dat_ind1')
-
-
-
-
