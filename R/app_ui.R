@@ -52,8 +52,8 @@ app_ui <- function() {
       tabItem(
         tabName="inequality",
         navbarPage(title = '',
-                   navbarMenu('Most recent value',
-                              tabPanel('Concentration index',
+                   navbarMenu('Concentration index',
+                              tabPanel('Most recent value',
                                        mod_recent_con_ui("recent_con_leaf1")),
                               tabPanel('Trends',
                                        mod_trends_con_ui("trends_con1"))),
