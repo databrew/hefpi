@@ -18,7 +18,7 @@
 #' @importFrom shiny NS tagList 
 mod_dat_country_ui <- function(id){
   ns <- NS(id)
-  tagList(
+  #tagList(
     fluidPage(
       column(8,
              plotlyOutput(
@@ -41,8 +41,8 @@ mod_dat_country_ui <- function(id){
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
-                         max = 2017,
-                         value = c(1982, 2017),
+                         max = 2018,
+                         value = c(1982, 2018),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -53,7 +53,7 @@ mod_dat_country_ui <- function(id){
                  actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              ))
     )
-  )
+  #)
 }
 
 # Module Server
@@ -84,6 +84,7 @@ mod_dat_country_server <- function(input, output, session){
   
   # ---- GENERATE PLOT DATA---- #
   get_dat <- reactive({
+    
     country_name <- input$country
     indicator = input$indicator
     date_range = input$date_range
@@ -126,7 +127,7 @@ mod_dat_country_server <- function(input, output, session){
     # plot
     p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
       geom_tile(alpha = 0.8, color = 'lightgrey') +
-      scale_x_continuous(limits = c(date_range[1], date_range[2]), 
+      scale_x_continuous(limits = c(date_range[1], (date_range[2] +1)), 
                          breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                          expand = c(0,0)) +
       scale_fill_manual(name = '',
@@ -148,8 +149,16 @@ mod_dat_country_server <- function(input, output, session){
                                         NULL
                                       } else {
                                         p <- dat_list[[1]]
-                                        p =  p + hefpi::theme_hefpi(x_axis_size = 9,
-                                                                    y_axis_size = 9) + 
+                                        p =  p + hefpi::theme_hefpi(grid_major_x = NA,
+                                                                    grid_major_y = NA,
+                                                                    x_axis_size = rel(1),
+                                                                    y_axis_size = rel(2/3),
+                                                                    y_axis_hjust = 1,
+                                                                    x_axis_angle = 90,
+                                                                    x_axis_vjust = 0.5,
+                                                                    legend_position = 'top',
+                                                                    legend_direction = 'horizontal',
+                                                                    legend_text_size = rel(1/2)) + 
                                           labs(title = '')
                                         p
                                         ggsave(file, width = 10, height = 8)
@@ -182,7 +191,8 @@ mod_dat_country_server <- function(input, output, session){
       } else {
         p <- dat_list[[1]]
         p  <- p + hefpi::theme_hefpi(x_axis_angle = 90, 
-                                     x_axis_hjust = 1, 
+                                     x_axis_vjust = 0.5,
+                                     y_axis_hjust = 1,
                                      x_axis_size = 8, 
                                      y_axis_size = 8, 
                                      grid_major_x = NA,
@@ -218,7 +228,7 @@ mod_dat_ind_ui <- function(id){
                          options = list(`style` = "btn-primary")),
              pickerInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
-                         selected = as.character(region_list$region),
+                         selected = as.character(region_list$region)[1],
                          options = list( `actions-box`=TRUE,
                                          `style` = "btn-primary",
                                          `selected-text-format` = "count > 2",
@@ -264,6 +274,7 @@ mod_dat_ind_server <- function(input, output, session){
   # ---- GENERATE UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
     # get inputs
+    # region = as.character(region_list$region)[1]
     region <- input$region
     # get region code
     region_list <- hefpi::region_list
@@ -290,7 +301,7 @@ mod_dat_ind_server <- function(input, output, session){
         sliderInput(inputId = session$ns('date_range'),
                     label = 'Date range',
                     min = 1982,
-                    max = 2017,
+                    max = 2018,
                     value = c(1982, 2018),
                     step = 1,
                     sep = '')
@@ -300,6 +311,8 @@ mod_dat_ind_server <- function(input, output, session){
   
   get_dat <- reactive({
     # get inputs
+    indicator <- indicators$indicator_short_name[1]
+  
     indicator <- input$indicator
     region <- input$region
     country_names <- input$country
@@ -327,7 +340,7 @@ mod_dat_ind_server <- function(input, output, session){
         # filter(indic == variable) %>%
         filter(regioncode %in% region_code) %>% # consider removing this, to show all years, not just the years where a region has any data
         select(year, country,regioncode, indic) 
-      all_years <- sort(unique(country_data$year))
+      all_years <- sort(unique(hefpi::df$year))
       all_countries <- sort(unique(country_data$country))
       temp_data <- expand_grid(year = all_years, country = all_countries) %>%
         left_join(df)
@@ -362,7 +375,7 @@ mod_dat_ind_server <- function(input, output, session){
         }
         p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
                         geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
-          scale_y_continuous(limits = c(date_range[1], date_range[2]), 
+          scale_y_continuous(limits = c(date_range[1], (date_range[2] +1)), 
                              breaks = seq(from = date_range[1],to = date_range[2], by = 1),
                              expand = c(0,0)) +
                         scale_fill_manual(name = '',
@@ -386,7 +399,16 @@ mod_dat_ind_server <- function(input, output, session){
                                         NULL
                                       } else {
                                         p <- dat_list[[1]]
-                                        p =  p + theme(axis.text = element_text(size = rel(3/4))) +
+                                        p =  p + theme_hefpi(grid_major_x = NA,
+                                                             grid_major_y = NA,
+                                                             x_axis_size = rel(1),
+                                                             y_axis_size = rel(2/3),
+                                                             y_axis_hjust = 1,
+                                                             x_axis_angle = 90,
+                                                             x_axis_vjust = 0.5,
+                                                             legend_position = 'top',
+                                                             legend_direction = 'horizontal',
+                                                             legend_text_size = rel(1/2)) +
                                           labs(title = '')
                                         p
                                         ggsave(file, width = 8, height = 8)
@@ -421,9 +443,10 @@ mod_dat_ind_server <- function(input, output, session){
         plot_height <- dat_list[[3]][[4]]
         p <- p +
           hefpi::theme_hefpi(x_axis_angle = 90,
-                             x_axis_hjust = 1, 
+                             x_axis_vjust = 0.5, 
                              x_axis_size = 10,
                              y_axis_size = 10,
+                             y_axis_hjust = 1,
                              grid_major_x = NA,
                              grid_major_y = NA,
                              legend_position = 'none') 

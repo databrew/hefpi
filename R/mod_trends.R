@@ -188,6 +188,8 @@ mod_trends_mean_server <- function(input, output, session){
       temp <- tableau_color_pal(palette = "Tableau 20")
       trend_palette <- rep(temp(n = 20), 10)
       yn <- input$interpolate
+      save(pd, file = 'plot.rda')
+      
       if(yn){
         p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
           geom_point() + 
@@ -267,7 +269,7 @@ mod_trends_mean_server <- function(input, output, session){
                                         pd <- pop_list[[2]]
                                         if(nrow(pd)==0){
                                           empty_plot <- function(title = NULL){
-                                            p <- plotly_empty(type = "scatter", mode = "markers") %>%
+                                            p <- plotly_empty(type = "scatter", mode = "markers                                                                                                                                                                        ") %>%
                                               config(
                                                 displayModeBar = FALSE
                                               ) %>%
@@ -287,12 +289,15 @@ mod_trends_mean_server <- function(input, output, session){
                                           p <- p + ggtitle('') +
                                             hefpi::theme_hefpi(grid_major_x = NA,
                                                                x_axis_angle = 90,
-                                                               x_axis_hjust = 0,
+                                                               x_axis_vjust =0.5,
+                                                               y_axis_vjust = 0.5,
+                                                               y_axis_hjust = 1,
                                                                x_axis_size = 12,
                                                                legend_position = 'top',
                                                                legend_direction = 'horizontal',
                                                                legend_text_size = 2/3)
-                                          ggsave(file, width = 8, height = 8)
+                                          p
+                                          ggsave(file, width = 8, height = 8, type = "cairo")
                                         }
                                       }
                                     })
@@ -323,7 +328,10 @@ mod_trends_mean_server <- function(input, output, session){
         p <- pop_list[[1]]
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_angle = 90,
-                                    x_axis_hjust = 1)
+                                    x_axis_vjust =0.5,
+                                    y_axis_vjust = 0.5,
+                                    y_axis_hjust = 1,
+                                    x_axis_size = 12)
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
           config(displayModeBar = F)
@@ -541,7 +549,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
       yn <- input$interpolate
       if(yn){
         # condition if we connect the dots
-        p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME)) +
+        p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME, text=mytext)) +
           geom_point() + 
           geom_line() +
           scale_color_manual(name = '',
@@ -643,7 +651,9 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                           p <- p + ggtitle('') +
                                             hefpi::theme_hefpi(grid_major_x = NA,
                                                                x_axis_angle = 90,
-                                                               x_axis_hjust = 0,
+                                                               x_axis_vjust =0.5,
+                                                               y_axis_vjust = 0.5,
+                                                               y_axis_hjust = 1,
                                                                x_axis_size = 12,
                                                                legend_position = 'top',
                                                                legend_direction = 'horizontal',
@@ -679,7 +689,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
         p <- pop_list[[1]]
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_angle = 90,
-                                    x_axis_hjust = 1)
+                                    x_axis_vjust =0.5,
+                                    y_axis_vjust = 0.5,
+                                    y_axis_hjust = 1,
+                                    x_axis_size = 12)
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
           config(displayModeBar = F)
@@ -951,11 +964,13 @@ mod_trends_con_server <- function(input, output, session){
                                           p
                                           ggsave(file, width = 8, height = 8)
                                         } else {
-                                          p <- pop_list[[1]]
+                                          p <- con_list[[1]]
                                           p <- p + ggtitle('') +
                                             hefpi::theme_hefpi(grid_major_x = NA,
                                                                x_axis_angle = 90,
-                                                               x_axis_hjust = 0,
+                                                               x_axis_vjust =0.5,
+                                                               y_axis_vjust = 0.5,
+                                                               y_axis_hjust = 1,
                                                                x_axis_size = 12,
                                                                legend_position = 'top',
                                                                legend_direction = 'horizontal',
@@ -994,7 +1009,10 @@ mod_trends_con_server <- function(input, output, session){
         p <- con_list[[1]]
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_angle = 90,
-                                    x_axis_hjust = 1)
+                                    x_axis_vjust =0.5,
+                                    y_axis_vjust = 0.5,
+                                    y_axis_hjust = 1,
+                                    x_axis_size = 12)
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
           config(displayModeBar = F) 
@@ -1258,8 +1276,11 @@ mod_trends_quin_server <- function(input, output, session){
                                         } else {
                                           p <- quin_list[[1]]
                                           p <- p + ggtitle('') +
-                                            hefpi::theme_hefpi(x_axis_angle = 90,
-                                                               x_axis_hjust = 0,
+                                            hefpi::theme_hefpi(grid_major_x = NA,
+                                                               x_axis_angle = 90,
+                                                               x_axis_vjust =0.5,
+                                                               y_axis_vjust = 0.5,
+                                                               y_axis_hjust = 1,
                                                                x_axis_size = 12,
                                                                legend_position = 'top',
                                                                legend_direction = 'horizontal',
@@ -1294,9 +1315,12 @@ mod_trends_quin_server <- function(input, output, session){
         fig <- empty_plot("No data available for the selected inputs")
       } else {
         p <- quin_list[[1]]
-        p <- p + hefpi::theme_hefpi(x_axis_angle = 90,
-                                    x_axis_hjust = 1,
-                                    grid_major_x = NA)
+        p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                    x_axis_angle = 90,
+                                    x_axis_vjust =0.5,
+                                    y_axis_vjust = 0.5,
+                                    y_axis_hjust = 1,
+                                    x_axis_size = 12)
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
           config(displayModeBar = F)
