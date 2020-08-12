@@ -2,7 +2,6 @@
 #' @import shinydashboard
 app_ui <- function() {
 
-  
   # HEADER
   header <- dashboardHeader(title = tags$a(tags$img(src='www/wb_logo.png', alt = 'WBG')))
   
@@ -171,7 +170,6 @@ golem_add_external_resources <- function(){
   addResourcePath(
     'www', system.file('app/www', package = 'hefpi')
   )
-  
   tags$head(
     golem::activate_js(),
     golem::favicon(),

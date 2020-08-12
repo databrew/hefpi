@@ -87,6 +87,9 @@ mod_dots_country_server <- function(input, output, session){
   
   # ---- GET UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
+    indicator = "4+ antenatal care visits"
+    region = as.character(region_list$region)
+    date_range = c(1982, 2018)
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -142,6 +145,11 @@ mod_dots_country_server <- function(input, output, session){
   })
   
   get_dot_data <- reactive({
+    # indicator = "4+ antenatal care visits"
+    # region = as.character(region_list$region)
+    # date_range = c(1982, 2018)
+    # country_names <- countries
+    # value_range = c(min_value, max_value)
     # get input data
     region <- input$region
     indicator <- input$indicator
@@ -211,8 +219,8 @@ mod_dots_country_server <- function(input, output, session){
         p <- ggplot(df, aes(x=country,
                             y=value,
                             text = mytext)) +
-          geom_point(size=5, alpha = 0.7, aes(color = variable)) +
-          geom_line(aes(group = country)) +
+          geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
+          geom_line(aes(group = country), color = 'darkgrey') +
           scale_color_manual(name = '',
                              values = col_vec) +
           scale_y_continuous(limits = c((value_range[1] -5), (value_range[2] +10)), 
@@ -265,7 +273,15 @@ mod_dots_country_server <- function(input, output, session){
                                         NULL
                                       } else {
                                         p <- dot_list[[1]]
-                                        p <- p + hefpi::theme_hefpi() 
+                                        plot_height <- dot_list[[3]][[5]]
+                                        
+                                        p <- p +
+                                          hefpi::theme_hefpi(grid_major_x = NA,
+                                                                    y_axis_size = rel(2/3),
+                                                                    x_axis_size = rel(1),
+                                                                    x_axis_hjust = 0.5,
+                                                                    y_axis_hjust = 1,
+                                                                    y_axis_vjust = 0.5) 
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -296,7 +312,10 @@ mod_dots_country_server <- function(input, output, session){
       } else {
         p <- dot_list[[1]]
         plot_height <- dot_list[[3]][[5]]
-        p <- p + hefpi::theme_hefpi(grid_major_x = NA)
+        p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                    x_axis_hjust = 0.5,
+                                    y_axis_hjust = 1,
+                                    y_axis_vjust = 0.5)
         fig <- ggplotly(p, 
                         tooltip = 'text', 
                         height = plot_height) %>%
@@ -491,9 +510,9 @@ mod_dots_ind_server <- function(input, output, session){
       # order indicator alphabetically
       df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
       mytext <- paste(
+        "Economy: ", as.character(df$country),"\n",
         "Value: ", paste0(round(df$value, digits = 2), ' (', df$unit_of_measure, ')'), "\n",
         "Year: ", as.character(df$year),"\n",
-        "Country: ", as.character(df$country),"\n",
         "Data source: ", as.character(df$referenceid_list),
         sep="") %>%
         lapply(htmltools::HTML)
@@ -505,11 +524,12 @@ mod_dots_ind_server <- function(input, output, session){
         }
         p <- ggplot(df, aes(x=indicator_short_name,
                             y=value,
-                            color = variable)) +
-          geom_point(size=5, alpha = 0.7) +
+                            color = variable,
+                            text = mytext)) +
+          geom_point(size=rel(2), alpha = 0.7) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          geom_line(aes(group = indicator_short_name)) +
+          geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
           scale_y_continuous(limits = c((value_range[1] -5), (value_range[2] +5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
@@ -560,7 +580,12 @@ mod_dots_ind_server <- function(input, output, session){
                                         NULL
                                       } else {
                                         p <- dot_list[[1]]
-                                        p =  p + theme(axis.text = element_text(size = rel(1/2))) 
+                                        p =  p + theme_hefpi(grid_major_x = NA,
+                                                             y_axis_size = rel(2/3),
+                                                             x_axis_size = rel(1),
+                                                             x_axis_hjust = 0.5,
+                                                             y_axis_hjust = 1,
+                                                             y_axis_vjust = 0.5) 
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -591,7 +616,10 @@ mod_dots_ind_server <- function(input, output, session){
       } else {
         p <- dot_list[[1]]
         plot_height <- dot_list[[3]][[5]]
-        p <- p + hefpi::theme_hefpi(grid_major_x = NA) 
+        p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                    x_axis_hjust = 0.5,
+                                    y_axis_hjust = 1,
+                                    y_axis_vjust = 0.5) 
         fig <- ggplotly(p, 
                         tooltip = 'text', 
                         height = plot_height) %>%
