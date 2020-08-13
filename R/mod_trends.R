@@ -21,6 +21,9 @@ mod_trends_mean_ui <- function(id){
   tagList(
     fluidPage(
       column(8,
+             fluidRow(column(12, align = 'center',
+                             actionButton(ns('generate_chart'), 'Generate chart')
+                             )),
              plotlyOutput(
                ns('trends_mean'), height = '600px'
              )),
@@ -86,56 +89,10 @@ mod_trends_mean_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
-  # ---- GENERATE UI OUTPUTS ---- #
-  output$ui_outputs <- renderUI({
-    # get inputs
-    indicator <- input$indicator
-    region <- input$region
-    # get region code
-    region_list <- hefpi::region_list
-    region_code <- as.character(region_list$region_code[region_list$region %in% region])
-    # Get the variable
-    variable <- indicators %>%
-      filter(indicator_short_name == indicator) %>%
-      .$variable_name
-    
-    # subset data by variable and region code
-    df <- hefpi::df
-    df <- df[df$regioncode %in% region_code,]
-    df <- df[df$indic == variable,]
-    max_value <- round(max(df$pop), 2)
-    min_value <- round(min(df$pop), 2)
-    if(max_value<1){
-      min_value=0
-      max_value = 1
-    } else {
-      min_value = 0
-      max_value = ceiling(max_value)
-    }
-    countries <- unique(df$country)
-    fluidPage(
-      fluidRow(
-        pickerInput(inputId = session$ns("country"),
-                    label = 'Country', 
-                    choices = countries,
-                    selected = countries,
-                    options = list( `actions-box`=TRUE,
-                                    `selected-text-format` = "count > 2",
-                                    `count-selected-text` = "{0}/{1} Countries",
-                                    `style` = "btn-primary"),
-                    multiple = TRUE),
-        sliderInput(session$ns('value_range'),
-                    'Y axis range',
-                    min = min_value,
-                    max = max_value,
-                    value = c(min_value, max_value),
-                    sep = '')
-      )
-    )
-  })
-  
-  # ---- GENERATE DATA FOR PLOTS ---- #
-  get_pop_data <- reactive({
+  # Observe the "generate chart" button to put together the data for the chart
+  chart_data <- reactiveValues(pop_data = NULL) # starts as null, gets overwritten when the button is pressed
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
     pop_list <- list()
     indicator <- input$indicator
@@ -222,9 +179,60 @@ mod_trends_mean_server <- function(input, output, session){
       pop_list[[1]] <- p
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
-      return(pop_list)
+      chart_data$pop_data <- pop_list
+      message('pop_list is of type:')
+      print(str(pop_list))
     }
   })
+  
+  # ---- GENERATE UI OUTPUTS ---- #
+  output$ui_outputs <- renderUI({
+    # get inputs
+    indicator <- input$indicator
+    region <- input$region
+    # get region code
+    region_list <- hefpi::region_list
+    region_code <- as.character(region_list$region_code[region_list$region %in% region])
+    # Get the variable
+    variable <- indicators %>%
+      filter(indicator_short_name == indicator) %>%
+      .$variable_name
+    
+    # subset data by variable and region code
+    df <- hefpi::df
+    df <- df[df$regioncode %in% region_code,]
+    df <- df[df$indic == variable,]
+    max_value <- round(max(df$pop), 2)
+    min_value <- round(min(df$pop), 2)
+    if(max_value<1){
+      min_value=0
+      max_value = 1
+    } else {
+      min_value = 0
+      max_value = ceiling(max_value)
+    }
+    countries <- unique(df$country)
+    fluidPage(
+      fluidRow(
+        pickerInput(inputId = session$ns("country"),
+                    label = 'Country', 
+                    choices = countries,
+                    selected = countries,
+                    options = list( `actions-box`=TRUE,
+                                    `selected-text-format` = "count > 2",
+                                    `count-selected-text` = "{0}/{1} Countries",
+                                    `style` = "btn-primary"),
+                    multiple = TRUE),
+        sliderInput(session$ns('value_range'),
+                    'Y axis range',
+                    min = min_value,
+                    max = max_value,
+                    value = c(min_value, max_value),
+                    sep = '')
+      )
+    )
+  })
+  
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -233,7 +241,7 @@ mod_trends_mean_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      pop_list <- get_pop_data()
+      pop_list <- chart_data$pop_data
       if(is.null(pop_list)){
         NULL
       } else {
@@ -262,7 +270,7 @@ mod_trends_mean_server <- function(input, output, session){
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("trends_mean_",Sys.Date(), ".png"),
                                     content = function(file) {
-                                      pop_list <- get_pop_data()
+                                      pop_list <- chart_data$pop_data
                                       if(is.null(pop_list)){
                                         NULL
                                       } else {
@@ -304,7 +312,7 @@ mod_trends_mean_server <- function(input, output, session){
   
   # ---- RENDER PLOT ---- 
   output$trends_mean <- renderPlotly({
-    pop_list <- get_pop_data()
+    pop_list <- chart_data$pop_data
     if(is.null(pop_list)){
       NULL
     } else {
