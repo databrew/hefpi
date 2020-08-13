@@ -469,6 +469,7 @@ mod_recent_con_server <- function(input, output, session){
     })
   
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
+  map_data <- reactiveValues(map = NULL)
   get_con_map <- reactive({
     con_map_list <- list()
     plot_years <- input$date_range
@@ -544,6 +545,7 @@ mod_recent_con_server <- function(input, output, session){
         ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend(pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
       con_map_list<- list(con_map, shp, unit_of_measure,year_title)
+      map_data$map <- con_map
       # save(con_map_list, file = 'map.rda')
     }
     return(con_map_list)
@@ -583,16 +585,16 @@ mod_recent_con_server <- function(input, output, session){
     if(is.null(con_map)){
       NULL
     } else {
-      if(is.na(con_map)){
-        this_map <- leaflet(options = leafletOptions(minZoom = 1, 
-                                                     maxZoom = 10)) %>% 
-          addProviderTiles('CartoDB.VoyagerNoLabels') %>%
-          setView(lat=0, lng=0 , zoom=1.7) 
+      # if(is.na(con_map)){
+      #   this_map <- leaflet(options = leafletOptions(minZoom = 1, 
+      #                                                maxZoom = 10)) %>% 
+      #     addProviderTiles('CartoDB.VoyagerNoLabels') %>%
+      #     setView(lat=0, lng=0 , zoom=1.7) 
+      #   this_map
+      # } else {
+        this_map <- map_data$map #con_map[[1]]
         this_map
-      } else {
-        this_map <- con_map[[1]]
-        this_map
-      }
+      # }
     }
   })
   
@@ -636,22 +638,22 @@ mod_recent_con_server <- function(input, output, session){
                                       if(is.null(con_map)){
                                         NULL
                                       } else {
-                                        if(is.na(con_map)){
-                                          this_map <- leaflet(options = leafletOptions(minZoom = 1, 
-                                                                                       maxZoom = 10)) %>% 
-                                            addProviderTiles('OpenStreetMap.DE') %>%
-                                            setView(lat=0, lng=0 , zoom=1.7) 
-                                          mapview::mapshot( x = this_map,
-                                                            file = file,
-                                                            cliprect = "viewport",
-                                                            selfcontained = FALSE)
-                                        } else {
+                                        # if(is.na(con_map)){
+                                        #   this_map <- leaflet(options = leafletOptions(minZoom = 1, 
+                                        #                                                maxZoom = 10)) %>% 
+                                        #     addProviderTiles('OpenStreetMap.DE') %>%
+                                        #     setView(lat=0, lng=0 , zoom=1.7) 
+                                        #   mapview::mapshot( x = this_map,
+                                        #                     file = file,
+                                        #                     cliprect = "viewport",
+                                        #                     selfcontained = FALSE)
+                                        # } else {
                                           this_map <- con_map[[1]]
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)
-                                        }
+                                        # }
                                       }
                                     })
   
