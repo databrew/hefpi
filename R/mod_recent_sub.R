@@ -319,11 +319,26 @@ mod_recent_mean_sub_server <- function(input, output, session){
     }
   )
   
+  
+  # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
+  user_zoom <- reactive({
+    pop_map <- get_pop_map()
+    if(is.null(pop_map)){
+      NULL
+    } else {
+      this_map <- pop_map[[3]]
+      this_map %>% setView(lng = input$recent_mean_sub_leaf_center$lng,
+                           lat = input$recent_mean_sub_leaf_center$lat,
+                           zoom = input$recent_mean_sub_leaf_zoom)
+    }
+  }) 
+  
+  
   # ---- DOWNLOAD MAP IMAGE ---- #
   # DO THE SAME HERE
   output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_regional_", Sys.Date(), ".png"),
                                     content = function(file) {
-                                      pop_map <- get_pop_map()
+                                      pop_map <- user_zoom()
                                       if(is.null(pop_map)){
                                         NULL
                                       } else {
@@ -340,7 +355,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                                             selfcontained = FALSE)
                                         } else {
                                           # get map
-                                          this_map <- pop_map[[3]]
+                                          this_map <- user_zoom()
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
