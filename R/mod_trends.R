@@ -23,13 +23,12 @@ mod_trends_mean_ui <- function(id){
   tagList(
     fluidPage(
       column(8,
-             fluidRow(column(12, align = 'center',
-                             actionButton(ns('generate_chart'), 'Generate chart')
-                             )),
              plotlyOutput(
                ns('trends_mean'), height = '600px'
              )),
       column(4,
+             actionButton(ns('generate_chart'), 'Generate chart'),
+             br(), br(),
              pickerInput(ns('indicator'),
                          'Indicator',
                          choices = indicators_list,
