@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_trends.R
 \name{mod_trends_mean_ui}
 \alias{mod_trends_mean_ui}
-\title{mod_trens.R}
+\title{mod_trends.R}
 \usage{
 mod_trends_mean_ui(id)
 }

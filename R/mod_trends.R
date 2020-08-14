@@ -1,6 +1,6 @@
 # Module Trends 
 
-#' @title   mod_trens.R
+#' @title mod_trends.R
 #' @description  A shiny Module.
 #'
 #' @param id shiny id
@@ -90,7 +90,12 @@ mod_trends_mean_server <- function(input, output, session){
   })
   
   # Observe the "generate chart" button to put together the data for the chart
-  chart_data <- reactiveValues(pop_data = NULL) # starts as null, gets overwritten when the button is pressed
+  if('pop_list.RData' %in% dir()){
+    load('pop_list.RData')
+  } else {
+    pop_list <- NULL
+  }
+  chart_data <- reactiveValues(pop_data = pop_list) 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
@@ -179,11 +184,16 @@ mod_trends_mean_server <- function(input, output, session){
       pop_list[[1]] <- p
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
+      if(!'pop_list.RData' %in% dir()){
+        save(pop_list, file = 'pop_list.RData')
+      }
       chart_data$pop_data <- pop_list
-      message('pop_list is of type:')
-      print(str(pop_list))
+      # message('pop_list is of type:')
+      # print(str(pop_list))
     }
-  })
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = FALSE)
   
   # ---- GENERATE UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
