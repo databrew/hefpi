@@ -24,9 +24,6 @@ mod_recent_mean_ui <- function(id){
   fluidPage(
     fluidRow(
       column(8,
-             leafletOutput(ns('test_map')),
-             downloadButton(ns('dl_test_map'), label = 'Download test plot', class = 'btn-primary')),
-      column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_mean_leaf')),
@@ -77,46 +74,6 @@ mod_recent_mean_ui <- function(id){
 #' @keywords internal
 
 mod_recent_mean_server <- function(input, output, session){
-  
-  
-  first_map <- reactive({
-    leaflet() %>% 
-      addProviderTiles('Esri.WorldShadedRelief') 
-      
-  })
-  # map <- reactiveValues(dat = 0)
-  output$test_map <- renderLeaflet({
-    first_map()
-  })
-  
-  # a reactive expression
-  user_created_map <- reactive({
-    
-    # call the foundational Leaflet map
-    first_map() %>%
-      
-      # store the view based on UI
-      setView( lng = input$test_map_center$lng
-               ,  lat = input$test_map_center$lat
-               , zoom = input$test_map_zoom
-      )
-    
-  }) 
-  
-  output$dl_test_map <- downloadHandler(
-    filename = paste0( Sys.Date()
-                      , "_testmap"
-                      , ".png"
-    )
-    
-    , content = function(file) {
-      mapview::mapshot( x = user_created_map()
-               , file = file
-               , cliprect = "viewport" 
-               , selfcontained = FALSE 
-      )
-    } 
-  )
   
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
   observeEvent(input$plot_info, {
@@ -331,11 +288,24 @@ mod_recent_mean_server <- function(input, output, session){
       }
     }
   )
+  
+  # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
+  user_zoom <- reactive({
+    pop_map <- get_pop_map()
+    if(is.null(pop_map)){
+      NULL
+    } else {
+        this_map <- pop_map[[1]]
+        this_map %>% setView(lng = input$recent_mean_leaf_center$lng,
+                             lat = input$recent_mean_leaf_center$lat,
+                             zoom = input$recent_mean_leaf_zoom)
+    }
+  }) 
 
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".png"),
                                     content = function(file) {
-                                      pop_map <- get_pop_map()
+                                      pop_map <- user_zoom()
                                       if(is.null(pop_map)){
                                         NULL
                                       } else {
@@ -350,7 +320,7 @@ mod_recent_mean_server <- function(input, output, session){
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)
                                         } else {
-                                        this_map <- pop_map[[1]]
+                                        this_map <- pop_map
                                         mapview::mapshot( x = this_map,
                                                           file = file,
                                                           cliprect = "viewport",
@@ -358,6 +328,8 @@ mod_recent_mean_server <- function(input, output, session){
                                         }
                                       }
                                     })
+  
+  
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_mean_plot <- renderPlotly({
     # get reactive list
@@ -642,6 +614,8 @@ mod_recent_con_server <- function(input, output, session){
     }
   })
   
+  
+  
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
@@ -674,30 +648,44 @@ mod_recent_con_server <- function(input, output, session){
     }
   )
   
+  # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
+  user_zoom_ci <- reactive({
+    con_map <- get_con_map()
+    if(is.null(con_map)){
+      NULL
+    } else {
+      this_map <- con_map[[1]]
+      this_map %>% setView(lng = input$recent_con_leaf_center$lng,
+                           lat = input$recent_con_leaf_center$lat,
+                           zoom = input$recent_con_leaf_zoom)
+    }
+  }) 
+  
+  
   # ---- DOWNLOAD MAP IMAGE ---- #
   # DO THE SAME HERE
   output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_ci_", Sys.Date(), ".png"),
                                     content = function(file) {
-                                      con_map <- get_con_map()
+                                      con_map <- user_zoom_ci()
                                       if(is.null(con_map)){
                                         NULL
                                       } else {
-                                        # if(is.na(con_map)){
-                                        #   this_map <- leaflet(options = leafletOptions(minZoom = 1, 
-                                        #                                                maxZoom = 10)) %>% 
-                                        #     addProviderTiles('OpenStreetMap.DE') %>%
-                                        #     setView(lat=0, lng=0 , zoom=1.7) 
-                                        #   mapview::mapshot( x = this_map,
-                                        #                     file = file,
-                                        #                     cliprect = "viewport",
-                                        #                     selfcontained = FALSE)
-                                        # } else {
-                                          this_map <- con_map[[1]]
+                                        if(is.na(con_map)){
+                                          this_map <- leaflet(options = leafletOptions(minZoom = 1,
+                                                                                       maxZoom = 10)) %>%
+                                            addProviderTiles('OpenStreetMap.DE') %>%
+                                            setView(lat=0, lng=0 , zoom=1.7)
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)
-                                        # }
+                                        } else {
+                                          this_map <- user_zoom_ci()
+                                          mapview::mapshot( x = this_map,
+                                                            file = file,
+                                                            cliprect = "viewport",
+                                                            selfcontained = FALSE)
+                                        }
                                       }
                                     })
   
