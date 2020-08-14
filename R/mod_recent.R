@@ -24,6 +24,9 @@ mod_recent_mean_ui <- function(id){
   fluidPage(
     fluidRow(
       column(8,
+             leafletOutput(ns('test_map')),
+             downloadButton(ns('dl_test_map'), label = 'Download test plot', class = 'btn-primary')),
+      column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_mean_leaf')),
@@ -75,6 +78,46 @@ mod_recent_mean_ui <- function(id){
 
 mod_recent_mean_server <- function(input, output, session){
   
+  
+  first_map <- reactive({
+    leaflet() %>% 
+      addProviderTiles('Esri.WorldShadedRelief') 
+      
+  })
+  # map <- reactiveValues(dat = 0)
+  output$test_map <- renderLeaflet({
+    first_map()
+  })
+  
+  # a reactive expression
+  user_created_map <- reactive({
+    
+    # call the foundational Leaflet map
+    first_map() %>%
+      
+      # store the view based on UI
+      setView( lng = input$test_map_center$lng
+               ,  lat = input$test_map_center$lat
+               , zoom = input$test_map_zoom
+      )
+    
+  }) 
+  
+  output$dl_test_map <- downloadHandler(
+    filename = paste0( Sys.Date()
+                      , "_testmap"
+                      , ".png"
+    )
+    
+    , content = function(file) {
+      mapview::mapshot( x = user_created_map()
+               , file = file
+               , cliprect = "viewport" 
+               , selfcontained = FALSE 
+      )
+    } 
+  )
+  
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
@@ -86,6 +129,7 @@ mod_recent_mean_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+ 
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
     # create list to store results from reactive object

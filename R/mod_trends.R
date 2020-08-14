@@ -16,6 +16,8 @@
 #' @import ggplot2
 #' @import reshape2
 #' @importFrom shiny NS tagList 
+#' 
+#' 
 mod_trends_mean_ui <- function(id){
   ns <- NS(id)
   tagList(
