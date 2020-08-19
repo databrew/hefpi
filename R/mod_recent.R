@@ -406,7 +406,8 @@ mod_recent_mean_server <- function(input, output, session){
           highlight(on='plotly_hover',
                     persistent = FALSE,
                     color = 'white',
-                    opacityDim = 0.6)
+                    opacityDim = 0.6) %>%
+          layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
         p
       }
     }
@@ -752,11 +753,22 @@ mod_recent_con_server <- function(input, output, session){
           highlight(on='plotly_hover',
                     persistent = FALSE,
                     color = 'white',
-                    opacityDim = 0.6)
+                    opacityDim = 0.6) %>%
+          layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
       }
     }
   })
 }
+
+library(maps)
+mapStates = map("state", fill = TRUE, plot = FALSE)
+
+leaflet(data = mapStates) %>% 
+  addProviderTiles('Esri.WorldShadedRelief') %>%
+  addPolygons( 
+    labelOptions = labelOptions(
+      noHide = TRUE
+    ))
 
 ## To be copied in the UI
 # mod_recent_mean_ui("leaf1")
