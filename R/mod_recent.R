@@ -497,7 +497,7 @@ mod_recent_con_server <- function(input, output, session){
       filter(indicator_short_name == indicator) %>%
       select(variable_name, unit_of_measure)
     variable_name <- ind_info$variable_name
-    unit_of_measure <- ind_info$unit_of_measure
+    unit_of_measure <- 'CI'
     
     pd<- hefpi::df %>%
       filter(year >= min(plot_years),
