@@ -235,6 +235,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
         pop_map_list[[5]] <- good_or_bad
         pop_map_list[[6]] <- unit_of_measure
         pop_map_list[[7]] <- year_title
+        save(pop_map_list, file = 'this_file.rda')
       }
       return(pop_map_list)
     }

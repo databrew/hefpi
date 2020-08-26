@@ -84,7 +84,9 @@ mod_dat_country_server <- function(input, output, session){
   
   # ---- GENERATE PLOT DATA---- #
   get_dat <- reactive({
-    
+    country_name = 'United States'
+    indicator = indicators$indicator_short_name
+    date_range = c(1982, 2018)
     country_name <- input$country
     indicator = input$indicator
     date_range = input$date_range
@@ -127,14 +129,14 @@ mod_dat_country_server <- function(input, output, session){
     # plot
     p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
       geom_tile(alpha = 0.8, color = 'lightgrey') +
-      scale_x_continuous(limits = c(date_range[1], (date_range[2] +1)), 
-                         breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+      scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                          expand = c(0,0)) +
       scale_fill_manual(name = '',
                         values = col_vec) +
       labs(x = 'Year',
            y = '',
-           title = plot_title) 
+           title = plot_title)
+    p
     dat_list[[1]] <- p
     dat_list[[2]] <- df
     dat_list[[3]] <- list(plot_title, col_vec)
@@ -151,6 +153,10 @@ mod_dat_country_server <- function(input, output, session){
                                         p <- dat_list[[1]]
                                         p =  p + hefpi::theme_hefpi(grid_major_x = NA,
                                                                     grid_major_y = NA,
+                                                                    grid_minor_x = NA,
+                                                                    grid_minor_y = NA,
+                                                                    y_axis_line = 'white',
+                                                                    x_axis_line = 'white',
                                                                     x_axis_size = rel(1),
                                                                     y_axis_size = rel(2/3),
                                                                     y_axis_hjust = 1,
@@ -311,8 +317,8 @@ mod_dat_ind_server <- function(input, output, session){
   
   get_dat <- reactive({
     # get inputs
-    indicator <- indicators$indicator_short_name[1]
-  
+    # indicator <- indicators$indicator_short_name[1]
+    date_range = c(1982,2018)
     indicator <- input$indicator
     region <- input$region
     country_names <- input$country
@@ -362,7 +368,7 @@ mod_dat_ind_server <- function(input, output, session){
       temp_data$level2 <- factor(temp_data$level2, levels =level2_levels )
       temp_data$country <- factor(temp_data$country, levels = sort(unique(temp_data$country), decreasing = TRUE))
         # make plot title 
-        plot_title = paste0('Missing data profile',' - ', indicator)
+        plot_title = paste0('Data availability',' - ', indicator)
         mytext <- paste(
           "Economy: ", as.character(temp_data$country), "\n",
           "Indicator class: ", as.character(temp_data$level2), "\n",
@@ -375,13 +381,12 @@ mod_dat_ind_server <- function(input, output, session){
         }
         p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
                         geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
-          scale_y_continuous(limits = c(date_range[1], (date_range[2] +1)), 
-                             breaks = seq(from = date_range[1],to = date_range[2], by = 1),
+          scale_y_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1),
                              expand = c(0,0)) +
                         scale_fill_manual(name = '',
                                           values = col_vec) +
                         labs(x = '',
-                             y = '',
+                             y = 'Year',
                              title = plot_title) +
           coord_flip() +
           theme(legend.position = "none") 
@@ -401,6 +406,10 @@ mod_dat_ind_server <- function(input, output, session){
                                         p <- dat_list[[1]]
                                         p =  p + theme_hefpi(grid_major_x = NA,
                                                              grid_major_y = NA,
+                                                             grid_minor_x = NA,
+                                                             grid_minor_y = NA,
+                                                             y_axis_line = 'white',
+                                                             x_axis_line = 'white',
                                                              x_axis_size = rel(1),
                                                              y_axis_size = rel(2/3),
                                                              y_axis_hjust = 1,
@@ -409,6 +418,7 @@ mod_dat_ind_server <- function(input, output, session){
                                                              legend_position = 'top',
                                                              legend_direction = 'horizontal',
                                                              legend_text_size = rel(1/2)) +
+                                          
                                           labs(title = '')
                                         p
                                         ggsave(file, width = 8, height = 8)
@@ -449,7 +459,12 @@ mod_dat_ind_server <- function(input, output, session){
                              y_axis_hjust = 1,
                              grid_major_x = NA,
                              grid_major_y = NA,
+                             grid_minor_x = NA,
+                             grid_minor_y = NA,
+                             y_axis_line = 'white',
+                             x_axis_line = 'white',
                              legend_position = 'none') 
+      
         fig <- ggplotly(p, 
                         tooltip = 'text',
                         height = plot_height) %>%
