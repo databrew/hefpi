@@ -16,6 +16,7 @@
 #' @import ggplot2
 #' @import reshape2
 #' @importFrom shiny NS tagList 
+#' 
 mod_dots_country_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -229,6 +230,7 @@ mod_dots_country_server <- function(input, output, session){
           labs(title=plot_title,
                subtitle = sub_title, x= '', y = y_axis_text) +
           coord_flip() 
+        p
         dot_list[[1]] <- p
         dot_list[[2]] <- df
         dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
@@ -248,17 +250,22 @@ mod_dots_country_server <- function(input, output, session){
         NULL
       } else {
         df <- dot_list[[2]]
-        temp <- df
-        names(temp) <- tolower(names(temp))
-        names(temp)[names(temp)=='variable'] <- 'level'
-        # subset by  
-        temp$parameter <- 'Mean'
-        # temp$level <- 'National'
-        temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
-                                indicator_description, parameter, level, ci, unit_of_measure)
-        names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
-                         'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
-                         'Value', 'Unit_of_measurement')
+        if(nrow(df) == 0){
+          temp <- data_frame()
+        } else {
+          temp <- df
+          names(temp) <- tolower(names(temp))
+          names(temp)[names(temp)=='variable'] <- 'level'
+          # subset by  
+          temp$parameter <- 'Mean'
+          # temp$level <- 'National'
+          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
+                                  indicator_description, parameter, level, ci, unit_of_measure)
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
+        }
+        write.csv(temp, file)
       }
     }
   )
@@ -281,7 +288,9 @@ mod_dots_country_server <- function(input, output, session){
                                                                     x_axis_size = rel(1),
                                                                     x_axis_hjust = 0.5,
                                                                     y_axis_hjust = 1,
-                                                                    y_axis_vjust = 0.5) 
+                                                                    y_axis_vjust = 0.5) +
+                                          labs(title = '',
+                                               subtitle = '') 
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -343,7 +352,6 @@ mod_dots_ind_ui <- function(id){
              tags$div(style='overflow-y: scroll; position: relative', 
                       plotlyOutput(ns('dots_ind'), height = '600px', width = '1000px') )),
       column(4,
-             tags$style("#indicator {font-size:10px;height:10px;}"),
              pickerInput(inputId = ns("indicator"),
                          label = 'Indicator', 
                          choices = indicators_list,
@@ -361,7 +369,7 @@ mod_dots_ind_ui <- function(id){
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
-                         max = 2017,
+                         max = 2018,
                          value = c(1982, 2018),
                          step = 1,
                          sep = ''),
@@ -406,8 +414,8 @@ mod_dots_ind_server <- function(input, output, session){
   # ---- GENERATE UI OUTPUTS---- #
   output$ui_outputs <- renderUI({
     date_range <- c(1982, 2018)
-    indicator <- indicators$indicator_short_name
-    country_names = 'United States'
+    indicator <- NULL
+    country_names = 'Zimbabwe'
     date_range <- input$date_range
     indicator <- input$indicator
     country_names <- input$country
@@ -493,6 +501,7 @@ mod_dots_ind_server <- function(input, output, session){
                                           ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
       # only keep data with no NAs
       df <- df[complete.cases(df),]
+      
       # get color graident 
       col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
       col_vec <- col_vec[-1]
@@ -502,11 +511,19 @@ mod_dots_ind_server <- function(input, output, session){
       plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', country_names)
       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
       y_axis_text = paste0(indicator)
-      # make percent 
-      df$value[df$unit_of_measure == '%'] <-    (df$value[df$unit_of_measure == '%'])*100
-      # if the dataframe is null of empty make plot null
-      df <- df %>% filter(value >= value_range[1],
-                          value <= value_range[2])
+      if(nrow(df) !=0){
+        if(length(unique(df$unit_of_measure)) == 1 & unique(df$unit_of_measure) == '%'){
+          # make percent 
+          df$value[df$unit_of_measure == '%'] <- (df$value[df$unit_of_measure == '%'])*100
+          # if the dataframe is null of empty make plot null
+          value_range[2] <- value_range[2]*100
+          value_range[1] <- value_range[1]*100
+        } else {
+          # make percent 
+          df$value[df$unit_of_measure == '%'] <- (df$value[df$unit_of_measure == '%'])*100
+        }
+      }
+     
       # order indicator alphabetically
       df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
       mytext <- paste(
@@ -556,18 +573,24 @@ mod_dots_ind_server <- function(input, output, session){
         NULL
       } else {
         df <- dot_list[[2]]
-        temp <- df
-        names(temp) <- tolower(names(temp))
-        names(temp)[names(temp)=='variable'] <- 'level'
-        # subset by  
-        temp$parameter <- 'Mean'
-        # temp$level <- 'National'
-        temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
-                                indicator_description, parameter, level, ci, unit_of_measure)
-        names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
-                         'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
-                         'Value', 'Unit_of_measurement')
-        write.csv(df, file)
+        if(nrow(df) == 0){
+          temp <- data_frame()
+          
+        } else {
+          temp <- df
+          names(temp) <- tolower(names(temp))
+          names(temp)[names(temp)=='variable'] <- 'level'
+          # subset by  
+          temp$parameter <- 'Mean'
+          # temp$level <- 'National'
+          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
+                                  indicator_description, parameter, level, ci, unit_of_measure)
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
+        }
+        
+        write.csv(temp, file)
       }
     }
   )
@@ -585,7 +608,9 @@ mod_dots_ind_server <- function(input, output, session){
                                                              x_axis_size = rel(1),
                                                              x_axis_hjust = 0.5,
                                                              y_axis_hjust = 1,
-                                                             y_axis_vjust = 0.5) 
+                                                             y_axis_vjust = 0.5) %>%
+                                          labs(title = '',
+                                               subtitle ='')
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -598,6 +623,7 @@ mod_dots_ind_server <- function(input, output, session){
       NULL
     } else {
       df <- dot_list[[2]]
+      save(df,file='plot_output.rda')
       if(nrow(df)==0){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -613,6 +639,7 @@ mod_dots_ind_server <- function(input, output, session){
             )
         } 
         fig <- empty_plot("No data available for the selected inputs")
+        fig
       } else {
         p <- dot_list[[1]]
         plot_height <- dot_list[[3]][[5]]
@@ -626,6 +653,7 @@ mod_dots_ind_server <- function(input, output, session){
           config(displayModeBar = F)
         fig
       }
+     
     }
   })
 }

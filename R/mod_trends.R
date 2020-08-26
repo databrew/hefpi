@@ -27,6 +27,8 @@ mod_trends_mean_ui <- function(id){
                ns('trends_mean'), height = '600px'
              )),
       column(4,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              br(), br(),
              pickerInput(ns('indicator'),
@@ -54,13 +56,7 @@ mod_trends_mean_ui <- function(id){
              checkboxInput(ns('interpolate'), 'Interpolate missing values',
                            value = TRUE),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(), 
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     )
   )
 }
@@ -90,9 +86,58 @@ mod_trends_mean_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  
+  # ---- GENERATE UI OUTPUTS ---- #
+  output$ui_outputs <- renderUI({
+    # get inputs
+    indicator <- input$indicator
+    region <- input$region
+    # get region code
+    region_list <- hefpi::region_list
+    region_code <- as.character(region_list$region_code[region_list$region %in% region])
+    # Get the variable
+    variable <- indicators %>%
+      filter(indicator_short_name == indicator) %>%
+      .$variable_name
+    
+    # subset data by variable and region code
+    df <- hefpi::df
+    df <- df[df$regioncode %in% region_code,]
+    df <- df[df$indic == variable,]
+    max_value <- round(max(df$pop), 2)
+    min_value <- round(min(df$pop), 2)
+    if(max_value<1){
+      min_value=0
+      max_value = 1
+    } else {
+      min_value = 0
+      max_value = ceiling(max_value)
+    }
+    countries <- unique(df$country)
+    fluidPage(
+      fluidRow(
+        pickerInput(inputId = session$ns("country"),
+                    label = 'Country', 
+                    choices = countries,
+                    selected = countries,
+                    options = list( `actions-box`=TRUE,
+                                    `selected-text-format` = "count > 2",
+                                    `count-selected-text` = "{0}/{1} Countries",
+                                    `style` = "btn-primary"),
+                    multiple = TRUE),
+        sliderInput(session$ns('value_range'),
+                    'Y axis range',
+                    min = min_value,
+                    max = max_value,
+                    value = c(min_value, max_value),
+                    sep = '')
+      )
+    )
+  })
+  
   # Observe the "generate chart" button to put together the data for the chart
-  if('pop_list.RData' %in% dir()){
-    load('pop_list.RData')
+  if('trends_national_mean.RData' %in% dir()){
+    load('trends_national_mean.RData')
   } else {
     pop_list <- NULL
   }
@@ -103,9 +148,9 @@ mod_trends_mean_server <- function(input, output, session){
     pop_list <- list()
     indicator <- input$indicator
     region <- input$region
-    country_names <- input$country
     date_range <- input$date_range
     value_range <- input$value_range
+    country_names <- input$country
     
     # control for charts that are temporarily NULL between input selection
     if(is.null(value_range)){
@@ -185,8 +230,8 @@ mod_trends_mean_server <- function(input, output, session){
       pop_list[[1]] <- p
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
-      if(!'pop_list.RData' %in% dir()){
-        save(pop_list, file = 'pop_list.RData')
+      if(!'trends_national_mean.RData' %in% dir()){
+        save(pop_list, file = 'trends_national_mean.RData')
       }
       chart_data$pop_data <- pop_list
       # message('pop_list is of type:')
@@ -196,53 +241,6 @@ mod_trends_mean_server <- function(input, output, session){
   ignoreNULL = FALSE,
   ignoreInit = FALSE)
   
-  # ---- GENERATE UI OUTPUTS ---- #
-  output$ui_outputs <- renderUI({
-    # get inputs
-    indicator <- input$indicator
-    region <- input$region
-    # get region code
-    region_list <- hefpi::region_list
-    region_code <- as.character(region_list$region_code[region_list$region %in% region])
-    # Get the variable
-    variable <- indicators %>%
-      filter(indicator_short_name == indicator) %>%
-      .$variable_name
-    
-    # subset data by variable and region code
-    df <- hefpi::df
-    df <- df[df$regioncode %in% region_code,]
-    df <- df[df$indic == variable,]
-    max_value <- round(max(df$pop), 2)
-    min_value <- round(min(df$pop), 2)
-    if(max_value<1){
-      min_value=0
-      max_value = 1
-    } else {
-      min_value = 0
-      max_value = ceiling(max_value)
-    }
-    countries <- unique(df$country)
-    fluidPage(
-      fluidRow(
-        pickerInput(inputId = session$ns("country"),
-                    label = 'Country', 
-                    choices = countries,
-                    selected = countries,
-                    options = list( `actions-box`=TRUE,
-                                    `selected-text-format` = "count > 2",
-                                    `count-selected-text` = "{0}/{1} Countries",
-                                    `style` = "btn-primary"),
-                    multiple = TRUE),
-        sliderInput(session$ns('value_range'),
-                    'Y axis range',
-                    min = min_value,
-                    max = max_value,
-                    value = c(min_value, max_value),
-                    sep = '')
-      )
-    )
-  })
   
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
@@ -378,7 +376,12 @@ mod_trends_mean_sub_ui <- function(id){
              plotlyOutput(
                ns('trends_mean'), height = '600px'
              )),
+      
       column(4,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'), label = 'Generate chart'),
+             br(), br(),
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = "4+ antenatal care visits",
@@ -387,20 +390,10 @@ mod_trends_mean_sub_ui <- function(id){
                          label = 'Country', 
                          choices = as.character(sort(unique(sub_national$country))),
                          selected ='Belize',
-                         options = list( `actions-box`=TRUE,
-                                         `style` = "btn-primary",
-                                         `selected-text-format` = "count > 2",
-                                         `count-selected-text` = "{0}/{1} Country"),
-                         multiple = TRUE),
+                         options = list(`style` = "btn-primary")),
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     )
   )
 }
@@ -439,7 +432,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     date_range <- c(1982, 2018)
     # Get the data to be plotted
     pd <- hefpi::sub_national %>%
-      filter(country %in% country_name)%>%
+      filter(country == country_name)%>%
       filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
       filter(year >= min(date_range),
@@ -499,9 +492,17 @@ mod_trends_mean_sub_server <- function(input, output, session){
       )
     )
   })
+
   
-  # ---- GET PLOT DATA ---- #
-  get_pop_data <- reactive({
+  # Observe the "generate chart" button to put together the data for the chart
+  if('trends_subnational_mean.RData' %in% dir()){
+    load('trends_subnational_mean.RData')
+  } else {
+    pop_list <- NULL
+  }
+  chart_data <- reactiveValues(pop_data = pop_list) 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -523,7 +524,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
       unit_of_measure = ind_info$unit_of_measure
       # get data
       pd <- hefpi::sub_national %>%
-        filter(country %in% country_name) %>%
+        filter(country == country_name) %>%
         filter(indicator_short_name == indicator) %>%
         group_by(ISO3 = iso3c, country,gaul_code) %>%
         filter(year >= min(date_range),
@@ -544,7 +545,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
       drop_cols <- c("G2008_1_", "G2008_1_ID", "ADM0_NAME", "ADM0_CODE", "AREA", "PERIMETER")
       pd <- pd %>% select(-one_of(drop_cols)) %>% group_by_if(is.character) %>% summarise_if(is.numeric, funs(mean))
       # get title and subtitle
-      plot_title <- paste0('Trends - Population mean - ', indicator)
+      plot_title <- paste0('Trends - Subnational mean - ', indicator)
       y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
       x_axis_text <- paste0('', '\n', 'Year')
       # condition on unit of measure
@@ -566,6 +567,13 @@ mod_trends_mean_sub_server <- function(input, output, session){
       temp <- tableau_color_pal(palette = "Tableau 20")
       trend_palette <- rep(temp(n = 20), 50)
       yn <- input$interpolate
+      
+      # change name of subregion to national if it is the countries name 
+      this_name = unique(pd$ADM1_NAME)[unique(pd$ADM1_NAME) %in% country_name]
+      if(length(this_name) != 0){
+        pd$ADM1_NAME <- ifelse(pd$ADM1_NAME == this_name, 'National', pd$ADM1_NAME)
+      }
+      
       if(yn){
         # condition if we connect the dots
         p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME, text=mytext)) +
@@ -603,9 +611,18 @@ mod_trends_mean_sub_server <- function(input, output, session){
       pop_list[[1]] <- p
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
-      return(pop_list)
+    
+      if(!'trends_subnational_mean.RData' %in% dir()){
+        save(pop_list, file = 'trends_subnational_mean.RData')
+      }
+      chart_data$pop_data <- pop_list
+      
     }
-  })
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = FALSE)
+  
+  
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -614,7 +631,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      pop_list <- get_pop_data()
+      pop_list <- chart_data$pop_data
       
       if(is.null(pop_list)){
         NULL
@@ -631,7 +648,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
           temp <- temp %>% ungroup %>% select(region_name, country, iso3, year,  
                                               survey, indic, indicator_short_name,
                                               indicator_description, parameter, level, value, unit_of_measure)
-          names(temp) <- c('Region', 'Country_name','Country_iso3', 'Year', 'Survey_name', 
+          names(temp) <- c('Region', 'national','Country_iso3', 'Year', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
         }
@@ -643,7 +660,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("trends_mean_sub", Sys.Date(),".png"),
                                     content = function(file) {
-                                      pop_list <- get_pop_data()
+                                      pop_list <- chart_data$pop_data
                                       if(is.null(pop_list)){
                                         NULL
                                       } else {
@@ -684,7 +701,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                     })
   # ---- RENDER PLOT ---- #
   output$trends_mean <- renderPlotly({
-    pop_list <- get_pop_data()
+    pop_list <- chart_data$pop_data
     if(is.null(pop_list)){
       NULL
     } else {
@@ -741,6 +758,10 @@ mod_trends_con_ui <- function(id){
                ns('trends_con'), height = '600px'
              )),
       column(4,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'),label = 'Generate chart'),
+             br(), br(),
              pickerInput(ns('indicator'),
                          'Indicator',
                          choices = indicators_list,
@@ -766,13 +787,8 @@ mod_trends_con_ui <- function(id){
              checkboxInput(ns('interpolate'), 'Interpolate missing values',
                            value = TRUE),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
+
     )
   )
 }
@@ -848,6 +864,11 @@ mod_trends_con_server <- function(input, output, session){
   get_con_data <- reactive({
     # get inputs
     con_list <- list()
+    # indicator ='4+ antenatal care visits'
+    # region = as.character(region_list$region)[1]
+    # date_range = c(1982, 2018)
+    # country_names = countries
+    # value_range = c(min_value, max_value)
     indicator <- input$indicator
     region <- input$region
     country_names <- input$country
@@ -873,6 +894,7 @@ mod_trends_con_server <- function(input, output, session){
       pd <- df[df$country %in% country_names,]
       pd <- pd %>% filter(year >= min(date_range),
                           year <= max(date_range)) 
+      pd$unit_of_measure <- 'CI'
       # get title and subtitle
       plot_title <- paste0('Trends - Concentration index - ', indicator)
       y_axis_text <- paste0(indicator, ' (CI) ')
@@ -1060,6 +1082,10 @@ mod_trends_quin_ui <- function(id){
                ns('trends_quin'),  height = '600px'
              )),
       column(4,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'), 'Generate chart'),
+             br(), br(),
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults',
@@ -1081,12 +1107,7 @@ mod_trends_quin_ui <- function(id){
                          choices =c('Slope chart', 'Line chart'),
                          options = list(`style` = "btn-primary")),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     )
   )
 }
@@ -1222,8 +1243,7 @@ mod_trends_quin_server <- function(input, output, session){
         scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                            breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                            expand = c(0,0)) +
-        labs(x='Year',
-             y = y_axis_text,
+        labs(y = y_axis_text,
              x = x_axis_text,
              title = plot_title) 
       
@@ -1247,6 +1267,7 @@ mod_trends_quin_server <- function(input, output, session){
         NULL
       } else {
         df <- quin_list[[2]]
+        save(df, file = 'df.rda')
         if(nrow(df)==0){
           temp <- data_frame()
         } else {
@@ -1257,7 +1278,7 @@ mod_trends_quin_server <- function(input, output, session){
           temp$parameter <- 'Mean'
           # temp$level <- 'National'
           temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
-                                  indicator_description, parameter, level, ci, unit_of_measure)
+                                  indicator_description, parameter, level, value, unit_of_measure)
           names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
