@@ -136,12 +136,8 @@ mod_trends_mean_server <- function(input, output, session){
   })
   
   # Observe the "generate chart" button to put together the data for the chart
-  if('trends_national_mean.RData' %in% dir()){
-    load('trends_national_mean.RData')
-  } else {
-    pop_list <- NULL
-  }
-  chart_data <- reactiveValues(pop_data = pop_list) 
+  
+  chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
@@ -196,8 +192,7 @@ mod_trends_mean_server <- function(input, output, session){
       temp <- tableau_color_pal(palette = "Tableau 20")
       trend_palette <- rep(temp(n = 20), 10)
       yn <- input$interpolate
-      save(pd, file = 'plot.rda')
-      
+
       if(yn){
         p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
           geom_point() + 
@@ -230,16 +225,14 @@ mod_trends_mean_server <- function(input, output, session){
       pop_list[[1]] <- p
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
-      if(!'trends_national_mean.RData' %in% dir()){
-        save(pop_list, file = 'trends_national_mean.RData')
-      }
-      chart_data$pop_data <- pop_list
+      
+      chart_data$plot_data <- pop_list
       # message('pop_list is of type:')
       # print(str(pop_list))
     }
   },
   ignoreNULL = FALSE,
-  ignoreInit = FALSE)
+  ignoreInit = TRUE)
   
   
   
@@ -250,7 +243,10 @@ mod_trends_mean_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      pop_list <- chart_data$pop_data
+      pop_list <- chart_data$plot_data
+      if(length(pop_list)==1){
+        load('trends_national_mean.RData')
+      }
       if(is.null(pop_list)){
         NULL
       } else {
@@ -279,7 +275,10 @@ mod_trends_mean_server <- function(input, output, session){
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("trends_mean_",Sys.Date(), ".png"),
                                     content = function(file) {
-                                      pop_list <- chart_data$pop_data
+                                      pop_list <- chart_data$plot_data
+                                      if(length(pop_list)==1){
+                                        load('trends_national_mean.RData')
+                                      }
                                       if(is.null(pop_list)){
                                         NULL
                                       } else {
@@ -321,7 +320,10 @@ mod_trends_mean_server <- function(input, output, session){
   
   # ---- RENDER PLOT ---- 
   output$trends_mean <- renderPlotly({
-    pop_list <- chart_data$pop_data
+    pop_list <- chart_data$plot_data
+    if(length(pop_list)==1){
+      load('trends_national_mean.RData')
+    }
     if(is.null(pop_list)){
       NULL
     } else {
@@ -494,13 +496,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
   })
 
   
-  # Observe the "generate chart" button to put together the data for the chart
-  if('trends_subnational_mean.RData' %in% dir()){
-    load('trends_subnational_mean.RData')
-  } else {
-    pop_list <- NULL
-  }
-  chart_data <- reactiveValues(pop_data = pop_list) 
+ 
+  chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
@@ -528,7 +525,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         filter(indicator_short_name == indicator) %>%
         group_by(ISO3 = iso3c, country,gaul_code) %>%
         filter(year >= min(date_range),
-               year <= max(date_range)) 
+               year <= max(date_range))
       names(pd)[names(pd)=='region'] <- 'region_name'
       # get shape files
       shp <- hefpi::gaul
@@ -555,6 +552,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
         value_range[1] <- value_range[1]*100
         
       }
+      pd <- pd %>% filter(value >= value_range[1],
+                          value <= value_range[2])
       # text for plot
       mytext <- paste(
         "Indicator: ", indicator,"<br>", 
@@ -612,17 +611,13 @@ mod_trends_mean_sub_server <- function(input, output, session){
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
     
-      if(!'trends_subnational_mean.RData' %in% dir()){
-        save(pop_list, file = 'trends_subnational_mean.RData')
-      }
-      chart_data$pop_data <- pop_list
+     
+      chart_data$plot_data <- pop_list
       
     }
   },
   ignoreNULL = FALSE,
-  ignoreInit = FALSE)
-  
-  
+  ignoreInit = TRUE)
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -631,7 +626,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      pop_list <- chart_data$pop_data
+      pop_list <- chart_data$plot_data
+      if(length(pop_list)==1){
+        load('trends_subnational_mean.RData')
+      }
       
       if(is.null(pop_list)){
         NULL
@@ -660,7 +658,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("trends_mean_sub", Sys.Date(),".png"),
                                     content = function(file) {
-                                      pop_list <- chart_data$pop_data
+                                      pop_list <- chart_data$plot_data
+                                      if(length(pop_list)==1){
+                                        load('trends_subnational_mean.RData')
+                                      }
                                       if(is.null(pop_list)){
                                         NULL
                                       } else {
@@ -701,7 +702,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                     })
   # ---- RENDER PLOT ---- #
   output$trends_mean <- renderPlotly({
-    pop_list <- chart_data$pop_data
+    pop_list <- chart_data$plot_data
+    if(length(pop_list)==1){
+      load('trends_subnational_mean.RData')
+    }
     if(is.null(pop_list)){
       NULL
     } else {
@@ -860,8 +864,9 @@ mod_trends_con_server <- function(input, output, session){
     )
   })
   
-  # ---- GENERATE PLOT DATA ---- #
-  get_con_data <- reactive({
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
     con_list <- list()
     # indicator ='4+ antenatal care visits'
@@ -944,24 +949,32 @@ mod_trends_con_server <- function(input, output, session){
       con_list[[1]] <- p
       con_list[[2]] <- pd
       con_list[[3]] <- list(plot_title, mytext, y_axis_text, trend_palette)
-      return(con_list)
     }
-  })
   
+    chart_data$plot_data <- con_list
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
       paste0("trends_ci_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      # get map
-      con_list <- get_con_data()
+      con_list <- chart_data$plot_data
+      if(length(con_list)==1){
+        load(file = 'trends_national_ci.RData')
+      }
       if(is.null(con_list)){
         NULL
       } else {
         pd <- con_list[[2]]
         if(nrow(pd)==0){
           temp <- data_frame()
+          write.csv(temp, file)
+          
         } else {
           temp <- pd
           temp <- temp %>% filter(!is.na(CI))
@@ -973,8 +986,9 @@ mod_trends_con_server <- function(input, output, session){
           names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
+          write.csv(temp, file)
+          
         }
-        write.csv(temp, file)
       }
     }
   )
@@ -982,7 +996,10 @@ mod_trends_con_server <- function(input, output, session){
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("trends_ci_", Sys.Date(),".png"),
                                     content = function(file) {
-                                      con_list <- get_con_data()
+                                      con_list <- chart_data$plot_data
+                                      if(length(con_list)==1){
+                                        load(file = 'trends_national_ci.RData')
+                                      }
                                       if(is.null(con_list)){
                                         NULL
                                       } else {
@@ -1002,7 +1019,6 @@ mod_trends_con_server <- function(input, output, session){
                                               )
                                           } 
                                           p <- empty_plot("No data available for the selected inputs")
-                                          p
                                           ggsave(file, width = 8, height = 8)
                                         } else {
                                           p <- con_list[[1]]
@@ -1024,7 +1040,10 @@ mod_trends_con_server <- function(input, output, session){
   
   # ---- GENERATE PLOT ---- #
   output$trends_con <- renderPlotly({
-    con_list <- get_con_data()
+    con_list <- chart_data$plot_data
+    if(length(con_list)==1){
+      load(file = 'trends_national_ci.RData')
+    }
     if(is.null(con_list)){
       NULL
     } else {
@@ -1045,8 +1064,6 @@ mod_trends_con_server <- function(input, output, session){
         } 
         fig <- empty_plot("No data available for the selected inputs")
       } else {
-        date_range <- input$date_range
-        indicator <- input$indicator
         p <- con_list[[1]]
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_angle = 90,
@@ -1096,16 +1113,6 @@ mod_trends_quin_ui <- function(id){
                          selected = 'United States',
                          options = list(`style` = "btn-primary")),
              uiOutput(ns('ui_outputs')),
-             sliderInput(ns('date_range'),
-                         'Date range',
-                         min = 1982,
-                         max = 2018,
-                         value = c(1982, 2018),
-                         step = 1,
-                         sep = ''),
-             pickerInput(ns('view_as'), 'View as',
-                         choices =c('Slope chart', 'Line chart'),
-                         options = list(`style` = "btn-primary")),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     )
@@ -1142,7 +1149,6 @@ mod_trends_quin_server <- function(input, output, session){
     # get input
     country_names <- input$country
     indicator <- input$indicator
-    date_range <- input$date_range
     # get variable
     ind_info <- indicators %>%
       filter(indicator_short_name == indicator) %>%
@@ -1153,8 +1159,6 @@ mod_trends_quin_server <- function(input, output, session){
     df <- hefpi::df %>%
       filter(country == country_names) %>%
       filter(indic == variable_name) %>%
-      filter(year >= min(date_range),
-             year <= max(date_range))  %>%
       select(year, Q1:Q5) 
     temp <- melt(df, id.vars = 'year')
     max_value <- round(max(temp$value, na.rm = TRUE), 2)
@@ -1166,15 +1170,32 @@ mod_trends_quin_server <- function(input, output, session){
       min_value = floor(min_value)
       max_value = ceiling(max_value)
     }
-    sliderInput(session$ns('value_range'),
-                'Y axis range',
-                min = min_value,
-                max = max_value,
-                value = c(min_value, max_value),
-                sep = '')
+    fluidRow(
+      fluidPage(
+        sliderInput(session$ns('value_range'),
+                    'Y axis range',
+                    min = min_value,
+                    max = max_value,
+                    value = c(min_value, max_value),
+                    sep = ''),
+        sliderInput(session$ns('date_range'),
+                    'Date range',
+                    min = 1982,
+                    max = 2018,
+                    value = c(1982, 2018),
+                    step = 1,
+                    sep = ''),
+        pickerInput(session$ns('view_as'), 'View as',
+                    choices =c('Slope chart', 'Line chart'),
+                    options = list(`style` = "btn-primary"))
+      )
+    )
+    
   })
-  # ---- GENERATE PLOT DATA ---- #
-  get_quin_data <- reactive({
+  
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
     country_names <- input$country
     indicator <- input$indicator
@@ -1251,9 +1272,14 @@ mod_trends_quin_server <- function(input, output, session){
       quin_list[[1]] <- p
       quin_list[[2]] <- df
       quin_list[[3]] <- list(plot_title, mytext, y_axis_text, col_vec)
-      return(quin_list)
     }
-  })
+    chart_data$plot_data <- quin_list
+    
+  },
+  
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -1262,12 +1288,14 @@ mod_trends_quin_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      quin_list <- get_quin_data()
+      quin_list <- chart_data$plot_data
+      if(length(quin_list)==1){
+        load('trends_quin.RData')
+      }
       if(is.null(quin_list)){
         NULL
       } else {
         df <- quin_list[[2]]
-        save(df, file = 'df.rda')
         if(nrow(df)==0){
           temp <- data_frame()
         } else {
@@ -1291,7 +1319,10 @@ mod_trends_quin_server <- function(input, output, session){
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("trends_quintiles_", Sys.Date(),".png"),
                                     content = function(file) {
-                                      quin_list <- get_quin_data()
+                                      quin_list <- chart_data$plot_data
+                                      if(length(quin_list)==1){
+                                        load('trends_quin.RData')
+                                      }
                                       if(is.null(quin_list)){
                                         NULL
                                       } else {
@@ -1333,7 +1364,10 @@ mod_trends_quin_server <- function(input, output, session){
   
   # ---- GENERATE PLOT ---- #
   output$trends_quin <- renderPlotly({
-    quin_list <- get_quin_data()
+    quin_list <- chart_data$plot_data
+    if(length(quin_list)==1){
+      load('trends_quin.RData')
+    }
     if(is.null(quin_list)){
       NULL
     } else {

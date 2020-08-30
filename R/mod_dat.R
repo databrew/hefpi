@@ -25,6 +25,10 @@ mod_dat_country_ui <- function(id){
                ns('dat_country'), height = '800px', width = '1000px', 
              )),
       column(4,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'),label = 'Generate chart'),
+             br(), br(),
              pickerInput(inputId = ns("indicator"),
                          label = 'Indicator', 
                          choices = indicators_list,
@@ -45,13 +49,7 @@ mod_dat_country_ui <- function(id){
                          value = c(1982, 2018),
                          step = 1,
                          sep = ''),
-             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'))
     )
   #)
 }
@@ -81,9 +79,9 @@ mod_dat_country_server <- function(input, output, session){
                showCancelButton = FALSE, 
                showConfirmButton = FALSE)
   })
-  
-  # ---- GENERATE PLOT DATA---- #
-  get_dat <- reactive({
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     country_name = 'United States'
     indicator = indicators$indicator_short_name
     date_range = c(1982, 2018)
@@ -136,17 +134,24 @@ mod_dat_country_server <- function(input, output, session){
       labs(x = 'Year',
            y = '',
            title = plot_title)
-    p
     dat_list[[1]] <- p
     dat_list[[2]] <- df
     dat_list[[3]] <- list(plot_title, col_vec)
-    return(dat_list)
-  })
+
+    chart_data$plot_data <- dat_list
+  },
   
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_data_availability_country", ".png"),
                                     content = function(file) {
-                                      dat_list <- get_dat()
+                                      dat_list <- chart_data$plot_data
+                                      if(length(dat_list)==1){
+                                        load('dat_country.RData')
+                                      }
                                       if(is.null(dat_list)){
                                         NULL
                                       } else {
@@ -173,7 +178,10 @@ mod_dat_country_server <- function(input, output, session){
   
   # ---- GENERATE PLOT ---- #
   output$dat_country <- renderPlotly({
-    dat_list <- get_dat()
+    dat_list <- chart_data$plot_data
+    if(length(dat_list)==1){
+      load('dat_country.RData')
+    }
     if(is.null(dat_list)){
       NULL
     } else {
@@ -228,6 +236,10 @@ mod_dat_ind_ui <- function(id){
              tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '1000px') )
              ),
       column(4,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'),label = 'Generate chart'),
+             br(), br(),
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected =indicators$indicator_short_name[1],
@@ -241,13 +253,7 @@ mod_dat_ind_ui <- function(id){
                                          `count-selected-text` = "{0}/{1} Regions"),
                          multiple = TRUE),
              uiOutput(ns('ui_outputs')),
-             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'))
     )
   )
 }
@@ -314,8 +320,9 @@ mod_dat_ind_server <- function(input, output, session){
       )
     )
   })
-  
-  get_dat <- reactive({
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
     # indicator <- indicators$indicator_short_name[1]
     date_range = c(1982,2018)
@@ -352,14 +359,16 @@ mod_dat_ind_server <- function(input, output, session){
         left_join(df)
       # subset by country_names
       temp_data <- temp_data %>% filter(country %in% country_names)
+      temp_data <- temp_data %>% filter(year >= date_range[1],
+                                        year <= date_range[2]) 
       col_data <- data_frame(level_2 = c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
                              color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'transparent'))
       # recode level2
       temp_data$level2 <- ifelse(temp_data$level2 == 'h_cov', 'Service Coverage',
-                          ifelse(temp_data$level2 == 'h_out', 'Health Outcomes',
-                                 ifelse(temp_data$level2 == 'f_cata', 'Catastrophic OOP spending',
-                                        ifelse(temp_data$level2 == 'f_impov', 'Impoverishing OOP spending',
-                                               ifelse(temp_data$level2 == 'f_oop', 'OOP spending', 'Missing Data')))))
+                                 ifelse(temp_data$level2 == 'h_out', 'Health Outcomes',
+                                        ifelse(temp_data$level2 == 'f_cata', 'Catastrophic OOP spending',
+                                               ifelse(temp_data$level2 == 'f_impov', 'Impoverishing OOP spending',
+                                                      ifelse(temp_data$level2 == 'f_oop', 'OOP spending', 'Missing Data')))))
       temp_data$level2[is.na(temp_data$level2)] <- 'Missing Data'
       # subset col data by data selected
       level2_levels = col_data$level_2[col_data$level_2 %in% unique(temp_data$level2)]
@@ -367,39 +376,51 @@ mod_dat_ind_server <- function(input, output, session){
       # order level2
       temp_data$level2 <- factor(temp_data$level2, levels =level2_levels )
       temp_data$country <- factor(temp_data$country, levels = sort(unique(temp_data$country), decreasing = TRUE))
-        # make plot title 
-        plot_title = paste0('Data availability',' - ', indicator)
-        mytext <- paste(
-          "Economy: ", as.character(temp_data$country), "\n",
-          "Indicator class: ", as.character(temp_data$level2), "\n",
-          sep="") %>%
-          lapply(htmltools::HTML)
-        # number of countries
-        plot_height <- ceiling(((length(unique(temp$country))* 100) + 100)/3)
-        if(plot_height < 250){
-          plot_height <- 250
-        }
-        p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
-                        geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
-          scale_y_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1),
-                             expand = c(0,0)) +
-                        scale_fill_manual(name = '',
-                                          values = col_vec) +
-                        labs(x = '',
-                             y = 'Year',
-                             title = plot_title) +
-          coord_flip() +
-          theme(legend.position = "none") 
-        dat_list[[1]] <- p
-        dat_list[[2]] <- df
-        dat_list[[3]] <- list(plot_title, col_vec, mytext, plot_height)
-        return(dat_list)
+      # make plot title 
+      plot_title = paste0('Data availability',' - ', indicator)
+      mytext <- paste(
+        "Economy: ", as.character(temp_data$country), "\n",
+        "Indicator class: ", as.character(temp_data$level2), "\n",
+        sep="") %>%
+        lapply(htmltools::HTML)
+      # number of countries
+      plot_height <- ceiling(((length(unique(temp_data$country))* 100) + 100)/3)
+      if(plot_height < 250){
+        plot_height <- 250
+      }
+      p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
+        geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
+        scale_y_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
+                                      breaks = seq(from = min(temp_data$year),
+                                                   to =max(temp_data$year), by = 1),
+                           expand = c(0,-0.5)) +
+        scale_fill_manual(name = '',
+                          values = col_vec) +
+        labs(x = '',
+             y = 'Year',
+             title = plot_title) +
+        coord_flip() +
+        theme(legend.position = "none") 
+      p
+      dat_list[[1]] <- p
+      dat_list[[2]] <- df
+      dat_list[[3]] <- list(plot_title, col_vec, mytext, plot_height)
+     
     }
-  })
+    chart_data$plot_data <- dat_list
+  },
+  
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+  
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("data_indicators_",Sys.Date(), ".png"),
                                     content = function(file) {
-                                      dat_list <- get_dat()
+                                      dat_list <- chart_data$plot_data
+                                      if(length(dat_list)==1){
+                                        load('dat_indicator.RData')
+                                      }
                                       if(is.null(dat_list)){
                                         NULL
                                       } else {
@@ -427,12 +448,14 @@ mod_dat_ind_server <- function(input, output, session){
   
   # ---- GENERATE PLOT ---- #
   output$dat_ind <- renderPlotly({
-    dat_list <- get_dat()
+    dat_list <- chart_data$plot_data
+    if(length(dat_list)==1){
+      load('dat_indicator.RData')
+    }
     if(is.null(dat_list)){
       NULL
     } else {
       pd <- dat_list[[2]]
-      save(pd, file = 'full.rda')
       if(nrow(pd)==0){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
