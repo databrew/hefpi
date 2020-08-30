@@ -25,6 +25,10 @@ mod_dots_country_ui <- function(id){
                  tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dots_country'), height = '600px', width = '1000px') )
       ),
       column(4,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'),label = 'Generate chart'),
+             br(), br(),
              pickerInput(inputId = ns("indicator"),
                          label = 'Indicator', 
                          choices = indicators_list,
@@ -40,21 +44,8 @@ mod_dots_country_ui <- function(id){
                                          `actions-box`=TRUE),
                          multiple = TRUE),
              uiOutput(ns('ui_outputs')),
-             sliderInput(ns('date_range'),
-                         'Date range',
-                         min = 1982,
-                         max = 2018,
-                         value = c(1982, 2018),
-                         step = 1,
-                         sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     )
   )
 }
@@ -90,11 +81,9 @@ mod_dots_country_server <- function(input, output, session){
   output$ui_outputs <- renderUI({
     indicator = "4+ antenatal care visits"
     region = as.character(region_list$region)
-    date_range = c(1982, 2018)
     # get inputs
     indicator <- input$indicator
     region <- input$region
-    date_range <- input$date_range
     # get region code
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
@@ -106,8 +95,7 @@ mod_dots_country_server <- function(input, output, session){
     df <- hefpi::df
     df <- df[df$indic == variable,]
     df <- df[df$regioncode %in% region_code,]
-    df <- df %>% filter(year >= date_range[1],
-                        year<=date_range[2]) %>% 
+    df <- df %>% 
       filter(!is.na(Q1) & !is.na(Q2) & !is.na(Q3) & !is.na(Q4) & !is.na(Q5)) %>%
       select(year, country, referenceid_list,indic, Q1:Q5) 
     # made data long form
@@ -140,12 +128,20 @@ mod_dots_country_server <- function(input, output, session){
                     min = min_value,
                     max = max_value,
                     value = c(min_value, max_value),
-                    sep = '')
+                    sep = ''),
+        sliderInput(session$ns('date_range'),
+                    'Date range',
+                    min = 1982,
+                    max = 2018,
+                    value = c(1982, 2018),
+                    step = 1,
+                    sep = ''),
       )
     )
   })
-  
-  get_dot_data <- reactive({
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # indicator = "4+ antenatal care visits"
     # region = as.character(region_list$region)
     # date_range = c(1982, 2018)
@@ -212,31 +208,36 @@ mod_dots_country_server <- function(input, output, session){
         "Data source: ", as.character(df$referenceid_list),
         sep="") %>%
         lapply(htmltools::HTML)
-        # number of countries
-        plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
-        if(plot_height < 250){
-          plot_height <- 250
-        }
-        p <- ggplot(df, aes(x=country,
-                            y=value,
-                            text = mytext)) +
-          geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
-          geom_line(aes(group = country), color = 'darkgrey') +
-          scale_color_manual(name = '',
-                             values = col_vec) +
-          scale_y_continuous(limits = c((value_range[1] -5), (value_range[2] +10)), 
-                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
-                             expand = c(0,0)) +
-          labs(title=plot_title,
-               subtitle = sub_title, x= '', y = y_axis_text) +
-          coord_flip() 
-        p
-        dot_list[[1]] <- p
-        dot_list[[2]] <- df
-        dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
-        return(dot_list)
+      # number of countries
+      plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
+      if(plot_height < 250){
+        plot_height <- 250
+      }
+      p <- ggplot(df, aes(x=country,
+                          y=value,
+                          text = mytext)) +
+        geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
+        geom_line(aes(group = country), color = 'darkgrey') +
+        scale_color_manual(name = '',
+                           values = col_vec) +
+        scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
+                           breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                           expand = c(0,0)) +
+        labs(title=plot_title,
+             subtitle = sub_title, x= '', y = y_axis_text) +
+        coord_flip() 
+      dot_list[[1]] <- p
+      dot_list[[2]] <- df
+      dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
+
     }
-  })
+    
+    chart_data$plot_data <- dot_list
+    
+  },
+  
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -245,7 +246,10 @@ mod_dots_country_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      dot_list <- get_dot_data()
+      dot_list <- chart_data$plot_data
+      if(length(dot_list)==1){
+        load('dots_country.RData')
+      }
       if(is.null(dot_list)){
         NULL
       } else {
@@ -274,7 +278,10 @@ mod_dots_country_server <- function(input, output, session){
   output$dl_plot <- downloadHandler(filename = paste0("quintile_country_", Sys.Date(),".png"),
                                     content = function(file) {
                                       
-                                      dot_list <- get_dot_data()
+                                      dot_list <- chart_data$plot_data
+                                      if(length(dot_list)==1){
+                                        load('dots_country.RData')
+                                      }
                                      
                                       if(is.null(dot_list)){
                                         NULL
@@ -298,7 +305,10 @@ mod_dots_country_server <- function(input, output, session){
   
   # ---- GENERATE PLOT ---- #
   output$dots_country <- renderPlotly({
-    dot_list <- get_dot_data()
+    dot_list <- chart_data$plot_data
+    if(length(dot_list)==1){
+      load('dots_country.RData')
+    }
     if(is.null(dot_list)){
       NULL
     } else {
@@ -352,6 +362,10 @@ mod_dots_ind_ui <- function(id){
              tags$div(style='overflow-y: scroll; position: relative', 
                       plotlyOutput(ns('dots_ind'), height = '600px', width = '1000px') )),
       column(4,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'),label = 'Generate chart'),
+             br(), br(),
              pickerInput(inputId = ns("indicator"),
                          label = 'Indicator', 
                          choices = indicators_list,
@@ -374,13 +388,7 @@ mod_dots_ind_ui <- function(id){
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     )
   )
 }
@@ -462,8 +470,9 @@ mod_dots_ind_server <- function(input, output, session){
                 sep = '')
   })
   
-  # ---- GENERATE PLOT DATA ---- #
-  get_dot_data <- reactive({
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs 
     date_range <- input$date_range
     indicator <- input$indicator
@@ -502,6 +511,7 @@ mod_dots_ind_server <- function(input, output, session){
       # only keep data with no NAs
       df <- df[complete.cases(df),]
       
+      message('mod_dots!!!')
       # get color graident 
       col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
       col_vec <- col_vec[-1]
@@ -523,7 +533,7 @@ mod_dots_ind_server <- function(input, output, session){
           df$value[df$unit_of_measure == '%'] <- (df$value[df$unit_of_measure == '%'])*100
         }
       }
-     
+      
       # order indicator alphabetically
       df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
       mytext <- paste(
@@ -533,32 +543,38 @@ mod_dots_ind_server <- function(input, output, session){
         "Data source: ", as.character(df$referenceid_list),
         sep="") %>%
         lapply(htmltools::HTML)
-
-        # number of countries
-        plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
-        if(plot_height < 250){
-          plot_height <- 250
-        }
-        p <- ggplot(df, aes(x=indicator_short_name,
-                            y=value,
-                            color = variable,
-                            text = mytext)) +
-          geom_point(size=rel(2), alpha = 0.7) +
-          scale_color_manual(name = '',
-                             values = col_vec) +
-          geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
-          scale_y_continuous(limits = c((value_range[1] -5), (value_range[2] +5)), 
-                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
-                             expand = c(0,0)) +
-          labs(title=plot_title, x= '', y = '',
-               subtitle = sub_title) +
-          coord_flip()
-        dot_list[[1]] <- p
-        dot_list[[2]] <- df
-        dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
-        return(dot_list)
-        
+      
+      # number of countries
+      plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
+      if(plot_height < 250){
+        plot_height <- 250
+      }
+      p <- ggplot(df, aes(x=indicator_short_name,
+                          y=value,
+                          color = variable,
+                          text = mytext)) +
+        geom_point(size=rel(2), alpha = 0.7) +
+        scale_color_manual(name = '',
+                           values = col_vec) +
+        geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
+        scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)), 
+                           breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                           expand = c(0,0)) +
+        labs(title=plot_title, x= '', y = '',
+             subtitle = sub_title) +
+        coord_flip()
+      dot_list[[1]] <- p
+      dot_list[[2]] <- df
+      dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
     }
+    chart_data$plot_data <- dot_list
+  },
+  
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  # ---- GENERATE PLOT DATA ---- #
+  get_dot_data <- reactive({
+    
   })
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
@@ -568,7 +584,10 @@ mod_dots_ind_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      dot_list <- get_dot_data()
+      dot_list <- chart_data$plot_data
+      if(length(dot_list)==1){
+        load('dots_indicator.RData')
+      }
       if(is.null(dot_list)){
         NULL
       } else {
@@ -596,19 +615,22 @@ mod_dots_ind_server <- function(input, output, session){
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0("quintile_dot_plots_indicator_", Sys.Date(),".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("quintile_indicator_", Sys.Date(),".png"),
                                     content = function(file) {
-                                     dot_list <- get_dot_data()
+                                      dot_list <- chart_data$plot_data
+                                      if(length(dot_list)==1){
+                                        load('dots_indicator.RData')
+                                      }
                                       if(is.null(dot_list)){
                                         NULL
                                       } else {
                                         p <- dot_list[[1]]
-                                        p =  p + theme_hefpi(grid_major_x = NA,
+                                        p <-  p + hefpi::theme_hefpi(grid_major_x = NA,
                                                              y_axis_size = rel(2/3),
                                                              x_axis_size = rel(1),
                                                              x_axis_hjust = 0.5,
                                                              y_axis_hjust = 1,
-                                                             y_axis_vjust = 0.5) %>%
+                                                             y_axis_vjust = 0.5) +
                                           labs(title = '',
                                                subtitle ='')
                                         p
@@ -616,14 +638,18 @@ mod_dots_ind_server <- function(input, output, session){
                                       }
                                     })
   
+  
+  
   # ---- GENERATE PLOT ---- #
   output$dots_ind <- renderPlotly({
-    dot_list <- get_dot_data()
+    dot_list <- chart_data$plot_data
+    if(length(dot_list)==1){
+      load('dots_indicator.RData')
+    }
     if(is.null(dot_list)){
       NULL
     } else {
       df <- dot_list[[2]]
-      save(df,file='plot_output.rda')
       if(nrow(df)==0){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
