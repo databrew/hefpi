@@ -6,7 +6,7 @@
 \usage{
 theme_hefpi(
   base_size = 12,
-  base_family = "Helveticaserif",
+  base_family = "Helvetica",
   plot_title_size = 15,
   plot_title_color = "#757575",
   sub_title_size = 10,

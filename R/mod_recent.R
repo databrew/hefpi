@@ -83,9 +83,10 @@ mod_recent_mean_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
- 
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
-  get_pop_map <- reactive({
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # create list to store results from reactive object
     pop_map_list <- list()
     
@@ -180,14 +181,23 @@ mod_recent_mean_server <- function(input, output, session){
         addLegend( pal=map_palette,title = unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
       # store palette, text, map object, and data in list
       pop_map_list<- list(pop_map, shp, unit_of_measure, good_or_bad, year_title, indicator, plot_years)
-      save(pop_map_list, file='maps_national_mean.RData')
     }
-    return(pop_map_list)
-  })
+    chart_data$plot_data <- pop_map_list
+  },
+  
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+ 
   
   # ---- RENDER MAP TITLE ---- #
   output$map_title_ui <- renderUI({
-    pop_map <- get_pop_map()
+    # get reactive list
+    pop_map <- chart_data$plot_data
+    if(length(pop_map)==1){
+      load('maps_national_mean.RData')
+      pop_map <- pop_map_list
+      
+    }
     if(is.null(pop_map)){
       NULL
     } else {
@@ -213,7 +223,13 @@ mod_recent_mean_server <- function(input, output, session){
   
   # ---- RENDER MAP FROM REACTIVE LIST ---- #
   output$recent_mean_leaf <- renderLeaflet({
-    pop_map <- get_pop_map()
+    # get reactive list
+    pop_map <- chart_data$plot_data
+    if(length(pop_map)==1){
+      load('maps_national_mean.RData')
+      pop_map <- pop_map_list
+      
+    }
     if(is.null(pop_map)){
       NULL
     } else {
@@ -260,7 +276,13 @@ mod_recent_mean_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      pop_map <- get_pop_map()
+      # get reactive list
+      pop_map <- chart_data$plot_data
+      if(length(pop_map)==1){
+        load('maps_national_mean.RData')
+        pop_map <- pop_map_list
+        
+      }
       if(is.null(pop_map)){
         NULL
       } else {
@@ -289,7 +311,13 @@ mod_recent_mean_server <- function(input, output, session){
   
   # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
   user_zoom <- reactive({
-    pop_map <- get_pop_map()
+    # get reactive list
+    pop_map <- chart_data$plot_data
+    if(length(pop_map)==1){
+      load('maps_national_mean.RData')
+      pop_map <- pop_map_list
+      
+    }
     if(is.null(pop_map)){
       NULL
     } else {
@@ -331,11 +359,13 @@ mod_recent_mean_server <- function(input, output, session){
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_mean_plot <- renderPlotly({
     # get reactive list
-    pop_map <- get_pop_map()
-    
-    # get inputs
-    plot_years <- pop_map[[7]]
-    indicator <- pop_map[[6]]
+    # get reactive list
+    pop_map <- chart_data$plot_data
+    if(length(pop_map)==1){
+      load('maps_national_mean.RData')
+      pop_map <- pop_map_list
+      
+    }
     
     # while map (generate from reactive object) is null, plot is null
     if(is.null(pop_map)){
@@ -363,6 +393,9 @@ mod_recent_mean_server <- function(input, output, session){
         shp <- pop_map[[2]]
         unit_of_measure <- pop_map[[3]]
         good_or_bad = pop_map[[4]]
+        # get inputs
+        plot_years <- pop_map[[7]]
+        indicator <- pop_map[[6]]
         temp <- shp@data
         temp <- temp %>% filter(!is.na(value))
         
@@ -481,12 +514,13 @@ mod_recent_con_server <- function(input, output, session){
     })
   
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
-  map_data <- reactiveValues(map = NULL)
-  get_con_map <- reactive({
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     con_map_list <- list()
     plot_years <- input$date_range
     indicator <- input$indicator
-
+    
     # generate data
     ind_info <- indicators %>%
       filter(indicator_short_name == indicator) %>%
@@ -557,18 +591,21 @@ mod_recent_con_server <- function(input, output, session){
         ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend(pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
       con_map_list<- list(con_map, shp, unit_of_measure,year_title, indicator, plot_years)
-      save(con_map_list, file='maps_national_ci.RData')
-      
-      map_data$map <- con_map
-      
-      # save(con_map_list, file = 'map.rda')
     }
-    return(con_map_list)
-  })
+    chart_data$plot_data <- con_map_list
+  },
+  
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
 
   # ---- RENDER MAP TITLE ---- #
   output$map_title_ui <- renderUI({
-    con_map <- get_con_map()
+    # get reactive list
+    con_map <- chart_data$plot_data
+    if(length(con_map)==1){
+      load('maps_national_ci.RData')
+      con_map <- con_map_list
+    }
     if(is.null(con_map)){
       NULL
     } else {
@@ -596,7 +633,11 @@ mod_recent_con_server <- function(input, output, session){
     # Plotly hover capture
     mouse_event <- event_data("plotly_click", source = "subset")
     print(mouse_event)
-    con_map <- get_con_map()
+    con_map <- chart_data$plot_data
+    if(length(con_map)==1){
+      load('maps_national_ci.RData')
+      con_map <- con_map_list
+    }
     if(is.null(con_map)){
       NULL
     } else {
@@ -607,7 +648,7 @@ mod_recent_con_server <- function(input, output, session){
       #     setView(lat=0, lng=0 , zoom=1.7) 
       #   this_map
       # } else {
-        this_map <- map_data$map #con_map[[1]]
+        this_map <- con_map[[1]]
         this_map
       # }
     }
@@ -621,12 +662,17 @@ mod_recent_con_server <- function(input, output, session){
       paste0("most_recent_value_ci_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      con_map <- get_con_map()
+      con_map <- chart_data$plot_data
+      if(length(con_map)==1){
+        load('maps_national_ci.RData')
+        con_map <- con_map_list
+      }
       if(is.null(con_map)){
         NULL
       } else {
         map_dat <- con_map[[2]]
-        if(is.na(map_dat)){
+        
+        if(nrow(map_dat@data)==0){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
@@ -649,7 +695,11 @@ mod_recent_con_server <- function(input, output, session){
   
   # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
   user_zoom_ci <- reactive({
-    con_map <- get_con_map()
+    con_map <- chart_data$plot_data
+    if(length(con_map)==1){
+      load('maps_national_ci.RData')
+      con_map <- con_map_list
+    }
     if(is.null(con_map)){
       NULL
     } else {
@@ -690,7 +740,11 @@ mod_recent_con_server <- function(input, output, session){
   
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_con_plot <- renderPlotly({
-    con_map <- get_con_map()
+    con_map <- chart_data$plot_data
+    if(length(con_map)==1){
+      load('maps_national_ci.RData')
+      con_map <- con_map_list
+    }
     plot_years <- con_map[[6]]
     indicator <- con_map[[5]]
 
@@ -759,15 +813,6 @@ mod_recent_con_server <- function(input, output, session){
   })
 }
 
-library(maps)
-mapStates = map("state", fill = TRUE, plot = FALSE)
-
-leaflet(data = mapStates) %>% 
-  addProviderTiles('Esri.WorldShadedRelief') %>%
-  addPolygons( 
-    labelOptions = labelOptions(
-      noHide = TRUE
-    ))
 
 ## To be copied in the UI
 # mod_recent_mean_ui("leaf1")

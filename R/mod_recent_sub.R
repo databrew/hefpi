@@ -115,7 +115,9 @@ mod_recent_mean_sub_server <- function(input, output, session){
     )
   })
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
-  get_pop_map <- reactive({
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get list to store map data
     pop_map_list <- list()
     # get input 
@@ -236,14 +238,25 @@ mod_recent_mean_sub_server <- function(input, output, session){
         pop_map_list[[8]] <- indicator
         pop_map_list[[9]] <- plot_years
         
-        save(pop_map_list, file='maps_subnational_mean.RData')
       }
-      return(pop_map_list)
     }
-  })
+    chart_data$plot_data <- pop_map_list
+    
+  },
+  
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+
   # ---- RENDER MAP TITLE ---- #
   output$map_title_ui <- renderUI({
-    pop_map <- get_pop_map()
+    # get reactive list
+    pop_map <- chart_data$plot_data
+    if(length(pop_map)==1){
+      load('maps_subnational_mean.RData')
+      pop_map <- pop_map_list
+      
+    }
     if(is.null(pop_map)){
       NULL
     } else {
@@ -272,7 +285,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
   
   # ---- RENDER MAP FROM REACTIVE LIST ---- #
   output$recent_mean_sub_leaf <- renderLeaflet({
-    pop_map <- get_pop_map()
+    # get reactive list
+    pop_map <- chart_data$plot_data
+    if(length(pop_map)==1){
+      load('maps_subnational_mean.RData')
+      pop_map <- pop_map_list
+      
+    }
     if(is.null(pop_map)){
       NULL
     } else {
@@ -296,7 +315,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      pop_map <- get_pop_map()
+      # get reactive list
+      pop_map <- chart_data$plot_data
+      if(length(pop_map)==1){
+        load('maps_subnational_mean.RData')
+        pop_map <- pop_map_list
+        
+      }
       if(is.null(pop_map)){
         NULL
       } else {
@@ -324,7 +349,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
   
   # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
   user_zoom <- reactive({
-    pop_map <- get_pop_map()
+    # get reactive list
+    pop_map <- chart_data$plot_data
+    if(length(pop_map)==1){
+      load('maps_subnational_mean.RData')
+      pop_map <- pop_map_list
+      
+    }
     if(is.null(pop_map)){
       NULL
     } else {
