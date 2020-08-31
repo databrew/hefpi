@@ -22,11 +22,11 @@ mod_trends_mean_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
-      column(8,
+      column(9,
              plotlyOutput(
                ns('trends_mean'), height = '600px'
              )),
-      column(4,
+      column(3,
              useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
@@ -374,12 +374,12 @@ mod_trends_mean_sub_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
-      column(8,
+      column(9,
              plotlyOutput(
                ns('trends_mean'), height = '600px'
              )),
       
-      column(4,
+      column(3,
              useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), label = 'Generate chart'),
@@ -757,11 +757,11 @@ mod_trends_con_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
-      column(8,
+      column(9,
              plotlyOutput(
                ns('trends_con'), height = '600px'
              )),
-      column(4,
+      column(3,
              useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
@@ -1094,11 +1094,11 @@ mod_trends_quin_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
-      column(8,
+      column(9,
              plotlyOutput(
                ns('trends_quin'),  height = '600px'
              )),
-      column(4,
+      column(3,
              useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
