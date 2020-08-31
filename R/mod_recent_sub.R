@@ -21,12 +21,16 @@ mod_recent_mean_sub_ui <- function(id){
   ns <- NS(id)
   fluidPage(
     fluidRow(
-      column(8,
+      column(9,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_mean_sub_leaf')),
              ),
-      column(4,
+      column(3,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'), 'Generate chart'),
+             br(), br(),
              pickerInput(ns('indicator'), 'Indicator',
                          choices = sort(unique(sub_national$indicator_short_name)),
                          selected = sort(unique(sub_national$indicator_short_name))[1],
@@ -37,13 +41,7 @@ mod_recent_mean_sub_ui <- function(id){
                          options = list(`style` = "btn-primary")),
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     ),
     br(), br(),
   )
@@ -235,7 +233,10 @@ mod_recent_mean_sub_server <- function(input, output, session){
         pop_map_list[[5]] <- good_or_bad
         pop_map_list[[6]] <- unit_of_measure
         pop_map_list[[7]] <- year_title
-        save(pop_map_list, file = 'this_file.rda')
+        pop_map_list[[8]] <- indicator
+        pop_map_list[[9]] <- plot_years
+        
+        save(pop_map_list, file='maps_subnational_mean.RData')
       }
       return(pop_map_list)
     }
@@ -254,7 +255,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
          )
        )
       } else {
-        indicator_name <- input$indicator
+        indicator_name <- pop_map[[8]]
         year_title <- pop_map[[7]]
         # HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
         #            h5(year_title)))

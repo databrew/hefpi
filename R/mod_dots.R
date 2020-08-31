@@ -21,10 +21,10 @@ mod_dots_country_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
-       column(8,
+       column(9,
                  tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dots_country'), height = '600px', width = '1000px') )
       ),
-      column(4,
+      column(3,
              useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
@@ -358,10 +358,10 @@ mod_dots_ind_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
-      column(8,
+      column(9,
              tags$div(style='overflow-y: scroll; position: relative', 
                       plotlyOutput(ns('dots_ind'), height = '600px', width = '1000px') )),
-      column(4,
+      column(3,
              useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),

@@ -23,12 +23,16 @@ mod_recent_mean_ui <- function(id){
   # tagList(
   fluidPage(
     fluidRow(
-      column(8,
+      column(9,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_mean_leaf')),
              ),
-      column(4,
+      column(3,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'), 'Generate chart'),
+             br(), br(),
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults',
@@ -41,18 +45,11 @@ mod_recent_mean_ui <- function(id){
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-               )
-             )
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     ),
     br(), br(),
     fluidRow(
-      column(8,
+      column(9,
              plotlyOutput(
                ns('recent_mean_plot')
              ))
@@ -182,7 +179,8 @@ mod_recent_mean_server <- function(input, output, session){
         setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend( pal=map_palette,title = unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
       # store palette, text, map object, and data in list
-      pop_map_list<- list(pop_map, shp, unit_of_measure, good_or_bad, year_title)
+      pop_map_list<- list(pop_map, shp, unit_of_measure, good_or_bad, year_title, indicator, plot_years)
+      save(pop_map_list, file='maps_national_mean.RData')
     }
     return(pop_map_list)
   })
@@ -197,7 +195,7 @@ mod_recent_mean_server <- function(input, output, session){
         
         h4('')
       } else {
-        indicator_name <- input$indicator
+        indicator_name <- pop_map[[6]]
         year_title <- pop_map[[5]]
         # HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
         #            h5(year_title)))
@@ -336,8 +334,8 @@ mod_recent_mean_server <- function(input, output, session){
     pop_map <- get_pop_map()
     
     # get inputs
-    plot_years <- input$date_range
-    indicator <- input$indicator
+    plot_years <- pop_map[[7]]
+    indicator <- pop_map[[6]]
     
     # while map (generate from reactive object) is null, plot is null
     if(is.null(pop_map)){
@@ -427,12 +425,16 @@ mod_recent_con_ui <- function(id){
   # tagList(
   fluidPage(
     fluidRow(
-      column(8,
+      column(9,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_con_leaf')),
              ),
-      column(4,
+      column(3,
+             useShinyalert(), 
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'), 'Generate chart'),
+             br(), br(),
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults',
@@ -445,18 +447,11 @@ mod_recent_con_ui <- function(id){
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),  # Set up shinyalert
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-               )
-             )
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     ),
     br(), br(),
     fluidRow(
-      column(8,
+      column(9,
              plotlyOutput(
                ns('recent_con_plot')
              ))
@@ -561,8 +556,11 @@ mod_recent_con_server <- function(input, output, session){
           )
         ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend(pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
-      con_map_list<- list(con_map, shp, unit_of_measure,year_title)
+      con_map_list<- list(con_map, shp, unit_of_measure,year_title, indicator, plot_years)
+      save(con_map_list, file='maps_national_ci.RData')
+      
       map_data$map <- con_map
+      
       # save(con_map_list, file = 'map.rda')
     }
     return(con_map_list)
@@ -581,7 +579,7 @@ mod_recent_con_server <- function(input, output, session){
           )
         )
       } else {
-        indicator_name <- input$indicator
+        indicator_name <- con_map[[5]]
         year_title <- con_map[[4]]
         fluidPage(
           fluidRow(
@@ -693,8 +691,9 @@ mod_recent_con_server <- function(input, output, session){
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_con_plot <- renderPlotly({
     con_map <- get_con_map()
-    plot_years <- input$date_range
-    indicator <- input$indicator
+    plot_years <- con_map[[6]]
+    indicator <- con_map[[5]]
+
     if(is.null(con_map)){
       NULL
     } else {
