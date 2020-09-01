@@ -23,16 +23,12 @@ mod_recent_mean_ui <- function(id){
   # tagList(
   fluidPage(
     fluidRow(
-      column(9,
+      column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_mean_leaf')),
-             ),
-      column(3,
-             useShinyalert(), 
-             actionButton(ns("plot_info"), label = "Plot Info"),
-             actionButton(ns('generate_chart'), 'Generate chart'),
-             br(), br(),
+      ),
+      column(4,
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults',
@@ -45,11 +41,18 @@ mod_recent_mean_ui <- function(id){
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),br(),
+             fluidPage(
+               fluidRow(
+                 useShinyalert(),  # Set up shinyalert
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
+             )
+      )
     ),
     br(), br(),
     fluidRow(
-      column(9,
+      column(8,
              plotlyOutput(
                ns('recent_mean_plot')
              ))
@@ -83,10 +86,9 @@ mod_recent_mean_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+  
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
-  chart_data <- reactiveValues(plot_data = 'new') 
-  observeEvent(input$generate_chart, {
-    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
+  get_pop_map <- reactive({
     # create list to store results from reactive object
     pop_map_list <- list()
     
@@ -180,24 +182,14 @@ mod_recent_mean_server <- function(input, output, session){
         setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend( pal=map_palette,title = unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
       # store palette, text, map object, and data in list
-      pop_map_list<- list(pop_map, shp, unit_of_measure, good_or_bad, year_title, indicator, plot_years)
+      pop_map_list<- list(pop_map, shp, unit_of_measure, good_or_bad, year_title)
     }
-    chart_data$plot_data <- pop_map_list
-  },
-  
-  ignoreNULL = FALSE,
-  ignoreInit = TRUE)
- 
+    return(pop_map_list)
+  })
   
   # ---- RENDER MAP TITLE ---- #
   output$map_title_ui <- renderUI({
-    # get reactive list
-    pop_map <- chart_data$plot_data
-    if(length(pop_map)==1){
-      load('maps_national_mean.RData')
-      pop_map <- pop_map_list
-      
-    }
+    pop_map <- get_pop_map()
     if(is.null(pop_map)){
       NULL
     } else {
@@ -205,7 +197,7 @@ mod_recent_mean_server <- function(input, output, session){
         
         h4('')
       } else {
-        indicator_name <- pop_map[[6]]
+        indicator_name <- input$indicator
         year_title <- pop_map[[5]]
         # HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
         #            h5(year_title)))
@@ -223,26 +215,20 @@ mod_recent_mean_server <- function(input, output, session){
   
   # ---- RENDER MAP FROM REACTIVE LIST ---- #
   output$recent_mean_leaf <- renderLeaflet({
-    # get reactive list
-    pop_map <- chart_data$plot_data
-    if(length(pop_map)==1){
-      load('maps_national_mean.RData')
-      pop_map <- pop_map_list
-      
-    }
+    pop_map <- get_pop_map()
     if(is.null(pop_map)){
       NULL
     } else {
-     if(is.na(pop_map)){
-       this_map <- leaflet(options = leafletOptions(minZoom = 1, 
-                                                   maxZoom = 10)) %>% 
-         addProviderTiles('CartoDB.VoyagerNoLabels') %>%
-         setView(lat=0, lng=0 , zoom=1.7) 
-       this_map
-     } else {
-       this_map <- pop_map[[1]]
-       this_map
-     }
+      if(is.na(pop_map)){
+        this_map <- leaflet(options = leafletOptions(minZoom = 1, 
+                                                     maxZoom = 10)) %>% 
+          addProviderTiles('CartoDB.VoyagerNoLabels') %>%
+          setView(lat=0, lng=0 , zoom=1.7) 
+        this_map
+      } else {
+        this_map <- pop_map[[1]]
+        this_map
+      }
     }
   })
   
@@ -276,13 +262,7 @@ mod_recent_mean_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      # get reactive list
-      pop_map <- chart_data$plot_data
-      if(length(pop_map)==1){
-        load('maps_national_mean.RData')
-        pop_map <- pop_map_list
-        
-      }
+      pop_map <- get_pop_map()
       if(is.null(pop_map)){
         NULL
       } else {
@@ -311,23 +291,17 @@ mod_recent_mean_server <- function(input, output, session){
   
   # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
   user_zoom <- reactive({
-    # get reactive list
-    pop_map <- chart_data$plot_data
-    if(length(pop_map)==1){
-      load('maps_national_mean.RData')
-      pop_map <- pop_map_list
-      
-    }
+    pop_map <- get_pop_map()
     if(is.null(pop_map)){
       NULL
     } else {
-        this_map <- pop_map[[1]]
-        this_map %>% setView(lng = input$recent_mean_leaf_center$lng,
-                             lat = input$recent_mean_leaf_center$lat,
-                             zoom = input$recent_mean_leaf_zoom)
+      this_map <- pop_map[[1]]
+      this_map %>% setView(lng = input$recent_mean_leaf_center$lng,
+                           lat = input$recent_mean_leaf_center$lat,
+                           zoom = input$recent_mean_leaf_zoom)
     }
   }) 
-
+  
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".png"),
                                     content = function(file) {
@@ -336,7 +310,7 @@ mod_recent_mean_server <- function(input, output, session){
                                         NULL
                                       } else {
                                         if(is.na(pop_map)){
-                                         
+                                          
                                           this_map <- leaflet(options = leafletOptions(minZoom = 1, 
                                                                                        maxZoom = 10)) %>% 
                                             addProviderTiles('OpenStreetMap.DE') %>%
@@ -346,11 +320,11 @@ mod_recent_mean_server <- function(input, output, session){
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)
                                         } else {
-                                        this_map <- pop_map
-                                        mapview::mapshot( x = this_map,
-                                                          file = file,
-                                                          cliprect = "viewport",
-                                                          selfcontained = FALSE)
+                                          this_map <- pop_map
+                                          mapview::mapshot( x = this_map,
+                                                            file = file,
+                                                            cliprect = "viewport",
+                                                            selfcontained = FALSE)
                                         }
                                       }
                                     })
@@ -359,13 +333,11 @@ mod_recent_mean_server <- function(input, output, session){
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_mean_plot <- renderPlotly({
     # get reactive list
-    # get reactive list
-    pop_map <- chart_data$plot_data
-    if(length(pop_map)==1){
-      load('maps_national_mean.RData')
-      pop_map <- pop_map_list
-      
-    }
+    pop_map <- get_pop_map()
+    
+    # get inputs
+    plot_years <- input$date_range
+    indicator <- input$indicator
     
     # while map (generate from reactive object) is null, plot is null
     if(is.null(pop_map)){
@@ -393,9 +365,6 @@ mod_recent_mean_server <- function(input, output, session){
         shp <- pop_map[[2]]
         unit_of_measure <- pop_map[[3]]
         good_or_bad = pop_map[[4]]
-        # get inputs
-        plot_years <- pop_map[[7]]
-        indicator <- pop_map[[6]]
         temp <- shp@data
         temp <- temp %>% filter(!is.na(value))
         
@@ -426,9 +395,9 @@ mod_recent_mean_server <- function(input, output, session){
                      labs(x='Country',
                           y = y_axis_text) +
                      hefpi::theme_hefpi(grid_major_x=NA,
-                                 x_axis_angle = 90,
-                                 x_axis_line = NA,
-                                 legend_position = 'none') +
+                                        x_axis_angle = 90,
+                                        x_axis_line = NA,
+                                        legend_position = 'none') +
                      theme(axis.text.x = element_blank(),
                            axis.ticks.x = element_blank()),
                    tooltip = 'text'))   
@@ -458,16 +427,12 @@ mod_recent_con_ui <- function(id){
   # tagList(
   fluidPage(
     fluidRow(
-      column(9,
+      column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
                ns('recent_con_leaf')),
-             ),
-      column(3,
-             useShinyalert(), 
-             actionButton(ns("plot_info"), label = "Plot Info"),
-             actionButton(ns('generate_chart'), 'Generate chart'),
-             br(), br(),
+      ),
+      column(4,
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults',
@@ -480,11 +445,18 @@ mod_recent_con_ui <- function(id){
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+             br(),br(),
+             fluidPage(
+               fluidRow(
+                 useShinyalert(),  # Set up shinyalert
+                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
+             )
+      )
     ),
     br(), br(),
     fluidRow(
-      column(9,
+      column(8,
              plotlyOutput(
                ns('recent_con_plot')
              ))
@@ -503,20 +475,19 @@ mod_recent_con_ui <- function(id){
 mod_recent_con_server <- function(input, output, session){
   
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
-    observeEvent(input$plot_info, {
-      # Show a modal when the button is pressed
-      shinyalert(title = "Concentration index – Most recent value", 
-                 text = 'This chart displays a world map in which countries are color-coded according to the most recent value of an indicator’s concentration index. The concentration index is based on a measure of household wealth and bounded between -1 and 1. How wealth is measured for a data point – by a wealth index, consumption, or income – depends on the underlying survey. Negative values of the concentration index indicate disproportionate concentration of an indicator among the poor, and positive values disproportionate concentration among the rich. For instance, a negative value for infant mortality in a country means infant mortality is higher among the poor there. The map is complemented by a bar chart that ranks countries by the concentration index. By default, the map and bar chart use an indicator’s latest available concentration index, but users can choose the time period from which this latest concentration index value is chosen.', 
-                 type = "info", 
-                 closeOnClickOutside = TRUE, 
-                 showCancelButton = FALSE, 
-                 showConfirmButton = FALSE)
-    })
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Concentration index – Most recent value", 
+               text = 'This chart displays a world map in which countries are color-coded according to the most recent value of an indicator’s concentration index. The concentration index is based on a measure of household wealth and bounded between -1 and 1. How wealth is measured for a data point – by a wealth index, consumption, or income – depends on the underlying survey. Negative values of the concentration index indicate disproportionate concentration of an indicator among the poor, and positive values disproportionate concentration among the rich. For instance, a negative value for infant mortality in a country means infant mortality is higher among the poor there. The map is complemented by a bar chart that ranks countries by the concentration index. By default, the map and bar chart use an indicator’s latest available concentration index, but users can choose the time period from which this latest concentration index value is chosen.', 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
   
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
-  chart_data <- reactiveValues(plot_data = 'new') 
-  observeEvent(input$generate_chart, {
-    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
+  map_data <- reactiveValues(map = NULL)
+  get_con_map <- reactive({
     con_map_list <- list()
     plot_years <- input$date_range
     indicator <- input$indicator
@@ -590,22 +561,16 @@ mod_recent_con_server <- function(input, output, session){
           )
         ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
         addLegend(pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
-      con_map_list<- list(con_map, shp, unit_of_measure,year_title, indicator, plot_years)
+      con_map_list<- list(con_map, shp, unit_of_measure,year_title)
+      map_data$map <- con_map
+      # save(con_map_list, file = 'map.rda')
     }
-    chart_data$plot_data <- con_map_list
-  },
+    return(con_map_list)
+  })
   
-  ignoreNULL = FALSE,
-  ignoreInit = TRUE)
-
   # ---- RENDER MAP TITLE ---- #
   output$map_title_ui <- renderUI({
-    # get reactive list
-    con_map <- chart_data$plot_data
-    if(length(con_map)==1){
-      load('maps_national_ci.RData')
-      con_map <- con_map_list
-    }
+    con_map <- get_con_map()
     if(is.null(con_map)){
       NULL
     } else {
@@ -616,7 +581,7 @@ mod_recent_con_server <- function(input, output, session){
           )
         )
       } else {
-        indicator_name <- con_map[[5]]
+        indicator_name <- input$indicator
         year_title <- con_map[[4]]
         fluidPage(
           fluidRow(
@@ -633,11 +598,7 @@ mod_recent_con_server <- function(input, output, session){
     # Plotly hover capture
     mouse_event <- event_data("plotly_click", source = "subset")
     print(mouse_event)
-    con_map <- chart_data$plot_data
-    if(length(con_map)==1){
-      load('maps_national_ci.RData')
-      con_map <- con_map_list
-    }
+    con_map <- get_con_map()
     if(is.null(con_map)){
       NULL
     } else {
@@ -648,8 +609,8 @@ mod_recent_con_server <- function(input, output, session){
       #     setView(lat=0, lng=0 , zoom=1.7) 
       #   this_map
       # } else {
-        this_map <- con_map[[1]]
-        this_map
+      this_map <- map_data$map #con_map[[1]]
+      this_map
       # }
     }
   })
@@ -662,17 +623,12 @@ mod_recent_con_server <- function(input, output, session){
       paste0("most_recent_value_ci_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      con_map <- chart_data$plot_data
-      if(length(con_map)==1){
-        load('maps_national_ci.RData')
-        con_map <- con_map_list
-      }
+      con_map <- get_con_map()
       if(is.null(con_map)){
         NULL
       } else {
         map_dat <- con_map[[2]]
-        
-        if(nrow(map_dat@data)==0){
+        if(is.na(map_dat)){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
@@ -695,11 +651,7 @@ mod_recent_con_server <- function(input, output, session){
   
   # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
   user_zoom_ci <- reactive({
-    con_map <- chart_data$plot_data
-    if(length(con_map)==1){
-      load('maps_national_ci.RData')
-      con_map <- con_map_list
-    }
+    con_map <- get_con_map()
     if(is.null(con_map)){
       NULL
     } else {
@@ -740,14 +692,9 @@ mod_recent_con_server <- function(input, output, session){
   
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_con_plot <- renderPlotly({
-    con_map <- chart_data$plot_data
-    if(length(con_map)==1){
-      load('maps_national_ci.RData')
-      con_map <- con_map_list
-    }
-    plot_years <- con_map[[6]]
-    indicator <- con_map[[5]]
-
+    con_map <- get_con_map()
+    plot_years <- input$date_range
+    indicator <- input$indicator
     if(is.null(con_map)){
       NULL
     } else {
@@ -813,6 +760,15 @@ mod_recent_con_server <- function(input, output, session){
   })
 }
 
+library(maps)
+mapStates = map("state", fill = TRUE, plot = FALSE)
+
+leaflet(data = mapStates) %>% 
+  addProviderTiles('Esri.WorldShadedRelief') %>%
+  addPolygons( 
+    labelOptions = labelOptions(
+      noHide = TRUE
+    ))
 
 ## To be copied in the UI
 # mod_recent_mean_ui("leaf1")

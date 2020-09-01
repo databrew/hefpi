@@ -225,7 +225,7 @@ mod_trends_mean_server <- function(input, output, session){
       pop_list[[1]] <- p
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
-      
+      # save(pop_list, file = 'trends_national_mean.RData')
       chart_data$plot_data <- pop_list
       # message('pop_list is of type:')
       # print(str(pop_list))
