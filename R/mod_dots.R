@@ -422,8 +422,8 @@ mod_dots_ind_server <- function(input, output, session){
   # ---- GENERATE UI OUTPUTS---- #
   output$ui_outputs <- renderUI({
     date_range <- c(1982, 2018)
-    indicator <- NULL
-    country_names = 'Zimbabwe'
+    indicator <- indicators$indicator_short_name
+    country_names = 'United States'
     date_range <- input$date_range
     indicator <- input$indicator
     country_names <- input$country
