@@ -138,6 +138,28 @@ usethis::use_data(region_list, overwrite = T)
 usethis::use_data(country_list, overwrite = T)
 usethis::use_data(yn_list, overwrite = T)
 
+t11 <- c(1,2,3,4,5)
+usethis::use_data(t11, overwrite = TRUE)
+
+#### ---------------------------------------------### create defualt data objects
+
+# trends national mean
+
+
+# trends subnational mean
+
+# trends ci 
+
+# trends quin
+
+# dots country
+
+# dots indicator
+
+# dat country
+
+# dat indicator
+
 
 
 
