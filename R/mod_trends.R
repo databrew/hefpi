@@ -225,7 +225,8 @@ mod_trends_mean_server <- function(input, output, session){
       pop_list[[1]] <- p
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
-      # save(pop_list, file = 'trends_national_mean.RData')
+      trends_national_mean <- pop_list
+      # usethis::use_data(trends_national_mean, overwrite = TRUE)
       chart_data$plot_data <- pop_list
       # message('pop_list is of type:')
       # print(str(pop_list))
@@ -245,7 +246,7 @@ mod_trends_mean_server <- function(input, output, session){
       # get map
       pop_list <- chart_data$plot_data
       if(length(pop_list)==1){
-        load('trends_national_mean.RData')
+        pop_list <- hefpi::trends_national_mean
       }
       if(is.null(pop_list)){
         NULL
@@ -277,7 +278,8 @@ mod_trends_mean_server <- function(input, output, session){
                                     content = function(file) {
                                       pop_list <- chart_data$plot_data
                                       if(length(pop_list)==1){
-                                        load('trends_national_mean.RData')
+                                        pop_list <- hefpi::trends_national_mean
+                                        
                                       }
                                       if(is.null(pop_list)){
                                         NULL
@@ -322,7 +324,8 @@ mod_trends_mean_server <- function(input, output, session){
   output$trends_mean <- renderPlotly({
     pop_list <- chart_data$plot_data
     if(length(pop_list)==1){
-      load('trends_national_mean.RData')
+      pop_list <- hefpi::trends_national_mean
+      
     }
     if(is.null(pop_list)){
       NULL
@@ -610,7 +613,6 @@ mod_trends_mean_sub_server <- function(input, output, session){
       pop_list[[1]] <- p
       pop_list[[2]] <- pd
       pop_list[[3]] <- list(plot_title, mytext, y_axis_text, unit_of_measure, trend_palette)
-    
      
       chart_data$plot_data <- pop_list
       
@@ -628,7 +630,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
       # get map
       pop_list <- chart_data$plot_data
       if(length(pop_list)==1){
-        load('trends_subnational_mean.RData')
+        pop_list <- hefpi::trends_subnational_mea
       }
       
       if(is.null(pop_list)){
@@ -660,7 +662,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                     content = function(file) {
                                       pop_list <- chart_data$plot_data
                                       if(length(pop_list)==1){
-                                        load('trends_subnational_mean.RData')
+                                        pop_list <- hefpi::trends_subnational_mean
                                       }
                                       if(is.null(pop_list)){
                                         NULL
@@ -704,7 +706,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
   output$trends_mean <- renderPlotly({
     pop_list <- chart_data$plot_data
     if(length(pop_list)==1){
-      load('trends_subnational_mean.RData')
+      pop_list <- hefpi::trends_subnational_mean
     }
     if(is.null(pop_list)){
       NULL
@@ -950,7 +952,8 @@ mod_trends_con_server <- function(input, output, session){
       con_list[[2]] <- pd
       con_list[[3]] <- list(plot_title, mytext, y_axis_text, trend_palette)
     }
-  
+    
+    
     chart_data$plot_data <- con_list
   },
   ignoreNULL = FALSE,
@@ -965,7 +968,8 @@ mod_trends_con_server <- function(input, output, session){
     content = function(file) {
       con_list <- chart_data$plot_data
       if(length(con_list)==1){
-        load(file = 'trends_national_ci.RData')
+        con_list <- hefpi::trends_national_ci
+        
       }
       if(is.null(con_list)){
         NULL
@@ -998,7 +1002,8 @@ mod_trends_con_server <- function(input, output, session){
                                     content = function(file) {
                                       con_list <- chart_data$plot_data
                                       if(length(con_list)==1){
-                                        load(file = 'trends_national_ci.RData')
+                                        con_list <- hefpi::trends_national_ci
+                                        
                                       }
                                       if(is.null(con_list)){
                                         NULL
@@ -1042,7 +1047,8 @@ mod_trends_con_server <- function(input, output, session){
   output$trends_con <- renderPlotly({
     con_list <- chart_data$plot_data
     if(length(con_list)==1){
-      load(file = 'trends_national_ci.RData')
+      con_list <- hefpi::trends_national_ci
+      
     }
     if(is.null(con_list)){
       NULL
@@ -1273,6 +1279,7 @@ mod_trends_quin_server <- function(input, output, session){
       quin_list[[2]] <- df
       quin_list[[3]] <- list(plot_title, mytext, y_axis_text, col_vec)
     }
+    
     chart_data$plot_data <- quin_list
     
   },
@@ -1290,7 +1297,8 @@ mod_trends_quin_server <- function(input, output, session){
       # get map
       quin_list <- chart_data$plot_data
       if(length(quin_list)==1){
-        load('trends_quin.RData')
+        quin_list <- hefpi::trends_national_quin
+        
       }
       if(is.null(quin_list)){
         NULL
@@ -1321,7 +1329,7 @@ mod_trends_quin_server <- function(input, output, session){
                                     content = function(file) {
                                       quin_list <- chart_data$plot_data
                                       if(length(quin_list)==1){
-                                        load('trends_quin.RData')
+                                        quin_list <- hefpi::trends_national_quin
                                       }
                                       if(is.null(quin_list)){
                                         NULL
@@ -1366,7 +1374,7 @@ mod_trends_quin_server <- function(input, output, session){
   output$trends_quin <- renderPlotly({
     quin_list <- chart_data$plot_data
     if(length(quin_list)==1){
-      load('trends_quin.RData')
+      quin_list <- hefpi::trends_national_quin
     }
     if(is.null(quin_list)){
       NULL

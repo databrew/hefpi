@@ -138,6 +138,7 @@ mod_dat_country_server <- function(input, output, session){
     dat_list[[2]] <- df
     dat_list[[3]] <- list(plot_title, col_vec)
 
+    
     chart_data$plot_data <- dat_list
   },
   
@@ -150,7 +151,8 @@ mod_dat_country_server <- function(input, output, session){
                                     content = function(file) {
                                       dat_list <- chart_data$plot_data
                                       if(length(dat_list)==1){
-                                        load('dat_country.RData')
+                                        dat_list <- hefpi::dat_country
+                                        
                                       }
                                       if(is.null(dat_list)){
                                         NULL
@@ -180,7 +182,7 @@ mod_dat_country_server <- function(input, output, session){
   output$dat_country <- renderPlotly({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
-      load('dat_country.RData')
+      dat_list <- hefpi::dat_country
     }
     if(is.null(dat_list)){
       NULL
@@ -401,12 +403,12 @@ mod_dat_ind_server <- function(input, output, session){
              title = plot_title) +
         coord_flip() +
         theme(legend.position = "none") 
-      p
+      
       dat_list[[1]] <- p
       dat_list[[2]] <- df
       dat_list[[3]] <- list(plot_title, col_vec, mytext, plot_height)
-     
     }
+    
     chart_data$plot_data <- dat_list
   },
   
@@ -419,7 +421,7 @@ mod_dat_ind_server <- function(input, output, session){
                                     content = function(file) {
                                       dat_list <- chart_data$plot_data
                                       if(length(dat_list)==1){
-                                        load('dat_indicator.RData')
+                                        dat_list <- hefpi::dat_indicator
                                       }
                                       if(is.null(dat_list)){
                                         NULL
@@ -450,7 +452,7 @@ mod_dat_ind_server <- function(input, output, session){
   output$dat_ind <- renderPlotly({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
-      load('dat_indicator.RData')
+      dat_list <- hefpi::dat_indicator
     }
     if(is.null(dat_list)){
       NULL
