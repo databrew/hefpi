@@ -248,7 +248,7 @@ mod_dots_country_server <- function(input, output, session){
       # get map
       dot_list <- chart_data$plot_data
       if(length(dot_list)==1){
-        load('dots_country.RData')
+        dot_list <- hefpi::dot_country
       }
       if(is.null(dot_list)){
         NULL
@@ -280,7 +280,7 @@ mod_dots_country_server <- function(input, output, session){
                                       
                                       dot_list <- chart_data$plot_data
                                       if(length(dot_list)==1){
-                                        load('dots_country.RData')
+                                        dot_list <- hefpi::dot_country
                                       }
                                      
                                       if(is.null(dot_list)){
@@ -307,7 +307,7 @@ mod_dots_country_server <- function(input, output, session){
   output$dots_country <- renderPlotly({
     dot_list <- chart_data$plot_data
     if(length(dot_list)==1){
-      load('dots_country.RData')
+      dot_list <- hefpi::dot_country
     }
     if(is.null(dot_list)){
       NULL
@@ -572,10 +572,7 @@ mod_dots_ind_server <- function(input, output, session){
   
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
-  # ---- GENERATE PLOT DATA ---- #
-  get_dot_data <- reactive({
-    
-  })
+  
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -586,7 +583,7 @@ mod_dots_ind_server <- function(input, output, session){
       # get map
       dot_list <- chart_data$plot_data
       if(length(dot_list)==1){
-        load('dots_indicator.RData')
+        dot_list <- hefpi::dot_country
       }
       if(is.null(dot_list)){
         NULL
@@ -619,7 +616,7 @@ mod_dots_ind_server <- function(input, output, session){
                                     content = function(file) {
                                       dot_list <- chart_data$plot_data
                                       if(length(dot_list)==1){
-                                        load('dots_indicator.RData')
+                                        dot_list <- hefpi::dot_country
                                       }
                                       if(is.null(dot_list)){
                                         NULL
@@ -644,7 +641,7 @@ mod_dots_ind_server <- function(input, output, session){
   output$dots_ind <- renderPlotly({
     dot_list <- chart_data$plot_data
     if(length(dot_list)==1){
-      load('dots_indicator.RData')
+      dot_list <- hefpi::dot_country
     }
     if(is.null(dot_list)){
       NULL

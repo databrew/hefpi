@@ -120,10 +120,10 @@ usethis::use_data(indicators, overwrite = T)
 
 
 # save data: NOTE: explore these later - Not sure these are actually needed. The database data seems to be a function of a combination of this data
-usethis::use_data(country, overwrite = T)
-usethis::use_data(dat, overwrite = T)
-usethis::use_data(series, overwrite = T)
-usethis::use_data(df_series, overwrite = T)
+# usethis::use_data(country, overwrite = T)
+# usethis::use_data(dat, overwrite = T)
+# usethis::use_data(series, overwrite = T)
+# usethis::use_data(df_series, overwrite = T)
 
 
 # create lists
@@ -137,4 +137,9 @@ yn_list <- c('Yes', 'No')
 usethis::use_data(region_list, overwrite = T)
 usethis::use_data(country_list, overwrite = T)
 usethis::use_data(yn_list, overwrite = T)
+
+
+
+
+
 
