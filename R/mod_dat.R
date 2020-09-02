@@ -122,21 +122,8 @@ mod_dat_country_server <- function(input, output, session){
     # order level2
     df$level2 <- factor(df$level2, levels =level2_levels )
     df$indicator_short_name <- factor(df$indicator_short_name, levels = rev(all_ind))
-    # make plot title 
-    plot_title = paste0('Data availability', ' - ', country_name)
-    # plot
-    p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
-      geom_tile(alpha = 0.8, color = 'lightgrey') +
-      scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                         expand = c(0,0)) +
-      scale_fill_manual(name = '',
-                        values = col_vec) +
-      labs(x = 'Year',
-           y = '',
-           title = plot_title)
-    dat_list[[1]] <- p
-    dat_list[[2]] <- df
-    dat_list[[3]] <- list(plot_title, col_vec)
+    
+    dat_list <- list(df, date_range, col_vec)
 
     
     chart_data$plot_data <- dat_list
@@ -145,19 +132,34 @@ mod_dat_country_server <- function(input, output, session){
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
-
+ 
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_data_availability_country", ".png"),
                                     content = function(file) {
                                       dat_list <- chart_data$plot_data
                                       if(length(dat_list)==1){
-                                        dat_list <- hefpi::dat_country
+                                        dat_list <- hefpi::dat_country_default
                                         
                                       }
                                       if(is.null(dat_list)){
                                         NULL
                                       } else {
-                                        p <- dat_list[[1]]
+                                        df <- dat_list[[1]]
+                                        date_range <- dat_list[[2]]
+                                        col_vec <-dat_list[[3]]
+                                        # make plot title 
+                                        plot_title = paste0('Data availability', ' - ', unique(df$country))
+                                        # plot
+                                        p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
+                                          geom_tile(alpha = 0.8, color = 'lightgrey') +
+                                          scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                             expand = c(0,0)) +
+                                          scale_fill_manual(name = '',
+                                                            values = col_vec) +
+                                          labs(x = 'Year',
+                                               y = '',
+                                               title = '')
+                                        
                                         p =  p + hefpi::theme_hefpi(grid_major_x = NA,
                                                                     grid_major_y = NA,
                                                                     grid_minor_x = NA,
@@ -182,12 +184,12 @@ mod_dat_country_server <- function(input, output, session){
   output$dat_country <- renderPlotly({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
-      dat_list <- hefpi::dat_country
+      dat_list <- hefpi::dat_country_default
     }
     if(is.null(dat_list)){
       NULL
     } else {
-      df= dat_list[[2]]
+      df= dat_list[[1]]
       if(nrow(df) == 0) {
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -205,7 +207,21 @@ mod_dat_country_server <- function(input, output, session){
         fig <- empty_plot("No data available for the selected inputs")
         fig
       } else {
-        p <- dat_list[[1]]
+        df <- dat_list[[1]]
+        date_range <- dat_list[[2]]
+        col_vec <-dat_list[[3]]
+        # make plot title 
+        plot_title = paste0('Data availability', ' - ', unique(df$country))
+        # plot
+        p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
+          geom_tile(alpha = 0.8, color = 'lightgrey') +
+          scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                             expand = c(0,0)) +
+          scale_fill_manual(name = '',
+                            values = col_vec) +
+          labs(x = 'Year',
+               y = '',
+               title = plot_title)
         p  <- p + hefpi::theme_hefpi(x_axis_angle = 90, 
                                      x_axis_vjust = 0.5,
                                      y_axis_hjust = 1,
@@ -326,7 +342,8 @@ mod_dat_ind_server <- function(input, output, session){
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
-    # indicator <- indicators$indicator_short_name[1]
+    region = as.character(region_list$region)[1]
+    indicator <- indicators$indicator_short_name[1]
     date_range = c(1982,2018)
     indicator <- input$indicator
     region <- input$region
@@ -378,35 +395,8 @@ mod_dat_ind_server <- function(input, output, session){
       # order level2
       temp_data$level2 <- factor(temp_data$level2, levels =level2_levels )
       temp_data$country <- factor(temp_data$country, levels = sort(unique(temp_data$country), decreasing = TRUE))
-      # make plot title 
-      plot_title = paste0('Data availability',' - ', indicator)
-      mytext <- paste(
-        "Economy: ", as.character(temp_data$country), "\n",
-        "Indicator class: ", as.character(temp_data$level2), "\n",
-        sep="") %>%
-        lapply(htmltools::HTML)
-      # number of countries
-      plot_height <- ceiling(((length(unique(temp_data$country))* 100) + 100)/3)
-      if(plot_height < 250){
-        plot_height <- 250
-      }
-      p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
-        geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
-        scale_y_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
-                                      breaks = seq(from = min(temp_data$year),
-                                                   to =max(temp_data$year), by = 1),
-                           expand = c(0,-0.5)) +
-        scale_fill_manual(name = '',
-                          values = col_vec) +
-        labs(x = '',
-             y = 'Year',
-             title = plot_title) +
-        coord_flip() +
-        theme(legend.position = "none") 
       
-      dat_list[[1]] <- p
-      dat_list[[2]] <- df
-      dat_list[[3]] <- list(plot_title, col_vec, mytext, plot_height)
+      dat_list <- list(temp_data, date_range, col_vec,indicator)
     }
     
     chart_data$plot_data <- dat_list
@@ -416,17 +406,51 @@ mod_dat_ind_server <- function(input, output, session){
   ignoreInit = TRUE)
   
   
+  
+ 
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("data_indicators_",Sys.Date(), ".png"),
                                     content = function(file) {
                                       dat_list <- chart_data$plot_data
                                       if(length(dat_list)==1){
-                                        dat_list <- hefpi::dat_indicator
+                                        dat_list <- hefpi::dat_indicator_default
                                       }
                                       if(is.null(dat_list)){
                                         NULL
                                       } else {
-                                        p <- dat_list[[1]]
+                                        temp_data <- dat_list[[1]]
+                                        date_range <- dat_list[[2]]
+                                        col_vec <- dat_list[[3]]
+                                        indicator <- dat_list[[4]]
+                                        
+                                        
+                                        # make plot title 
+                                        plot_title = paste0('Data availability',' - ', indicator)
+                                        mytext <- paste(
+                                          "Economy: ", as.character(temp_data$country), "\n",
+                                          "Indicator class: ", as.character(temp_data$level2), "\n",
+                                          sep="") %>%
+                                          lapply(htmltools::HTML)
+                                        # number of countries
+                                        plot_height <- ceiling(((length(unique(temp_data$country))* 100) + 100)/3)
+                                        if(plot_height < 250){
+                                          plot_height <- 250
+                                        }
+                                        p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2)) + 
+                                          geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
+                                          scale_y_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
+                                                             breaks = seq(from = min(temp_data$year),
+                                                                          to =max(temp_data$year), by = 1),
+                                                             expand = c(0,-0.5)) +
+                                          scale_fill_manual(name = '',
+                                                            values = col_vec) +
+                                          labs(x = '',
+                                               y = 'Year',
+                                               title = '') +
+                                          coord_flip() +
+                                          theme(legend.position = "none") 
+                                        
+                                        
                                         p =  p + theme_hefpi(grid_major_x = NA,
                                                              grid_major_y = NA,
                                                              grid_minor_x = NA,
@@ -452,12 +476,12 @@ mod_dat_ind_server <- function(input, output, session){
   output$dat_ind <- renderPlotly({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
-      dat_list <- hefpi::dat_indicator
+      dat_list <- hefpi::dat_indicator_default
     }
     if(is.null(dat_list)){
       NULL
     } else {
-      pd <- dat_list[[2]]
+      pd <- dat_list[[1]]
       if(nrow(pd)==0){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -474,8 +498,38 @@ mod_dat_ind_server <- function(input, output, session){
         } 
         fig <- empty_plot("No data available for the selected inputs")
       } else {
-        p <- dat_list[[1]]
-        plot_height <- dat_list[[3]][[4]]
+        temp_data <- dat_list[[1]]
+        date_range <- dat_list[[2]]
+        col_vec <- dat_list[[3]]
+        indicator <- dat_list[[4]]
+        
+        
+        # make plot title 
+        plot_title = paste0('Data availability',' - ', indicator)
+        mytext <- paste(
+          "Economy: ", as.character(temp_data$country), "\n",
+          "Indicator class: ", as.character(temp_data$level2), "\n",
+          sep="") %>%
+          lapply(htmltools::HTML)
+        # number of countries
+        plot_height <- ceiling(((length(unique(temp_data$country))* 100) + 100)/3)
+        if(plot_height < 250){
+          plot_height <- 250
+        }
+        p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
+          geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
+          scale_y_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
+                             breaks = seq(from = min(temp_data$year),
+                                          to =max(temp_data$year), by = 1),
+                             expand = c(0,-0.5)) +
+          scale_fill_manual(name = '',
+                            values = col_vec) +
+          labs(x = '',
+               y = 'Year',
+               title = plot_title) +
+          coord_flip() +
+          theme(legend.position = "none") 
+        
         p <- p +
           hefpi::theme_hefpi(x_axis_angle = 90,
                              x_axis_vjust = 0.5, 

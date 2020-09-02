@@ -187,13 +187,6 @@ mod_dots_country_server <- function(input, output, session){
       df <- df[complete.cases(df),]
       # order country
       df$country <- factor(df$country,levels= sort(unique(df$country), decreasing = TRUE ))
-      # get color graident 
-      col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-      col_vec <- col_vec[-1]
-      # make plot title 
-      plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
-      sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
-      y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
       df <- df %>% filter(value >= value_range[1],
                           value <= value_range[2])
       if(unit_of_measure == '%'){
@@ -201,34 +194,9 @@ mod_dots_country_server <- function(input, output, session){
         value_range[2] <- value_range[2]*100
         value_range[1] <- value_range[1]*100
       }
-      mytext <- paste(
-        "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
-        "Year: ", as.character(df$year),"\n",
-        "Indicator: ", as.character(indicator),"\n",
-        "Data source: ", as.character(df$referenceid_list),
-        sep="") %>%
-        lapply(htmltools::HTML)
-      # number of countries
-      plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
-      if(plot_height < 250){
-        plot_height <- 250
-      }
-      p <- ggplot(df, aes(x=country,
-                          y=value,
-                          text = mytext)) +
-        geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
-        geom_line(aes(group = country), color = 'darkgrey') +
-        scale_color_manual(name = '',
-                           values = col_vec) +
-        scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
-                           breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
-                           expand = c(0,0)) +
-        labs(title=plot_title,
-             subtitle = sub_title, x= '', y = y_axis_text) +
-        coord_flip() 
-      dot_list[[1]] <- p
-      dot_list[[2]] <- df
-      dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
+
+      # just save data, not implement 
+      dot_list <- list(df,unit_of_measure, indicator, value_range,date_range)
 
     }
     
@@ -239,6 +207,7 @@ mod_dots_country_server <- function(input, output, session){
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
+  
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
@@ -248,12 +217,12 @@ mod_dots_country_server <- function(input, output, session){
       # get map
       dot_list <- chart_data$plot_data
       if(length(dot_list)==1){
-        dot_list <- hefpi::dot_country
+        dot_list <- hefpi::dot_country_default
       }
       if(is.null(dot_list)){
         NULL
       } else {
-        df <- dot_list[[2]]
+        df <- dot_list[[1]]
         if(nrow(df) == 0){
           temp <- data_frame()
         } else {
@@ -280,14 +249,51 @@ mod_dots_country_server <- function(input, output, session){
                                       
                                       dot_list <- chart_data$plot_data
                                       if(length(dot_list)==1){
-                                        dot_list <- hefpi::dot_country
+                                        dot_list <- hefpi::dot_country_default
                                       }
                                      
                                       if(is.null(dot_list)){
                                         NULL
                                       } else {
-                                        p <- dot_list[[1]]
-                                        plot_height <- dot_list[[3]][[5]]
+                                        df <- dot_list[[1]]
+                                        unit_of_measure <- dot_list[[2]]
+                                        indicator <- dot_list[[3]]
+                                        value_range <- dot_list[[4]]
+                                        date_range <- dot_list[[5]]
+                                        
+                                        
+                                        # get color graident 
+                                        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+                                        col_vec <- col_vec[-1]
+                                        # make plot title 
+                                        plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
+                                        sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+                                        y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+                                        
+                                        mytext <- paste(
+                                          "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
+                                          "Year: ", as.character(df$year),"\n",
+                                          "Indicator: ", as.character(indicator),"\n",
+                                          "Data source: ", as.character(df$referenceid_list),
+                                          sep="") %>%
+                                          lapply(htmltools::HTML)
+                                        # number of countries
+                                        plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
+                                        if(plot_height < 250){
+                                          plot_height <- 250
+                                        }
+                                        p <- ggplot(df, aes(x=country,
+                                                            y=value)) +
+                                          geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
+                                          geom_line(aes(group = country), color = 'darkgrey') +
+                                          scale_color_manual(name = '',
+                                                             values = col_vec) +
+                                          scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
+                                                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                                                             expand = c(0,0)) +
+                                          labs(title='',
+                                               subtitle = '', x= '', y = y_axis_text) +
+                                          coord_flip() 
                                         
                                         p <- p +
                                           hefpi::theme_hefpi(grid_major_x = NA,
@@ -307,12 +313,12 @@ mod_dots_country_server <- function(input, output, session){
   output$dots_country <- renderPlotly({
     dot_list <- chart_data$plot_data
     if(length(dot_list)==1){
-      dot_list <- hefpi::dot_country
+      dot_list <- hefpi::dot_country_default
     }
     if(is.null(dot_list)){
       NULL
     } else {
-      df <- dot_list[[2]]
+      df <- dot_list[[1]]
       if(nrow(df)==0){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -329,8 +335,46 @@ mod_dots_country_server <- function(input, output, session){
         } 
         fig <- empty_plot("No data available for the selected inputs")
       } else {
-        p <- dot_list[[1]]
-        plot_height <- dot_list[[3]][[5]]
+        df <- dot_list[[1]]
+        unit_of_measure <- dot_list[[2]]
+        indicator <- dot_list[[3]]
+        value_range <- dot_list[[4]]
+        date_range <- dot_list[[5]]
+        
+        
+        # get color graident 
+        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+        col_vec <- col_vec[-1]
+        # make plot title 
+        plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
+        sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+        y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+        
+        mytext <- paste(
+          "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
+          "Year: ", as.character(df$year),"\n",
+          "Indicator: ", as.character(indicator),"\n",
+          "Data source: ", as.character(df$referenceid_list),
+          sep="") %>%
+          lapply(htmltools::HTML)
+        # number of countries
+        plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
+        if(plot_height < 250){
+          plot_height <- 250
+        }
+        p <- ggplot(df, aes(x=country,
+                            y=value,
+                            text =mytext)) +
+          geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
+          geom_line(aes(group = country), color = 'darkgrey') +
+          scale_color_manual(name = '',
+                             values = col_vec) +
+          scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
+                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                             expand = c(0,0)) +
+          labs(title=plot_title,
+               subtitle = sub_title, x= '', y = y_axis_text) +
+          coord_flip() 
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
@@ -511,16 +555,6 @@ mod_dots_ind_server <- function(input, output, session){
       # only keep data with no NAs
       df <- df[complete.cases(df),]
       
-      message('mod_dots!!!')
-      # get color graident 
-      col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-      col_vec <- col_vec[-1]
-      # get length of variable 
-      col_length <- length(unique(df$variable))
-      # make plot title 
-      plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', country_names)
-      sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
-      y_axis_text = paste0(indicator)
       if(nrow(df) !=0){
         if(length(unique(df$unit_of_measure)) == 1 & unique(df$unit_of_measure) == '%'){
           # make percent 
@@ -528,44 +562,20 @@ mod_dots_ind_server <- function(input, output, session){
           # if the dataframe is null of empty make plot null
           value_range[2] <- value_range[2]*100
           value_range[1] <- value_range[1]*100
+          df <- df %>% filter(value >= value_range[1],
+                              value <= value_range[2])
         } else {
           # make percent 
           df$value[df$unit_of_measure == '%'] <- (df$value[df$unit_of_measure == '%'])*100
+          df <- df %>% filter(value >= value_range[1],
+                              value <= value_range[2])
         }
       }
       
       # order indicator alphabetically
       df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
-      mytext <- paste(
-        "Economy: ", as.character(df$country),"\n",
-        "Value: ", paste0(round(df$value, digits = 2), ' (', df$unit_of_measure, ')'), "\n",
-        "Year: ", as.character(df$year),"\n",
-        "Data source: ", as.character(df$referenceid_list),
-        sep="") %>%
-        lapply(htmltools::HTML)
       
-      # number of countries
-      plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
-      if(plot_height < 250){
-        plot_height <- 250
-      }
-      p <- ggplot(df, aes(x=indicator_short_name,
-                          y=value,
-                          color = variable,
-                          text = mytext)) +
-        geom_point(size=rel(2), alpha = 0.7) +
-        scale_color_manual(name = '',
-                           values = col_vec) +
-        geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
-        scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)), 
-                           breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
-                           expand = c(0,0)) +
-        labs(title=plot_title, x= '', y = '',
-             subtitle = sub_title) +
-        coord_flip()
-      dot_list[[1]] <- p
-      dot_list[[2]] <- df
-      dot_list[[3]] <- list(plot_title, sub_title, col_vec, mytext, plot_height)
+      dot_list <- list(df, unit_of_measure, indicator, date_range, value_range)
     }
     chart_data$plot_data <- dot_list
   },
@@ -574,6 +584,8 @@ mod_dots_ind_server <- function(input, output, session){
   ignoreInit = TRUE)
   
   
+  
+ 
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
@@ -583,12 +595,12 @@ mod_dots_ind_server <- function(input, output, session){
       # get map
       dot_list <- chart_data$plot_data
       if(length(dot_list)==1){
-        dot_list <- hefpi::dot_country
+        dot_list <- hefpi::dot_indicator_default
       }
       if(is.null(dot_list)){
         NULL
       } else {
-        df <- dot_list[[2]]
+        df <- dot_list[[1]]
         if(nrow(df) == 0){
           temp <- data_frame()
           
@@ -616,12 +628,46 @@ mod_dots_ind_server <- function(input, output, session){
                                     content = function(file) {
                                       dot_list <- chart_data$plot_data
                                       if(length(dot_list)==1){
-                                        dot_list <- hefpi::dot_country
+                                        dot_list <- hefpi::dot_indicator_default
                                       }
                                       if(is.null(dot_list)){
                                         NULL
                                       } else {
-                                        p <- dot_list[[1]]
+                                        df <- dot_list[[1]]
+                                        unit_of_measure <- dot_list[[2]]
+                                        indicator <- dot_list[[3]]
+                                        date_range <- dot_list[[4]]
+                                        value_range <- dot_list[[5]]
+                                        # get color graident 
+                                        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+                                        col_vec <- col_vec[-1]
+                                        # get length of variable 
+                                        col_length <- length(unique(df$variable))
+                                        # make plot title 
+                                        plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
+                                        sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+                                        y_axis_text = paste0(indicator)
+                                        
+                                        
+                                        # number of countries
+                                        plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
+                                        if(plot_height < 250){
+                                          plot_height <- 250
+                                        }
+                                        p <- ggplot(df, aes(x=indicator_short_name,
+                                                            y=value,
+                                                            color = variable)) +
+                                          geom_point(size=rel(2), alpha = 0.7) +
+                                          scale_color_manual(name = '',
+                                                             values = col_vec) +
+                                          geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
+                                          scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)), 
+                                                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                                                             expand = c(0,0)) +
+                                          labs(title='', x= '', y = '',
+                                               subtitle = '') +
+                                          coord_flip()
+                                        
                                         p <-  p + hefpi::theme_hefpi(grid_major_x = NA,
                                                              y_axis_size = rel(2/3),
                                                              x_axis_size = rel(1),
@@ -641,12 +687,12 @@ mod_dots_ind_server <- function(input, output, session){
   output$dots_ind <- renderPlotly({
     dot_list <- chart_data$plot_data
     if(length(dot_list)==1){
-      dot_list <- hefpi::dot_country
+      dot_list <- hefpi::dot_indicator_default
     }
     if(is.null(dot_list)){
       NULL
     } else {
-      df <- dot_list[[2]]
+      df <- dot_list[[1]]
       if(nrow(df)==0){
         empty_plot <- function(title = NULL){
           p <- plotly_empty(type = "scatter", mode = "markers") %>%
@@ -664,8 +710,50 @@ mod_dots_ind_server <- function(input, output, session){
         fig <- empty_plot("No data available for the selected inputs")
         fig
       } else {
-        p <- dot_list[[1]]
-        plot_height <- dot_list[[3]][[5]]
+        df <- dot_list[[1]]
+        unit_of_measure <- dot_list[[2]]
+        indicator <- dot_list[[3]]
+        date_range <- dot_list[[4]]
+        value_range <- dot_list[[5]]
+        # get color graident 
+        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+        col_vec <- col_vec[-1]
+        # get length of variable 
+        col_length <- length(unique(df$variable))
+        # make plot title 
+        plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
+        sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+        y_axis_text = paste0(indicator)
+        
+        mytext <- paste(
+          "Economy: ", as.character(df$country),"\n",
+          "Value: ", paste0(round(df$value, digits = 2), ' (', df$unit_of_measure, ')'), "\n",
+          "Year: ", as.character(df$year),"\n",
+          "Data source: ", as.character(df$referenceid_list),
+          sep="") %>%
+          lapply(htmltools::HTML)
+        
+        # number of countries
+        plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
+        if(plot_height < 250){
+          plot_height <- 250
+        }
+        p <- ggplot(df, aes(x=indicator_short_name,
+                            y=value,
+                            color = variable,
+                            text = mytext)) +
+          geom_point(size=rel(2), alpha = 0.7) +
+          scale_color_manual(name = '',
+                             values = col_vec) +
+          geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
+          scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)), 
+                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                             expand = c(0,0)) +
+          labs(title=plot_title, x= '', y = '',
+               subtitle = sub_title) +
+          coord_flip()
+        
+        
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
