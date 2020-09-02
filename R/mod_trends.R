@@ -1527,7 +1527,7 @@ mod_trends_quin_server <- function(input, output, session){
                                           col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
                                           col_vec <- col_vec[-1]
                                           # make plot title
-                                          plot_title = paste0('quinile - Trends - ',indicator, ' - ', country_names)
+                                          plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
                                           y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
                                           x_axis_text = paste0('', '\n', 'Year')
                                           # text for plot
@@ -1609,7 +1609,7 @@ mod_trends_quin_server <- function(input, output, session){
         col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
         col_vec <- col_vec[-1]
         # make plot title
-        plot_title = paste0('quinile - Trends - ',indicator, ' - ', country_names)
+        plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
         y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
         x_axis_text = paste0('', '\n', 'Year')
         # text for plot
@@ -1626,7 +1626,7 @@ mod_trends_quin_server <- function(input, output, session){
           geom_line(aes(group = as.character(variable))) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+          scale_y_continuous(limits = c(value_range[1], (value_range[2]+2)), 
                              expand = c(0,0))+
           scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                              breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
