@@ -154,9 +154,11 @@ mod_recent_mean_server <- function(input, output, session){
       pop_map <- leaflet(shp, 
                          options = leafletOptions(minZoom = 1, 
                                                   maxZoom = 10)) %>% 
+        # addMapPane("mover", zIndex = 100) %>%
         addProviderTiles('Esri.WorldShadedRelief') %>%
         # addTiles(carto) %>%
         addPolygons( 
+          # options = pathOptions(pane = "mover"),
           color = 'black',
           fillColor = ~map_palette(value), 
           stroke=TRUE, 
@@ -227,10 +229,27 @@ mod_recent_mean_server <- function(input, output, session){
         this_map
       } else {
         this_map <- pop_map[[1]]
-        this_map
+        
       }
     }
   })
+  
+  observeEvent(input$recent_mean_leaf_zoom, {
+    the_zoom <- input$recent_mean_leaf_zoom
+    print('THE ZOOM LEVEL IS :')
+    message('----', the_zoom)
+    if(the_zoom <= 4 & the_zoom >= 3){ # BEN, change this to 2 if you want to suppress the continent labels
+      leafletProxy('recent_mean_leaf') %>%
+        addMapPane("country_labels", zIndex = 410) %>%
+        addProviderTiles('CartoDB.PositronOnlyLabels',
+                         options = pathOptions(pane = "country_labels"),
+                         layerId = 'country_labs')
+    } else {
+      leafletProxy('recent_mean_leaf') %>%
+        removeTiles(layerId = 'country_labs')
+    }
+  })
+  
   
   the_country <- reactiveVal(value = NULL)
   the_shp <- reactiveValues(shp = NULL)
@@ -536,8 +555,10 @@ mod_recent_con_server <- function(input, output, session){
       # carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
         addProviderTiles('Esri.WorldShadedRelief') %>%
+        # addMapPane("mover", zIndex = 1001) %>%
         # addTiles(carto) %>%
-        addPolygons( 
+        addPolygons(
+          # options = pathOptions(pane = "mover"),
           color = 'black',
           fillColor = ~map_palette(value), 
           stroke=TRUE, 
@@ -610,7 +631,10 @@ mod_recent_con_server <- function(input, output, session){
       #   this_map
       # } else {
       this_map <- map_data$map #con_map[[1]]
-      this_map
+      this_map # %>%
+        # addMapPane("country_labels", zIndex = 1000) %>%
+        # addProviderTiles('CartoDB.PositronOnlyLabels',
+        #                  options = pathOptions(pane = "country_labels"))
       # }
     }
   })
@@ -661,6 +685,22 @@ mod_recent_con_server <- function(input, output, session){
                            zoom = input$recent_con_leaf_zoom)
     }
   }) 
+  
+  observeEvent(input$recent_con_leaf_zoom, {
+    the_zoom <- input$recent_con_leaf_zoom
+    print('THE CON ZOOM LEVEL IS :')
+    message('----', the_zoom)
+    if(the_zoom <= 4 & the_zoom >= 3){ # BEN, change this to 2 if you want to suppress the continent labels
+      leafletProxy('recent_con_leaf') %>%
+        addMapPane("country_labels_con", zIndex = 410) %>%
+        addProviderTiles('CartoDB.PositronOnlyLabels',
+                         options = pathOptions(pane = "country_labels_con"),
+                         layerId = 'country_labs_con')
+    } else {
+      leafletProxy('recent_con_leaf') %>%
+        removeTiles(layerId = 'country_labs_con')
+    }
+  })
   
   
   # ---- DOWNLOAD MAP IMAGE ---- #
@@ -759,16 +799,16 @@ mod_recent_con_server <- function(input, output, session){
     }
   })
 }
-
-library(maps)
-mapStates = map("state", fill = TRUE, plot = FALSE)
-
-leaflet(data = mapStates) %>% 
-  addProviderTiles('Esri.WorldShadedRelief') %>%
-  addPolygons( 
-    labelOptions = labelOptions(
-      noHide = TRUE
-    ))
+# 
+# library(maps)
+# mapStates = map("state", fill = TRUE, plot = FALSE)
+# 
+# leaflet(data = mapStates) %>% 
+#   addProviderTiles('Esri.WorldShadedRelief') %>%
+#   addPolygons( 
+#     labelOptions = labelOptions(
+#       noHide = TRUE
+#     ))
 
 ## To be copied in the UI
 # mod_recent_mean_ui("leaf1")
