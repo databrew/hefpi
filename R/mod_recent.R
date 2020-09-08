@@ -234,11 +234,12 @@ mod_recent_mean_server <- function(input, output, session){
     }
   })
   
+  
   observeEvent(input$recent_mean_leaf_zoom, {
     the_zoom <- input$recent_mean_leaf_zoom
     print('THE ZOOM LEVEL IS :')
     message('----', the_zoom)
-    if(the_zoom <= 4 & the_zoom >= 3){ # BEN, change this to 2 if you want to suppress the continent labels
+    if(the_zoom <= 4 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
       leafletProxy('recent_mean_leaf') %>%
         addMapPane("country_labels", zIndex = 410) %>%
         addProviderTiles('CartoDB.PositronOnlyLabels',
@@ -340,6 +341,12 @@ mod_recent_mean_server <- function(input, output, session){
                                                             selfcontained = FALSE)
                                         } else {
                                           this_map <- pop_map
+                                          this_map <- this_map %>%
+                                            addMapPane("country_labels", zIndex = 410) %>%
+                                            addProviderTiles('CartoDB.PositronOnlyLabels',
+                                                             options = pathOptions(pane = "country_labels"),
+                                                             layerId = 'country_labs')
+                                      
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
@@ -690,7 +697,7 @@ mod_recent_con_server <- function(input, output, session){
     the_zoom <- input$recent_con_leaf_zoom
     print('THE CON ZOOM LEVEL IS :')
     message('----', the_zoom)
-    if(the_zoom <= 4 & the_zoom >= 3){ # BEN, change this to 2 if you want to suppress the continent labels
+    if(the_zoom <= 4 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
       leafletProxy('recent_con_leaf') %>%
         addMapPane("country_labels_con", zIndex = 410) %>%
         addProviderTiles('CartoDB.PositronOnlyLabels',
@@ -721,7 +728,12 @@ mod_recent_con_server <- function(input, output, session){
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)
                                         } else {
-                                          this_map <- user_zoom_ci()
+                                          this_map <- con_map
+                                          this_map <- this_map %>%
+                                            addMapPane("country_labels", zIndex = 410) %>%
+                                            addProviderTiles('CartoDB.PositronOnlyLabels',
+                                                             options = pathOptions(pane = "country_labels"),
+                                                             layerId = 'country_labs')
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
