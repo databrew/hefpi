@@ -17,7 +17,6 @@
 #' @importFrom shiny NS tagList 
 mod_recent_mean_sub_ui <- function(id){
   
-  
   ns <- NS(id)
   fluidPage(
     fluidRow(
@@ -235,7 +234,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
         pop_map_list[[5]] <- good_or_bad
         pop_map_list[[6]] <- unit_of_measure
         pop_map_list[[7]] <- year_title
-        save(pop_map_list, file = 'this_file.rda')
       }
       return(pop_map_list)
     }
@@ -287,6 +285,25 @@ mod_recent_mean_sub_server <- function(input, output, session){
       }
     }
   })
+  
+ 
+  observeEvent(input$recent_mean_sub_leaf_zoom, {
+    the_zoom <- input$recent_mean_sub_leaf_zoom
+    print('THE ZOOM LEVEL IS :')
+    message('----', the_zoom)
+    if(the_zoom <= 10 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
+      leafletProxy('recent_mean_sub_leaf') %>%
+        addMapPane("country_labels", zIndex = 410) %>%
+        addProviderTiles('CartoDB.PositronOnlyLabels',
+                         options = pathOptions(pane = "country_labels"),
+                         layerId = 'country_labs')
+    } else {
+      leafletProxy('recent_mean_sub_leaf') %>%
+        removeTiles(layerId = 'country_labs')
+    }
+  })
+  
+  
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -355,8 +372,12 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)
                                         } else {
-                                          # get map
-                                          this_map <- user_zoom()
+                                          this_map <- pop_map
+                                          this_map <- this_map %>%
+                                            addMapPane("country_labels", zIndex = 410) %>%
+                                            addProviderTiles('CartoDB.PositronOnlyLabels',
+                                                             options = pathOptions(pane = "country_labels"),
+                                                             layerId = 'country_labs')
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
