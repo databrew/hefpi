@@ -291,12 +291,33 @@ mod_recent_mean_sub_server <- function(input, output, session){
     the_zoom <- input$recent_mean_sub_leaf_zoom
     print('THE ZOOM LEVEL IS :')
     message('----', the_zoom)
+    # JOE HERE
+    shpx <- get_pop_map()
+    if(!is.null(shpx)){
+      shp <- shpx[[4]]
+      shp@data$label <- shp@data$ADM1_NAME
+      coords <- coordinates(shp)
+      coords <- data.frame(coords)
+      names(coords) <- c('x', 'y')
+      coords$label <- shp@data$ADM1_NAME
+      print('HEAD OF COORDS')
+      print(head(coords))
+    } else {
+      shp <- NULL
+    }
     if(the_zoom <= 10 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
       leafletProxy('recent_mean_sub_leaf') %>%
-        addMapPane("country_labels", zIndex = 410) %>%
-        addProviderTiles('CartoDB.PositronOnlyLabels',
-                         options = pathOptions(pane = "country_labels"),
-                         layerId = 'country_labs')
+        # addMapPane("abc", zIndex = 4410) %>%
+        addLabelOnlyMarkers(data = coords,
+                            # layerId = 'abc',
+                            lng = coords$x,
+                            lat = coords$y,
+                            label = coords$label,
+                            labelOptions = labelOptions(noHide = T, direction = 'top', textOnly = T))
+      
+        # addProviderTiles('CartoDB.PositronOnlyLabels',
+        #                  options = pathOptions(pane = "country_labels"),
+        #                  layerId = 'country_labs')
     } else {
       leafletProxy('recent_mean_sub_leaf') %>%
         removeTiles(layerId = 'country_labs')
