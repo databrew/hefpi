@@ -74,6 +74,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
   # ---- REDNER UI OUTPUT ---- #
   output$ui_outputs <- renderUI({
     # get inputs
+    indicator = sort(unique(sub_national$indicator_short_name))[1]
+    region = as.character(region_list$region)[[1]]
     indicator <- input$indicator
     region <- input$region
     # get region code
@@ -99,17 +101,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
         pickerInput(inputId = session$ns("country"),
                     label = 'Country', 
                     choices = country_names,
-                    selected = country_names,
-                    options = list( `actions-box`=TRUE,
-                                    `selected-text-format` = "count > 2",
-                                    `count-selected-text` = "{0}/{1} Countries",
-                                    `style` = "btn-primary"),
-                    multiple = TRUE),
+                    selected = country_names[1],
+                    options = list(`style` = "btn-primary")),
         sliderInput(inputId = session$ns('date_range'),
                     label = 'Date range',
                     min = 1982,
-                    max = 2017,
-                    value = c(1982, 2017),
+                    max = 2018,
+                    value = c(1982, 2018),
                     step = 1,
                     sep = '')
       )
@@ -118,6 +116,10 @@ mod_recent_mean_sub_server <- function(input, output, session){
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
     # get list to store map data
+    indicator = sort(unique(sub_national$indicator_short_name))[1]
+    region = as.character(region_list$region)[[1]]
+    country_names <- 'Argentina'
+    plot_years = c(1982, 2018)
     pop_map_list <- list()
     # get input 
     plot_years <- input$date_range
@@ -157,18 +159,21 @@ mod_recent_mean_sub_server <- function(input, output, session){
                   indicator_short_name = indicator_short_name,
                   indicator_description = indicator_description,
                   unit_of_measure) 
+      # get shape files
+      shp <- hefpi::gaul
+      # joine with data
+      shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code')) %>% group_by(ADM1_NAME) %>% mutate(value = mean(value))
+      # remove polygons associated with NA - keeps only that region
+      na_rows <- which(!is.na(shp@data$value))
+      shp <- shp[na_rows,]
+      shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
+      # save(shp, file = 'try_this.rda')
+      # save(pd, file ='try_pd.rda')
       # get indicator short name joined to data
-      if(nrow(pd)==0 | all(is.na(pd$value))){
+      if(nrow(pd)==0 | nrow(shp@data)==0| all(is.na(pd$value))){
         pop_map_list <- NA
       } else {
-        # get shape files
-        shp <- hefpi::gaul
-        # joine with data
-        shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code'))
-        # remove polygons associated with NA - keeps only that region
-        na_rows <- which(!is.na(shp@data$value))
-        shp <- shp[na_rows,]
-        shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
+        
         # Define centroid
         centroid <- coordinates(shp)
         centroid <- data.frame(centroid)
@@ -197,7 +202,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
           "Year: ", as.character(shp@data$year),"<br/>",
           sep="") %>%
           lapply(htmltools::HTML)
-        pop_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
+        pop_map <- leaflet(shp, options = leafletOptions(zoomControl = FALSE, minZoom = 4, maxZoom = 4)) %>% 
           addProviderTiles('Esri.WorldShadedRelief') %>%
           # addTiles(carto) %>%
           addPolygons( 
@@ -224,7 +229,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
             )
           ) %>% 
           # setView(lat=0, lng=0 , zoom=1.7) %>%
-          setView(lat=centroid$y, lng=centroid$x , zoom=3) %>%
+          setView(lat=centroid$y, lng=centroid$x , zoom=4) %>%
           addLegend(pal=map_palette, title= unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
         # store palette, text, map object, and data
         pop_map_list[[1]] <- map_palette
@@ -293,35 +298,44 @@ mod_recent_mean_sub_server <- function(input, output, session){
     message('----', the_zoom)
     # JOE HERE
     shpx <- get_pop_map()
-    if(!is.null(shpx)){
-      shp <- shpx[[4]]
-      shp@data$label <- shp@data$ADM1_NAME
-      coords <- coordinates(shp)
-      coords <- data.frame(coords)
-      names(coords) <- c('x', 'y')
-      coords$label <- shp@data$ADM1_NAME
-      print('HEAD OF COORDS')
-      print(head(coords))
+    if(is.na(shpx)){
+      NULL
     } else {
-      shp <- NULL
-    }
-    if(the_zoom <= 10 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
-      leafletProxy('recent_mean_sub_leaf') %>%
-        # addMapPane("abc", zIndex = 4410) %>%
-        addLabelOnlyMarkers(data = coords,
-                            # layerId = 'abc',
-                            lng = coords$x,
-                            lat = coords$y,
-                            label = coords$label,
-                            labelOptions = labelOptions(noHide = T, direction = 'top', textOnly = T))
-      
+      if(!is.null(shpx)){
+        shp <- shpx[[4]]
+        save(shp, file = 'test_this.rda')
+        shp@data$label <- shp@data$ADM1_NAME
+        shp@data$label[duplicated(shp@data$label)] <- ""
+        
+        coords <- coordinates(shp)
+        coords <- data.frame(coords)
+        names(coords) <- c('x', 'y')
+        coords$label <- shp@data$ADM1_NAME
+        coords$label[duplicated(coords$label)] <- ''
+        print('HEAD OF COORDS')
+        print(head(coords))
+      } else {
+        shp <- NULL
+      }
+      if(the_zoom <= 10 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
+        leafletProxy('recent_mean_sub_leaf') %>%
+          # addMapPane("abc", zIndex = 4410) %>%
+          addLabelOnlyMarkers(data = coords,
+                              # layerId = 'abc',
+                              lng = coords$x,
+                              lat = coords$y,
+                              label = coords$label,
+                              labelOptions = labelOptions(noHide = T, direction = 'top', textOnly = T))
+        
         # addProviderTiles('CartoDB.PositronOnlyLabels',
         #                  options = pathOptions(pane = "country_labels"),
         #                  layerId = 'country_labs')
-    } else {
-      leafletProxy('recent_mean_sub_leaf') %>%
-        removeTiles(layerId = 'country_labs')
+      } else {
+        leafletProxy('recent_mean_sub_leaf') %>%
+          removeTiles(layerId = 'country_labs')
+      }
     }
+  
   })
   
   
@@ -362,7 +376,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
   # ---- CAPTURE USER ZOOM LEVEL FOR DOWNLOAD ---- #
   user_zoom <- reactive({
     pop_map <- get_pop_map()
-    if(is.null(pop_map)){
+    if(is.null(pop_map) | is.na(pop_map)){
       NULL
     } else {
       this_map <- pop_map[[3]]
