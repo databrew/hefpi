@@ -10,10 +10,46 @@ usethis::use_data(world, overwrite = T)
 # # Read in gaul codes (downloaded from https://blog.gdeltproject.org/global-second-order-administrative-divisions-now-available-from-gaul/)
 # gaul <- read.delim('from_other/gaul/GNS-GAUL-ADM2-CROSSWALK.TXT')
 
+# Read in the Gaul shp files for MICS subnational and the DHS shape files for DHS subnational and combine them
+# ---------------------------
 # Gaul shapefile (downloaded from https://worldmap.harvard.edu/data/geonode:g2008_1)
+# save spatial data fro dhs 
 gaul <- readOGR('from_other/gaul/g2008_1/')
-
 usethis::use_data(gaul, overwrite = T)
+
+# read in dhs subnational data
+afghan <- readOGR('from_dhs/afghanistan/shps/')
+maldives <- readOGR('from_dhs/maldives/shps/')
+tajik <- readOGR('from_dhs/tajikistan/shps/')
+mali <- readOGR('from_dhs/mali/shps/')
+nigeria <- readOGR('from_dhs/nigeria/shps/')
+
+dhs_shp <- rbind(afghan, maldives, tajik, mali, nigeria)
+rm(afghan, maldives, tajik, mali, nigeria)
+
+# subset dhs_shp by needed columns
+dhs_shp@data <- dhs_shp@data %>% select(CNTRYNAMEE, REGCODE, REGNAME)
+gaul@data <- gaul@data %>% select( ADM0_NAME, ADM1_CODE, ADM1_NAME)
+
+# rename columns so we can bind them
+names(dhs_shp) <- c('country_name', 'reg_code', 'reg_name')
+names(gaul) <- c('country_name', 'reg_code', 'reg_name')
+
+# combine data
+sub_national_shp <- rbind(dhs_shp, gaul)
+usethis::use_data(sub_national_shp, overwrite = T)
+
+
+# Read in the indicators hierarchy data from WB
+indicators <- readxl::read_excel('from_wb/indicator_description.xlsx')
+names(indicators)[1:2] <- c('level 1', 'level 2')
+names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
+
+usethis::use_data(indicators, overwrite = T)
+
+
+
+################################################################
 
 # Read in the full database
 df <- haven::read_dta('from_wb/hefpi_full_database.dta')
@@ -80,6 +116,36 @@ country$region_code <- ifelse(country$region == 'Latin America & Caribbean', 'LC
 # join country and dat to get region and country data together
 df_series <- inner_join(dat,country, by = c('country_name' = 'short_name'))
 
+# read in WB subnational dhs data 
+# Attaching an example file for DHS – Rp is the subnational region’s mean, Rc is its code (based on variable v024 in micro-data) and Rl is its label. LMK if you have any questions.
+sub_national_dhs <- haven::read_dta('from_wb/NewDHS_2020.dta')
+
+# HERE SHOULD COMBINE WITH OTHER SUBNATIONAL AND JUST CALL IT GAUL CODE
+# Restructure
+x <- sub_national_dhs %>% dplyr::select(year, indic, survey, country, iso3c, iso2c, Rp1:Rl34)
+names(x) <- gsub('Rp', 'value_', names(x))
+names(x) <- gsub('Rc', 'key_', names(x))
+out_list <- list()
+for(i in 1:34){
+  sub_data <- x[,c('year', 'indic','survey', 'country', 'iso3c', 'iso2c', paste0('value_', i), paste0('key_', i))]
+  names(sub_data)[7:8] <- c('value', 'gaul_code')
+  sub_data <- sub_data %>% dplyr::filter(!is.na(gaul_code))
+  out_list[[i]] <- sub_data
+}
+out <- dplyr::bind_rows(out_list)
+sub_national_dhs <- out
+
+temp <- country %>% select(short_name, region, region_code)
+
+# join with country
+sub_national_dhs <- left_join(sub_national_dhs, temp, by = c('country'='short_name'))
+
+# get list of indicators from sub_national that are not present in indicators, and remove them temporarily from subnation until sven gives us all the descriptions
+sub_national_dhs <- inner_join(sub_national_dhs, indicators, by = c('indic'='variable_name'))
+
+usethis::use_data(sub_national_dhs, overwrite = T)
+
+
 
 # As for the subnational points – the dataset indeed has one row per country. But for each country, the Rp* and Rc* variables give the indicator value (Rp) and GAUL code (Admin1) for each of the country’s regions. For instance, for Equatorial Guinea 2000 and indicater c_ITN, Rp1 is the indicator value for the region with the code 1198 (Rc1) and takes on .1153984. The indicator value for the second region (code 1199) is .0848593. And so on. Makes sense?
 # ----------------------------------------
@@ -93,10 +159,10 @@ out_list <- list()
 for(i in 1:37){
   sub_data <- x[,c('year', 'indic','survey', 'country', 'iso3c', 'iso2c', paste0('value_', i), paste0('key_', i))]
   names(sub_data)[7:8] <- c('value', 'gaul_code')
-  sub_data <- sub_data %>% filter(!is.na(gaul_code))
+  sub_data <- sub_data %>% dplyr::filter(!is.na(gaul_code))
   out_list[[i]] <- sub_data
 }
-out <- bind_rows(out_list)
+out <- dplyr::bind_rows(out_list)
 sub_national <- out
 
 temp <- country %>% select(short_name, region, region_code)
@@ -107,16 +173,12 @@ sub_national <- left_join(sub_national, temp, by = c('country'='short_name'))
 # get list of indicators from sub_national that are not present in indicators, and remove them temporarily from subnation until sven gives us all the descriptions
 sub_national <- inner_join(sub_national, indicators, by = c('indic'='variable_name'))
 
-
-
 usethis::use_data(sub_national, overwrite = T)
 
-# Read in the indicators hierarchy data from WB
-indicators <- readxl::read_excel('from_wb/indicator_description.xlsx')
-names(indicators)[1:2] <- c('level 1', 'level 2')
-names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
-
-usethis::use_data(indicators, overwrite = T)
+##########################################################
+# combine sub_national and sub_national dhs
+sub_national_data <- rbind(sub_national, sub_national_dhs)
+usethis::use_data(sub_national_data, overwrite = T)
 
 
 # save data: NOTE: explore these later - Not sure these are actually needed. The database data seems to be a function of a combination of this data
@@ -141,10 +203,11 @@ usethis::use_data(yn_list, overwrite = T)
 t11 <- c(1,2,3,4,5)
 usethis::use_data(t11, overwrite = TRUE)
 
+
+
 #### ---------------------------------------------### create defualt data objects
 
 # trends national mean
-
 
 # trends subnational mean
 

@@ -82,7 +82,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
     # get data
-    pd <- hefpi::sub_national[sub_national$region_code == region_code,]
+    pd <- hefpi::sub_national_data[sub_national_data$region_code == region_code,]
     pd <- pd %>% 
       filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
@@ -140,7 +140,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
       good_or_bad = ind_info$good_or_bad
       unit_of_measure = ind_info$unit_of_measure
       # Get the data to be plotted
-      temp <- hefpi::sub_national[sub_national$region_code == region_code,]
+      temp <- hefpi::sub_national_data[sub_national_data$region_code == region_code,]
       pd <- temp %>% filter(year >= min(plot_years),
                             year <= max(plot_years)) %>%
         filter(indicator_short_name == indicator) %>%
@@ -160,13 +160,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
                   indicator_description = indicator_description,
                   unit_of_measure) 
       # get shape files
-      shp <- hefpi::gaul
+      shp <- hefpi::sub_national_shp
       # joine with data
-      shp@data <- shp@data %>% dplyr::left_join(pd, by=c('ADM1_CODE'='gaul_code')) %>% group_by(ADM1_NAME) %>% mutate(value = mean(value))
+      shp@data <- shp@data %>% dplyr::left_join(pd, by=c('reg_code'='gaul_code')) %>% group_by(reg_name) %>% mutate(value = mean(value))
       # remove polygons associated with NA - keeps only that region
       na_rows <- which(!is.na(shp@data$value))
       shp <- shp[na_rows,]
-      shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
+      shp@data$reg_name <- as.character(shp@data$reg_name)
       # save(shp, file = 'try_this.rda')
       # save(pd, file ='try_pd.rda')
       # get indicator short name joined to data
@@ -197,7 +197,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
         # Make tooltip
         map_text <- paste(
           "Indicator: ",  indicator,"<br>",
-          "Economy: ", as.character(shp@data$ADM1_NAME),"<br/>", 
+          "Economy: ", as.character(shp@data$reg_name),"<br/>", 
           "Value: ", paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'), "<br/>",
           "Year: ", as.character(shp@data$year),"<br/>",
           sep="") %>%
@@ -303,19 +303,20 @@ mod_recent_mean_sub_server <- function(input, output, session){
     } else {
       if(!is.null(shpx)){
         shp <- shpx[[4]]
+        # HERE after clicking back and forth the labels vanish
         save(shp, file = 'test_this.rda')
-        shp@data$label <- shp@data$ADM1_NAME
+        shp@data$label <- shp@data$reg_name
         shp@data$label[duplicated(shp@data$label)] <- ""
         
         coords <- coordinates(shp)
         coords <- data.frame(coords)
         names(coords) <- c('x', 'y')
-        coords$label <- shp@data$ADM1_NAME
+        coords$label <- shp@data$reg_name
         coords$label[duplicated(coords$label)] <- ''
         print('HEAD OF COORDS')
         print(head(coords))
       } else {
-        shp <- NULL
+        shp <- NULL # issue is probably
       }
       if(the_zoom <= 10 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
         leafletProxy('recent_mean_sub_leaf') %>%
@@ -361,7 +362,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
           names(temp) <- tolower(names(temp))
           temp$parameter <- 'Mean'
           temp$level <- 'Subnational'
-          temp <- temp %>% select(region_name, country,adm1_name, iso3, year,  survey_list, indic, indicator_short_name,
+          temp <- temp %>% select(region_name, country,reg_name, iso3, year,  survey_list, indic, indicator_short_name,
                                   indicator_description, parameter, level, value, unit_of_measure)
           names(temp) <- c('Region', 'Country_name', 'Subregion','Country_iso3', 'Year', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
