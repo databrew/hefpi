@@ -4,6 +4,10 @@
 
 library(sp)
 library(rgdal)
+
+# read in default map parameters
+sn_map_params <- read.csv('from_other/default_map_parameters.csv')
+usethis::use_data(sn_map_params, overwrite = TRUE)
 world <- readOGR('from_other/world_small/', 'TM_WORLD_BORDERS_SIMPL-0.3')
 usethis::use_data(world, overwrite = T)
 
@@ -28,7 +32,7 @@ dhs_shp <- rbind(afghan, maldives, tajik, mali, nigeria)
 rm(afghan, maldives, tajik, mali, nigeria)
 
 # subset dhs_shp by needed columns
-dhs_shp@data <- dhs_shp@data %>% select(CNTRYNAMEE, REGCODE, REGNAME)
+dhs_shp@data <- dhs_shp@data %>% select(CNTRYNAMEE, REGCODE, DHSREGEN)
 gaul@data <- gaul@data %>% select( ADM0_NAME, ADM1_CODE, ADM1_NAME)
 
 # rename columns so we can bind them
