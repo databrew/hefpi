@@ -32,7 +32,7 @@ mod_recent_mean_sub_ui <- function(id){
                          options = list(`style` = "btn-primary")),
              pickerInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
-                         selected = as.character(region_list$region)[[1]],
+                         selected = as.character(region_list$region)[[2]],
                          options = list(`style` = "btn-primary")),
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -75,7 +75,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
   output$ui_outputs <- renderUI({
     # get inputs
     indicator = sort(unique(sub_national$indicator_short_name))[1]
-    region = as.character(region_list$region)[[1]]
+    region = as.character(region_list$region)[[2]]
     indicator <- input$indicator
     region <- input$region
     # get region code
@@ -117,8 +117,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
   get_pop_map <- reactive({
     # get list to store map data
     indicator = sort(unique(sub_national$indicator_short_name))[1]
-    region = as.character(region_list$region)[[1]]
-    country_names <- 'Argentina'
+    region = as.character(region_list$region)[[2]]
+    country_names <- 'Afghanistan'
     plot_years = c(1982, 2018)
     pop_map_list <- list()
     # get input 
@@ -161,10 +161,18 @@ mod_recent_mean_sub_server <- function(input, output, session){
                   unit_of_measure) 
       # get shape files
       shp <- hefpi::sub_national_shp
+      # Define centroid
+      # rgeos::gCentroid(shp)@coords
       # joine with data
-      shp@data <- shp@data %>% dplyr::left_join(pd, by=c('reg_code'='gaul_code')) %>% group_by(reg_name) %>% mutate(value = mean(value))
+      shp@data <- shp@data %>% dplyr::left_join(pd, by=c('reg_code'='gaul_code', 'country_name'='country'))
+      # %>%
+      #   filter(country_name == country_names) %>% filter(complete.cases(.)) %>%
+      #   distinct()
+      # %>%
+      # HERE the issue is new data all the countries show up when afghanistan is chosen. maybe something in raw_data.R. 
+      # group_by(reg_name) %>% mutate(value = mean(value))
       # remove polygons associated with NA - keeps only that region
-      na_rows <- which(!is.na(shp@data$value))
+      na_rows <- which(!is.na(shp@data$indic))
       shp <- shp[na_rows,]
       shp@data$reg_name <- as.character(shp@data$reg_name)
       # save(shp, file = 'try_this.rda')
@@ -173,14 +181,19 @@ mod_recent_mean_sub_server <- function(input, output, session){
       if(nrow(pd)==0 | nrow(shp@data)==0| all(is.na(pd$value))){
         pop_map_list <- NA
       } else {
+        # get default zoom and lat long parameters
+        mp <- hefpi::sn_map_params
+        mp$country_name <- Hmisc::capitalize(as.character(mp$country_name))
+        mp <- mp %>% filter(tolower(country_name)==tolower(country_names))
         
-        # Define centroid
-        centroid <- coordinates(shp)
-        centroid <- data.frame(centroid)
-        names(centroid) <- c('x', 'y')
-        centroid <- centroid %>%
-          summarise(x = mean(x, na.rm = TRUE),
-                    y = mean(y, na.rm = TRUE))
+        # centroi
+        # centroid <- coordinates(shp)
+        # centroid <- data.frame(centroid)
+        # names(centroid) <- c('x', 'y')
+        # centroid <- centroid %>%
+        #   summarise(x = mean(x, na.rm = TRUE),
+        #             y = mean(y, na.rm = TRUE))
+
         # condition on unit of measure
         if(unit_of_measure == '%'){
           shp@data$value<- shp@data$value*100
@@ -202,7 +215,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
           "Year: ", as.character(shp@data$year),"<br/>",
           sep="") %>%
           lapply(htmltools::HTML)
-        pop_map <- leaflet(shp, options = leafletOptions(zoomControl = FALSE, minZoom = 4, maxZoom = 4)) %>% 
+        
+        pop_map <- leaflet(shp, options = leafletOptions(zoomControl = FALSE, minZoom = mp$the_zoom, maxZoom = 10)) %>% 
           addProviderTiles('Esri.WorldShadedRelief') %>%
           # addTiles(carto) %>%
           addPolygons( 
@@ -229,7 +243,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
             )
           ) %>% 
           # setView(lat=0, lng=0 , zoom=1.7) %>%
-          setView(lat=centroid$y, lng=centroid$x , zoom=4) %>%
+          setView(lat=mp$lat, lng=mp$lon , zoom=mp$the_zoom) %>%
           addLegend(pal=map_palette, title= unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
         # store palette, text, map object, and data
         pop_map_list[[1]] <- map_palette
@@ -292,51 +306,79 @@ mod_recent_mean_sub_server <- function(input, output, session){
   })
   
  
-  observeEvent(input$recent_mean_sub_leaf_zoom, {
+  observeEvent(input$recent_mean_sub_leaf_center$lng, {
+    pop_map <- get_pop_map()
     the_zoom <- input$recent_mean_sub_leaf_zoom
+    the_lat <- input$recent_mean_sub_leaf_center$lat
+    the_lon <- input$recent_mean_sub_leaf_center$lng
+    
+    
     print('THE ZOOM LEVEL IS :')
-    message('----', the_zoom)
+    message('###   ', the_zoom)
+    print('THE LAT IS :')
+    message('###  ', the_lat)
+    print('THE LON IS :')
+    message('###  ', the_lon)
+    
     # JOE HERE
-    shpx <- get_pop_map()
-    if(is.na(shpx)){
+    
+   
+    
+    if(is.null(pop_map)){
       NULL
     } else {
-      if(!is.null(shpx)){
-        shp <- shpx[[4]]
-        # HERE after clicking back and forth the labels vanish
+      if(is.na(pop_map)){
+        NULL
+      } else {
+        shp <- pop_map[[4]]
         save(shp, file = 'test_this.rda')
-        shp@data$label <- shp@data$reg_name
-        shp@data$label[duplicated(shp@data$label)] <- ""
+        # loop through and store region name and centroid, to be joined back later
+        region_names <- sort(unique(shp@data$reg_name))
+        region_holder <- list()
+        for(i in 1:length(region_names)){
+          this_name <- region_names[i]
+          temp_region <- shp[which(shp@data$reg_name == this_name),]
+          temp_centroid <- rgeos::gCentroid(temp_region)@coords
+          temp_data <- tibble(label = this_name, x= temp_centroid[1], y=temp_centroid[2])
+          region_holder[[i]] <- temp_data
+        }
+        center_points <- do.call(rbind, region_holder)
+        rm(temp_region, temp_data, temp_centroid, this_name, region_holder, region_names,i)
         
-        coords <- coordinates(shp)
-        coords <- data.frame(coords)
-        names(coords) <- c('x', 'y')
-        coords$label <- shp@data$reg_name
-        coords$label[duplicated(coords$label)] <- ''
-        print('HEAD OF COORDS')
-        print(head(coords))
-      } else {
-        shp <- NULL # issue is probably
-      }
-      if(the_zoom <= 10 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
-        leafletProxy('recent_mean_sub_leaf') %>%
-          # addMapPane("abc", zIndex = 4410) %>%
-          addLabelOnlyMarkers(data = coords,
-                              # layerId = 'abc',
-                              lng = coords$x,
-                              lat = coords$y,
-                              label = coords$label,
-                              labelOptions = labelOptions(noHide = T, direction = 'top', textOnly = T))
+        # HERE after clicking back and forth the labels vanish
+        # shp@data$label <- shp@data$reg_name
+        # shp@data$label[duplicated(shp@data$label)] <- ""
         
-        # addProviderTiles('CartoDB.PositronOnlyLabels',
-        #                  options = pathOptions(pane = "country_labels"),
-        #                  layerId = 'country_labs')
-      } else {
-        leafletProxy('recent_mean_sub_leaf') %>%
-          removeTiles(layerId = 'country_labs')
+        # coords <- coordinates(shp)
+        # coords <- data.frame(coords)
+        # names(coords) <- c('x1', 'y1')
+        # coords$label <- shp@data$reg_name
+        # temp <- left_join(coords, center_points)
+        # print('HEAD OF COORDS')
+        # print(head(center_points))
+        
+        # create a character with "px" that takes into account zoom
+        # px_size <- paste0(ceiling(24/(the_zoom*2)),'px')
+        if(the_zoom <= 10 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
+          leafletProxy('recent_mean_sub_leaf') %>%
+            # addMapPane("abc", zIndex = 4410) %>%
+            addLabelOnlyMarkers(data = center_points,
+                                # layerId = 'abc',
+                                lng =center_points$x,
+                                lat = center_points$y,
+                                label = center_points$label,
+                                labelOptions = labelOptions(noHide = T, direction = 'center',textsize  = 5, textOnly = T))
+          
+          # addProviderTiles('CartoDB.PositronOnlyLabels',
+          #                  options = pathOptions(pane = "country_labels"),
+          #                  layerId = 'country_labs')
+        } else {
+          leafletProxy('recent_mean_sub_leaf') %>%
+            removeTiles(layerId = 'country_labs')
+        }
       }
     }
-  
+    
   })
   
   
