@@ -23,7 +23,7 @@ mod_recent_mean_sub_ui <- function(id){
       column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
-               ns('recent_mean_sub_leaf')),
+               ns('recent_mean_sub_leaf'), height  = '1000px'),
       ),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
