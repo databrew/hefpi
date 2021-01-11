@@ -74,8 +74,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
   # ---- REDNER UI OUTPUT ---- #
   output$ui_outputs <- renderUI({
     # get inputs
-    # indicator = sort(unique(sub_national$indicator_short_name))[1]
-    # region = as.character(region_list$region)[[3]]
+    indicator = sort(unique(sub_national$indicator_short_name))[1]
+    region = as.character(region_list$region)[[1]]
     indicator <- input$indicator
     region <- input$region
     # get region code
@@ -179,9 +179,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
       #TEMORARILY ADD CONDITION FOR FAKE DATA
       if(nrow(pd)==0){
         shp <- hefpi::sub_national_shp
+        
         # GET REGIONS FROM SHP DATA
         pd <- shp@data[shp@data$country_name==country_names,]
-        pd <- pd %>% filter(survey_type == 'DHS')
+        if(length(unique(pd$survey_type)) == 2){
+          pd <- pd %>% filter(survey_type == 'DHS')
+        }
+        # pd <- pd %>% filter(survey_type == 'DHS')
         pd <- pd[!is.na(pd$reg_name),]
         pd$counts <- as.numeric(pd$reg_code)
         pd$value <- pd$counts/max(pd$counts)
