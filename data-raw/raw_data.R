@@ -4,6 +4,8 @@
 
 library(sp)
 library(rgdal)
+library(tidyverse)
+
 
 # read in default map parameters
 sn_map_params <- read.csv('from_other/default_map_parameters.csv')
@@ -14,6 +16,7 @@ usethis::use_data(world, overwrite = T)
 # # Read in gaul codes (downloaded from https://blog.gdeltproject.org/global-second-order-administrative-divisions-now-available-from-gaul/)
 # gaul <- read.delim('from_other/gaul/GNS-GAUL-ADM2-CROSSWALK.TXT')
 
+
 # Read in the Gaul shp files for MICS subnational and the DHS shape files for DHS subnational and combine them
 # ---------------------------
 # Gaul shapefile (downloaded from https://worldmap.harvard.edu/data/geonode:g2008_1)
@@ -21,26 +24,33 @@ usethis::use_data(world, overwrite = T)
 gaul <- readOGR('from_other/gaul/g2008_1/')
 usethis::use_data(gaul, overwrite = T)
 
-# read in dhs subnational data
-afghan <- readOGR('from_dhs/afghanistan/shps/')
-maldives <- readOGR('from_dhs/maldives/shps/')
-tajik <- readOGR('from_dhs/tajikistan/shps/')
-mali <- readOGR('from_dhs/mali/shps/')
-nigeria <- readOGR('from_dhs/nigeria/shps/')
+file_names <- list.files('from_dhs/')
+file_list <- list()
+for (i in 1:length(file_names)){
+  this_file <- file_names[i]
+  file_list[[i]] <- readOGR(paste0('from_dhs/', this_file, '/shps'))
+  print(i)
+}
 
-dhs_shp <- rbind(afghan, maldives, tajik, mali, nigeria)
-rm(afghan, maldives, tajik, mali, nigeria)
+dhs_shp_data <- do.call('rbind', file_list)
 
-# subset dhs_shp by needed columns
-dhs_shp@data <- dhs_shp@data %>% select(CNTRYNAMEE, REGCODE, DHSREGEN)
+
+# subset dhs_shp_data by needed columns
+dhs_shp_data@data <- dhs_shp_data@data %>% select(CNTRYNAMEE, REGCODE, DHSREGEN,SVYTYPE,SVYYEAR)
 gaul@data <- gaul@data %>% select( ADM0_NAME, ADM1_CODE, ADM1_NAME)
 
+# create year and survey type varibles for gaul data
+gaul@data$survery_type <- 'MIS'
+gaul@data$survery_year <- NA
+
+
 # rename columns so we can bind them
-names(dhs_shp) <- c('country_name', 'reg_code', 'reg_name')
-names(gaul) <- c('country_name', 'reg_code', 'reg_name')
+names(dhs_shp_data) <- c('country_name', 'reg_code', 'reg_name', 'survey_type', 'survey_year')
+names(gaul) <- c('country_name', 'reg_code', 'reg_name', 'survey_type', 'survey_year')
 
 # combine data
-sub_national_shp <- rbind(dhs_shp, gaul)
+sub_national_shp <- rbind(dhs_shp_data, gaul)
+
 usethis::use_data(sub_national_shp, overwrite = T)
 
 
@@ -149,8 +159,6 @@ sub_national_dhs <- inner_join(sub_national_dhs, indicators, by = c('indic'='var
 
 usethis::use_data(sub_national_dhs, overwrite = T)
 
-
-
 # As for the subnational points – the dataset indeed has one row per country. But for each country, the Rp* and Rc* variables give the indicator value (Rp) and GAUL code (Admin1) for each of the country’s regions. For instance, for Equatorial Guinea 2000 and indicater c_ITN, Rp1 is the indicator value for the region with the code 1198 (Rc1) and takes on .1153984. The indicator value for the second region (code 1199) is .0848593. And so on. Makes sense?
 # ----------------------------------------
 # Read in sub-national data (sent June 10 2020)
@@ -176,6 +184,10 @@ sub_national <- left_join(sub_national, temp, by = c('country'='short_name'))
 
 # get list of indicators from sub_national that are not present in indicators, and remove them temporarily from subnation until sven gives us all the descriptions
 sub_national <- inner_join(sub_national, indicators, by = c('indic'='variable_name'))
+
+# create dummy data to join with sub_national, based on years, countries, and regions from sub_national_dhs
+old_countries <- unique(sub_national$country)
+new_countries <- unique(sub_national_dhs$country)
 
 usethis::use_data(sub_national, overwrite = T)
 
