@@ -68,33 +68,50 @@ mod_recent_mean_sub_server <- function(input, output, session){
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
-               showConfirmButton = FALSE)
+               showConfirmButton = FALSE) 
   })
   
   # ---- REDNER UI OUTPUT ---- #
   output$ui_outputs <- renderUI({
     # get inputs
-    indicator = sort(unique(sub_national$indicator_short_name))[1]
-    region = as.character(region_list$region)[[2]]
+    # indicator = sort(unique(sub_national$indicator_short_name))[1]
+    # region = as.character(region_list$region)[[3]]
     indicator <- input$indicator
     region <- input$region
     # get region code
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
     # get data
-    pd <- hefpi::sub_national_data[sub_national_data$region_code == region_code,]
-    pd <- pd %>% 
+    # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
+    pd <- hefpi::df[df$regioncode == region_code,]
+    pd <- pd %>%
       filter(indicator_short_name == indicator) %>%
-      group_by(ISO3 = iso3c, country,gaul_code) %>%
+      group_by(ISO3 = iso3c, country) %>%
       filter(year == max(year, na.rm = TRUE)) %>%
       # filter(referenceid_list == first(referenceid_list)) %>%
-      summarise(value = first(value),
+      summarise(value = first(pop),
                 indic = indic,
                 year = year,
-                region_name = region,
-                survey_list = survey) 
+                region_name = region)
+    pd_country_names <- sort(unique(pd$country))
+    # pd <- hefpi::sub_national_data[sub_national_data$region_code == region_code,]
+    # pd <- pd %>% 
+    #   filter(indicator_short_name == indicator) %>%
+    #   group_by(ISO3 = iso3c, country,gaul_code) %>%
+    #   filter(year == max(year, na.rm = TRUE)) %>%
+    #   # filter(referenceid_list == first(referenceid_list)) %>%
+    #   summarise(value = first(value),
+    #             indic = indic,
+    #             year = year,
+    #             region_name = region,
+    #             survey_list = survey) 
     # get country_names 
-    country_names <- sort(unique(pd$country))
+    # TEMPORARILY COMMENTED OUT FOR FAKE DATA BELOW
+    shp <- hefpi::sub_national_shp
+    country_names <- as.character(sort(unique(shp@data$country_name)))
+    country_names <- intersect(pd_country_names, country_names)
+    # country_names <- sort(unique(pd$country))
+
     # get ui inputs
     fluidPage(
       fluidRow(
@@ -116,17 +133,16 @@ mod_recent_mean_sub_server <- function(input, output, session){
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
     # get list to store map data
-    indicator = sort(unique(sub_national$indicator_short_name))[1]
-    region = as.character(region_list$region)[[2]]
-    country_names <- 'Afghanistan'
-    plot_years = c(1982, 2018)
+    # indicator = sort(unique(sub_national$indicator_short_name))[1]
+    # region = as.character(region_list$region)[[7]]
+    # plot_years = c(1982, 2018)
     pop_map_list <- list()
     # get input 
     plot_years <- input$date_range
     indicator <- input$indicator
     region  <- input$region
     country_names <- input$country
-    if(is.null(plot_years)){
+    if(is.null(plot_years) | is.null(country_names)){
       NULL
     } else {
       # get region code
@@ -159,12 +175,37 @@ mod_recent_mean_sub_server <- function(input, output, session){
                   indicator_short_name = indicator_short_name,
                   indicator_description = indicator_description,
                   unit_of_measure) 
-      # get shape files
-      shp <- hefpi::sub_national_shp
-      # Define centroid
-      # rgeos::gCentroid(shp)@coords
-      # joine with data
-      shp@data <- shp@data %>% dplyr::left_join(pd, by=c('reg_code'='gaul_code', 'country_name'='country'))
+
+      #TEMORARILY ADD CONDITION FOR FAKE DATA
+      if(nrow(pd)==0){
+        shp <- hefpi::sub_national_shp
+        # GET REGIONS FROM SHP DATA
+        pd <- shp@data[shp@data$country_name==country_names,]
+        pd <- pd %>% filter(survey_type == 'DHS')
+        pd <- pd[!is.na(pd$reg_name),]
+        pd$counts <- as.numeric(pd$reg_code)
+        pd$value <- pd$counts/max(pd$counts)
+        pd$counts <- NULL
+        pd$country <- country_names
+        names(pd)[2] <- 'gaul_code'
+        pd$indic <- indicator
+        pd$good_or_bad <- good_or_bad
+        pd$unit_of_measure <- unit_of_measure
+        pd$reg_name <- NULL
+        # MAKE FAKE PD DATA FROM INPUT
+        shp@data <- shp@data %>% dplyr::left_join(pd, by=c('reg_code'='gaul_code', 'country_name'='country'))
+        dup_rows <- which(!is.na(shp@data$value))
+        shp <- shp[dup_rows,]
+      } else {
+        # get shape files
+        shp <- hefpi::sub_national_shp
+        # Define centroid
+        # rgeos::gCentroid(shp)@coords
+        # joine with data
+        shp@data <- shp@data %>% dplyr::left_join(pd, by=c('reg_code'='gaul_code', 'country_name'='country'))
+      }
+     
+
       # %>%
       #   filter(country_name == country_names) %>% filter(complete.cases(.)) %>%
       #   distinct()
@@ -175,8 +216,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
       na_rows <- which(!is.na(shp@data$indic))
       shp <- shp[na_rows,]
       shp@data$reg_name <- as.character(shp@data$reg_name)
-      # save(shp, file = 'try_this.rda')
-      # save(pd, file ='try_pd.rda')
       # get indicator short name joined to data
       if(nrow(pd)==0 | nrow(shp@data)==0| all(is.na(pd$value))){
         pop_map_list <- NA
@@ -216,6 +255,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
           sep="") %>%
           lapply(htmltools::HTML)
         
+        # put this back in later
+        # pop_map <- leaflet(shp, options = leafletOptions(zoomControl = FALSE, minZoom = mp$the_zoom, maxZoom = 10)) 
         pop_map <- leaflet(shp, options = leafletOptions(zoomControl = FALSE, minZoom = mp$the_zoom, maxZoom = 10)) %>% 
           addProviderTiles('Esri.WorldShadedRelief') %>%
           # addTiles(carto) %>%
@@ -243,7 +284,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
             )
           ) %>% 
           # setView(lat=0, lng=0 , zoom=1.7) %>%
-          setView(lat=mp$lat, lng=mp$lon , zoom=mp$the_zoom) %>%
+          # setView(lat=mp$lat, lng=mp$lon , zoom=mp$the_zoom) %>%
+
           addLegend(pal=map_palette, title= unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
         # store palette, text, map object, and data
         pop_map_list[[1]] <- map_palette
@@ -331,7 +373,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
         NULL
       } else {
         shp <- pop_map[[4]]
-        save(shp, file = 'test_this.rda')
         # loop through and store region name and centroid, to be joined back later
         region_names <- sort(unique(shp@data$reg_name))
         region_holder <- list()
@@ -400,16 +441,23 @@ mod_recent_mean_sub_server <- function(input, output, session){
         } else {
           this_map <- pop_map[[4]]
           temp <- this_map@data
-          temp <- temp %>% filter(!is.na(value))
-          names(temp) <- tolower(names(temp))
-          temp$parameter <- 'Mean'
-          temp$level <- 'Subnational'
-          temp <- temp %>% select(region_name, country,reg_name, iso3, year,  survey_list, indic, indicator_short_name,
-                                  indicator_description, parameter, level, value, unit_of_measure)
-          names(temp) <- c('Region', 'Country_name', 'Subregion','Country_iso3', 'Year', 'Survey_name', 
-                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
-                           'Value', 'Unit_of_measurement')
-          write.csv(temp, file)
+          # condition for temporary fake data
+          if(ncol(temp)==12){
+            temp <- data_frame(' '= 'Simulated data for this selection. Will be updated with real data.')
+            write.csv(temp, file)
+          } else {
+            temp <- temp %>% filter(!is.na(value))
+            names(temp) <- tolower(names(temp))
+            temp$parameter <- 'Mean'
+            temp$level <- 'Subnational'
+            temp <- temp %>% select(region_name, country_name,reg_name, iso3, year,  survey_list, indic, indicator_short_name,
+                                    indicator_description, parameter, level, value, unit_of_measure)
+            names(temp) <- c('Region', 'Country_name', 'Subregion','Country_iso3', 'Year', 'Survey_name', 
+                             'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                             'Value', 'Unit_of_measurement')
+            write.csv(temp, file)
+          }
+         
         }
       }
     }

@@ -55,9 +55,13 @@ mod_recent_mean_ui <- function(id){
       column(8,
              plotlyOutput(
                ns('recent_mean_plot')
+             )),
+      column(4,
+             selectInput(ns('country'), 'Choose country to highlight', choices = country_list, selected = 'Brazil'))
+
              ))
-    )
-  )
+    
+  
 }
 
 # Module Server
@@ -364,6 +368,8 @@ mod_recent_mean_server <- function(input, output, session){
     # get inputs
     plot_years <- input$date_range
     indicator <- input$indicator
+    country_name <- input$country
+
     
     # while map (generate from reactive object) is null, plot is null
     if(is.null(pop_map)){
@@ -413,10 +419,20 @@ mod_recent_mean_server <- function(input, output, session){
           sep="") %>%
           lapply(htmltools::HTML)
         y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
+
+        
+     
+        
+        # here - create value_color vector, identical to value
+        temp$value_col <- temp$value
+        # the selected country gets a value of NA which the palette will make black.
+        temp$value_col[temp$NAME == country_name] <- NA
+        
         temp <- highlight_key(temp, key=~NAME)
         p <- ggplotly(
           ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
-                     geom_bar(stat = 'identity', aes(fill = value)) +
+                     geom_bar(stat = 'identity', aes(fill = value_col)) +
+
                      scale_fill_distiller(palette = bar_palette, direction = 1) +
                      labs(x='Country',
                           y = y_axis_text) +
@@ -485,9 +501,13 @@ mod_recent_con_ui <- function(id){
       column(8,
              plotlyOutput(
                ns('recent_con_plot')
+
+             )),
+      column(4,
+             selectInput(ns('country'), 'Choose country to highlight', choices = country_list, selected = 'Brazil'))
+
              ))
-    )
-  )
+
 }
 
 # Module Server
@@ -511,6 +531,7 @@ mod_recent_con_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   map_data <- reactiveValues(map = NULL)
   get_con_map <- reactive({
@@ -747,6 +768,11 @@ mod_recent_con_server <- function(input, output, session){
     con_map <- get_con_map()
     plot_years <- input$date_range
     indicator <- input$indicator
+    country_name <- input$country
+    if(grepl('voire', country_name)){
+      country_name <- "Cote d'Ivoire"
+    }
+
     if(is.null(con_map)){
       NULL
     } else {
@@ -787,9 +813,15 @@ mod_recent_con_server <- function(input, output, session){
         y_axis_text = paste0('CI - ', indicator)
         plot_title = 'Most recent value - concentration index'
         plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
+        # here - create value_color vector, identical to value
+        temp$value_col <- temp$value
+        # the selected country gets a value of NA which the palette will make black.
+        temp$value_col[temp$NAME == country_name] <- NA
+        
         temp <- highlight_key(temp, key=~NAME)
         p <- ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
-                        geom_bar(stat = 'identity', aes(fill = value)) +
+                        geom_bar(stat = 'identity', aes(fill = value_col)) +
+
                         scale_fill_distiller(palette = "BrBG", limit = plot_limit) +
                         labs(x='Country',
                              y = y_axis_text) +
