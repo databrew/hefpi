@@ -13,6 +13,7 @@
 #' @keywords internal
 #' @export 
 #' @import leaflet
+#' @import shinyWidgets
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
 mod_recent_mean_sub_ui <- function(id){

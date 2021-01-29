@@ -14,6 +14,7 @@
 #' @export 
 #' @import tidyverse
 #' @import ggplot2
+#' @import shinyWidgets
 #' @import reshape2
 #' @importFrom shiny NS tagList 
 mod_dat_country_ui <- function(id){
