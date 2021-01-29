@@ -13,6 +13,7 @@
 #' @keywords internal
 #' @export 
 #' @import leaflet
+#' @import shinyjs
 #' @import shinyWidgets
 #' @import shinyalert
 #' @importFrom shiny NS tagList 

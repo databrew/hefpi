@@ -15,6 +15,7 @@
 #' @import leaflet
 #' @import shinyWidgets
 #' @import webshot
+#' @import shinyjs
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
 mod_recent_mean_ui <- function(id){
