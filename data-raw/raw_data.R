@@ -62,7 +62,6 @@ names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
 usethis::use_data(indicators, overwrite = T)
 
 
-
 ################################################################
 
 # Read in the full database
