@@ -23,7 +23,7 @@ mod_recent_mean_sub_ui <- function(id){
       column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
-               ns('recent_mean_sub_leaf'), height  = '1000px'),
+               ns('recent_mean_sub_leaf'), height  = 700),
       ),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
@@ -323,7 +323,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
         #            h5(year_title)))
         fluidPage(
           fluidRow(
-            h4(paste0('Most recent value - Subational mean - ', indicator_name)),
+            h4(paste0('Most recent value - Subnational mean - ', indicator_name)),
             h5(paste0(year_title))
             
           )

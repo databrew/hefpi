@@ -148,7 +148,7 @@ mod_dat_country_server <- function(input, output, session){
                                         date_range <- dat_list[[2]]
                                         col_vec <-dat_list[[3]]
                                         # make plot title 
-                                        plot_title = paste0('Data availability', ' - ', unique(df$country))
+                                        plot_title = paste0('Data availability', ' - By country')
                                         # plot
                                         p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
                                           geom_tile(alpha = 0.8, color = 'lightgrey') +
@@ -211,7 +211,7 @@ mod_dat_country_server <- function(input, output, session){
         date_range <- dat_list[[2]]
         col_vec <-dat_list[[3]]
         # make plot title 
-        plot_title = paste0('Data availability', ' - ', unique(df$country))
+        plot_title = paste0('Data availability', ' - By country')
         # plot
         p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
           geom_tile(alpha = 0.8, color = 'lightgrey') +
@@ -425,7 +425,7 @@ mod_dat_ind_server <- function(input, output, session){
                                         
                                         
                                         # make plot title 
-                                        plot_title = paste0('Data availability',' - ', indicator)
+                                        plot_title = paste0('Data availability',' - By indicator')
                                         mytext <- paste(
                                           "Economy: ", as.character(temp_data$country), "\n",
                                           "Indicator class: ", as.character(temp_data$level2), "\n",
@@ -505,7 +505,7 @@ mod_dat_ind_server <- function(input, output, session){
         
         
         # make plot title 
-        plot_title = paste0('Data availability',' - ', indicator)
+        plot_title = paste0('Data availability',' - By ', 'indicator')
         mytext <- paste(
           "Economy: ", as.character(temp_data$country), "\n",
           "Indicator class: ", as.character(temp_data$level2), "\n",
