@@ -26,7 +26,7 @@ mod_recent_mean_ui <- function(id){
       column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
-               ns('recent_mean_leaf')),
+               ns('recent_mean_leaf'), height = 700 ),
       ),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
@@ -54,7 +54,7 @@ mod_recent_mean_ui <- function(id){
     fluidRow(
       column(8,
              plotlyOutput(
-               ns('recent_mean_plot')
+               ns('recent_mean_plot'), height = 550
              )),
       column(4,
              selectInput(ns('country'), 'Choose country to highlight', choices = country_list, selected = 'Brazil'))
@@ -472,7 +472,7 @@ mod_recent_con_ui <- function(id){
       column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
-               ns('recent_con_leaf')),
+               ns('recent_con_leaf'), height = 700),
       ),
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
@@ -500,7 +500,7 @@ mod_recent_con_ui <- function(id){
     fluidRow(
       column(8,
              plotlyOutput(
-               ns('recent_con_plot')
+               ns('recent_con_plot'), height = 550
 
              )),
       column(4,
@@ -811,7 +811,7 @@ mod_recent_con_server <- function(input, output, session){
         ordered_names <- temp$NAME[order(temp$value, decreasing = TRUE)]
         temp$NAME <- factor(temp$NAME, levels = ordered_names)
         y_axis_text = paste0('CI - ', indicator)
-        plot_title = 'Most recent value - concentration index'
+        plot_title = 'Concentration index - Most recent value'
         plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
         # here - create value_color vector, identical to value
         temp$value_col <- temp$value

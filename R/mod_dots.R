@@ -362,28 +362,30 @@ mod_dots_country_server <- function(input, output, session){
         if(plot_height < 250){
           plot_height <- 250
         }
-        p <- ggplot(df, aes(x=country,
-                            y=value,
+        p <- ggplot(df, aes(x=value,
+                            y=country,
                             text =mytext)) +
           geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
           geom_line(aes(group = country), color = 'darkgrey') +
           scale_color_manual(name = '',
                              values = col_vec) +
-          scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
+          scale_x_continuous(position = 'top',limits = c((value_range[1]), (value_range[2] + 5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
           labs(title=plot_title,
-               subtitle = sub_title, x= '', y = y_axis_text) +
-          coord_flip() 
+               subtitle = sub_title, x= '', y = y_axis_text) 
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
-                                    y_axis_vjust = 0.5)
+                                    y_axis_vjust = 0.5)+
+          theme(plot.title = element_text(margin = margin(0,0,30,0)))
+        
         fig <- ggplotly(p, 
                         tooltip = 'text', 
                         height = plot_height) %>%
-          config(displayModeBar = F)
-        fig
+          config(displayModeBar = F)%>%
+          layout(xaxis = list(side ="top" ), margin = list(t=100))  
+        fig 
       }
     }
   })
@@ -499,12 +501,22 @@ mod_dots_ind_server <- function(input, output, session){
     df <- df[complete.cases(df),]
     max_value <- round(max(df$value), 2)
     min_value <- round(min(df$value), 2)
+    
+    # get min max of percent (*100)
+    df_per <- df %>% filter(unit_of_measure=='%')
+    max_per <- round(max(df_per$value*100), 2)
+    min_per <- round(min(df_per$value*100), 2)
+    
+    # evaulate together
+    min_value <- min(min_value, min_per)
+    max_value <- max(max_value, max_per)
+    
     if(max_value<1){
       min_value=0
       max_value = 1
     } else {
       min_value = 0
-      max_value = ceiling(max_value)
+      max_value = ceiling(max_value) + 3
     }
     sliderInput(session$ns('value_range'),
                 'X axis range',
@@ -710,6 +722,7 @@ mod_dots_ind_server <- function(input, output, session){
         fig <- empty_plot("No data available for the selected inputs")
         fig
       } else {
+        save(dot_list, file = 'temp_dots_for_def.rda')
         df <- dot_list[[1]]
         unit_of_measure <- dot_list[[2]]
         indicator <- dot_list[[3]]
@@ -738,31 +751,34 @@ mod_dots_ind_server <- function(input, output, session){
         if(plot_height < 250){
           plot_height <- 250
         }
-        p <- ggplot(df, aes(x=indicator_short_name,
-                            y=value,
+        p <- ggplot(df, aes(x=value,
+                            y=indicator_short_name,
                             color = variable,
                             text = mytext)) +
           geom_point(size=rel(2), alpha = 0.7) +
           scale_color_manual(name = '',
                              values = col_vec) +
           geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
-          scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)), 
+          scale_x_continuous(position = 'top', 
+                             limits = c((value_range[1]), (value_range[2] +5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
           labs(title=plot_title, x= '', y = '',
-               subtitle = sub_title) +
-          coord_flip()
+               subtitle = sub_title) 
         
         
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
                                     y_axis_vjust = 0.5) 
+        p
         fig <- ggplotly(p, 
                         tooltip = 'text', 
                         height = plot_height) %>%
-          config(displayModeBar = F)
-        fig
+          config(displayModeBar = F)%>%
+          layout(xaxis = list(side ="top" ), margin = list(t=100))  
+        fig 
+        
       }
      
     }
