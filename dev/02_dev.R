@@ -15,6 +15,8 @@ usethis::use_package("shinydashboard")
 usethis::use_package("ggimage") 
 usethis::use_package("hexSticker") 
 usethis::use_package("extrafont") 
+usethis::use_package("shinyWidgets") 
+
 
 ## 2.3 Add tests
 usethis::use_test( "app" )
