@@ -13,6 +13,7 @@
 #' @keywords internal
 #' @export 
 #' @import leaflet
+#' @import shinyWidgets
 #' @import webshot
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
@@ -60,8 +61,6 @@ mod_recent_mean_ui <- function(id){
              selectInput(ns('country'), 'Choose country to highlight', choices = country_list, selected = 'Brazil'))
 
              ))
-    
-  
 }
 
 # Module Server
@@ -90,9 +89,9 @@ mod_recent_mean_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
-  
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
+    
     # create list to store results from reactive object
     pop_map_list <- list()
     
@@ -238,7 +237,7 @@ mod_recent_mean_server <- function(input, output, session){
     }
   })
   
-  
+  # ---- GET COUNTRY LABELS ---- #
   observeEvent(input$recent_mean_leaf_zoom, {
     the_zoom <- input$recent_mean_leaf_zoom
     print('THE ZOOM LEVEL IS :')
@@ -253,30 +252,6 @@ mod_recent_mean_server <- function(input, output, session){
       leafletProxy('recent_mean_leaf') %>%
         removeTiles(layerId = 'country_labs')
     }
-  })
-  
-  
-  the_country <- reactiveVal(value = NULL)
-  the_shp <- reactiveValues(shp = NULL)
-  
-  observeEvent(input$recent_mean_leaf_shape_mouseover, {
-    # print('Shape mouseover')
-    shp_mouse <- input$recent_mean_leaf_shape_mouseover
-    lng <- shp_mouse$lng
-    lat <- shp_mouse$lat
-    the_point <- tibble(lng = lng, lat = lat)
-    coordinates(the_point) <- ~lng+lat    
-    proj4string(the_point) <- proj4string(world)
-    # Get the country
-    poly <- over(world, the_point)
-    poly_number <- which(!is.na(poly))
-    country_row <- world[poly_number,]
-    print(country_row@data)
-    the_shp$shp <- country_row
-    country_name <- country_row@data$NAME
-    the_country(country_name)
-    message('Mouse-overed country is ', country_name)
-    
   })
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
@@ -294,11 +269,11 @@ mod_recent_mean_server <- function(input, output, session){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
+          # get the map data from the second element of the list
           temp <- pop_map[[2]]
           temp <- temp@data
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
-          # subset by  
           temp$parameter <- 'Mean'
           temp$level <- 'National'
           temp <- temp %>% select(region_name, name, iso3, year, data_source, survey_list, indic, indicator_short_name,
@@ -370,7 +345,6 @@ mod_recent_mean_server <- function(input, output, session){
     indicator <- input$indicator
     country_name <- input$country
 
-    
     # while map (generate from reactive object) is null, plot is null
     if(is.null(pop_map)){
       NULL
@@ -420,14 +394,11 @@ mod_recent_mean_server <- function(input, output, session){
           lapply(htmltools::HTML)
         y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
 
-        
-     
-        
-        # here - create value_color vector, identical to value
+        # Create value_color vector, identical to value
         temp$value_col <- temp$value
         # the selected country gets a value of NA which the palette will make black.
         temp$value_col[temp$NAME == country_name] <- NA
-        
+        # add higlight functionality to plot
         temp <- highlight_key(temp, key=~NAME)
         p <- ggplotly(
           ggplotly(ggplot(temp, aes(NAME, value, text = plot_text)) +
@@ -507,7 +478,6 @@ mod_recent_con_ui <- function(id){
              selectInput(ns('country'), 'Choose country to highlight', choices = country_list, selected = 'Brazil'))
 
              ))
-
 }
 
 # Module Server
@@ -544,8 +514,10 @@ mod_recent_con_server <- function(input, output, session){
       filter(indicator_short_name == indicator) %>%
       select(variable_name, unit_of_measure)
     variable_name <- ind_info$variable_name
+    # hard code CI as unit of measure
     unit_of_measure <- 'CI'
     
+    # get subset of data based on inputs
     pd<- hefpi::df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
@@ -580,13 +552,9 @@ mod_recent_con_server <- function(input, output, session){
         lapply(htmltools::HTML)
       
       year_title = paste0('From ',plot_years[1], ' to ', plot_years[2])
-      # carto <- "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       con_map <- leaflet(shp, options = leafletOptions(minZoom = 1, maxZoom = 10)) %>% 
         addProviderTiles('Esri.WorldShadedRelief') %>%
-        # addMapPane("mover", zIndex = 1001) %>%
-        # addTiles(carto) %>%
         addPolygons(
-          # options = pathOptions(pane = "mover"),
           color = 'black',
           fillColor = ~map_palette(value), 
           stroke=TRUE, 
@@ -612,7 +580,6 @@ mod_recent_con_server <- function(input, output, session){
         addLegend(pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
       con_map_list<- list(con_map, shp, unit_of_measure,year_title)
       map_data$map <- con_map
-      # save(con_map_list, file = 'map.rda')
     }
     return(con_map_list)
   })
@@ -645,29 +612,23 @@ mod_recent_con_server <- function(input, output, session){
   # ---- RENDER MAP FROM REACTIVE LIST ---- #
   output$recent_con_leaf <- renderLeaflet({
     # Plotly hover capture
-    mouse_event <- event_data("plotly_click", source = "subset")
-    print(mouse_event)
     con_map <- get_con_map()
     if(is.null(con_map)){
       NULL
     } else {
-      # if(is.na(con_map)){
-      #   this_map <- leaflet(options = leafletOptions(minZoom = 1, 
-      #                                                maxZoom = 10)) %>% 
-      #     addProviderTiles('CartoDB.VoyagerNoLabels') %>%
-      #     setView(lat=0, lng=0 , zoom=1.7) 
-      #   this_map
-      # } else {
+      if(is.na(con_map)){
+        this_map <- leaflet(options = leafletOptions(minZoom = 1,
+                                                     maxZoom = 10)) %>%
+          addProviderTiles('CartoDB.VoyagerNoLabels') %>%
+          setView(lat=0, lng=0 , zoom=1.7)
+        this_map
+      } else {
       this_map <- map_data$map #con_map[[1]]
-      this_map # %>%
-        # addMapPane("country_labels", zIndex = 1000) %>%
-        # addProviderTiles('CartoDB.PositronOnlyLabels',
-        #                  options = pathOptions(pane = "country_labels"))
-      # }
+      this_map 
+      
+      }
     }
   })
-  
-  
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -714,6 +675,7 @@ mod_recent_con_server <- function(input, output, session){
     }
   }) 
   
+  # ---- GET COUNTRY LABELS ---- #
   observeEvent(input$recent_con_leaf_zoom, {
     the_zoom <- input$recent_con_leaf_zoom
     print('THE CON ZOOM LEVEL IS :')
@@ -732,7 +694,6 @@ mod_recent_con_server <- function(input, output, session){
   
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  # DO THE SAME HERE
   output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_ci_", Sys.Date(), ".png"),
                                     content = function(file) {
                                       con_map <- user_zoom_ci()
@@ -843,16 +804,6 @@ mod_recent_con_server <- function(input, output, session){
     }
   })
 }
-# 
-# library(maps)
-# mapStates = map("state", fill = TRUE, plot = FALSE)
-# 
-# leaflet(data = mapStates) %>% 
-#   addProviderTiles('Esri.WorldShadedRelief') %>%
-#   addPolygons( 
-#     labelOptions = labelOptions(
-#       noHide = TRUE
-#     ))
 
 ## To be copied in the UI
 # mod_recent_mean_ui("leaf1")
