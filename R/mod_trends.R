@@ -32,7 +32,7 @@ mod_trends_mean_ui <- function(id){
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              br(), br(),
-             pickerInput(ns('indicator'),
+             selectInput(ns('indicator'),
                          'Indicator',
                          choices = indicators_list,
                          selected = '4+ antenatal care visits',
