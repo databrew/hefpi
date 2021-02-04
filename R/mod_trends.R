@@ -38,10 +38,10 @@ mod_trends_mean_ui <- function(id){
                          selected = '4+ antenatal care visits'),
              
                pickerInput(inputId = ns("region"),
-                           label = '', 
+                           label = 'Region', 
                            choices = as.character(region_list$region),
                            selected = as.character(region_list$region)[1],
-                           options = list("style-base" = "form-control", style = ""),
+                           options = list(`style-base` = "form-control", style = ""),
                            multiple = TRUE),
             
              
