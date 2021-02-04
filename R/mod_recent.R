@@ -34,7 +34,7 @@ mod_recent_mean_ui <- function(id){
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults',
-                        options = list(`style-base` = "form-control", style = "",`max-options` = 1),
+                         options = list(style = "default"),
              ),
              sliderInput(ns('date_range'),
                          'Date range',
