@@ -41,6 +41,7 @@ mod_trends_mean_ui <- function(id){
                            label = '', 
                            choices = as.character(region_list$region),
                            selected = as.character(region_list$region)[1],
+                           options = list(class = 'btn'),
                            multiple = TRUE),
             
              
