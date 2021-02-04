@@ -32,10 +32,11 @@ mod_trends_mean_ui <- function(id){
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              br(), br(),
-             selectInput(ns('indicator'),
+             pickerInput(ns('indicator'),
                          'Indicator',
                          choices = indicators_list,
-                         selected = '4+ antenatal care visits'),
+                         selected = '4+ antenatal care visits',
+                         options = list(`style-base` = "form-control", style = "")),
              
                pickerInput(inputId = ns("region"),
                            label = 'Region', 
@@ -118,10 +119,11 @@ mod_trends_mean_server <- function(input, output, session){
     countries <- unique(df$country)
     fluidPage(
       fluidRow(
-        selectInput(inputId = session$ns("country"),
+        pickerInput(inputId = session$ns("country"),
                     label = 'Country', 
                     choices = countries,
                     selected = countries,
+                    options = list(`style-base` = "form-control", style = ""),
                     multiple = TRUE),
         sliderInput(session$ns('value_range'),
                     'Y axis range',
