@@ -31,14 +31,18 @@ mod_dat_country_ui <- function(id){
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
-             selectInput(inputId = ns("indicator"),
+             pickerInput(inputId = ns("indicator"),
                          label = 'Indicator', 
                          choices = indicators_list,
                          selected = indicators$indicator_short_name,
+                         options = list(`actions-box`=TRUE,
+                              `style` = "btn-primary"),
                          multiple = TRUE),
-             selectInput(ns('country'), 'Country',
+             pickerInput(ns('country'), 'Country',
                          choices = country_list,
-                         selected = 'United States'),
+                         selected = 'United States',
+                         options = list(`actions-box`=TRUE,
+                              `style` = "btn-primary")),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -255,12 +259,16 @@ mod_dat_ind_ui <- function(id){
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
-             selectInput(ns('indicator'), 'Indicator',
+             pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected =indicators$indicator_short_name[1]),
-             selectInput(ns('region'), 'Region',
+                         selected =indicators$indicator_short_name[1],
+                         options = list(`actions-box`=TRUE,
+                              `style` = "btn-primary")),
+             pickerInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region)[1],
+                         options = list(`actions-box`=TRUE,
+                              `style` = "btn-primary"),
                          multiple = TRUE),
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'))
@@ -311,10 +319,12 @@ mod_dat_ind_server <- function(input, output, session){
     # get ui page
     fluidPage(
       fluidRow(
-       selectInput(inputId = session$ns("country"), 
+       pickerInput(inputId = session$ns("country"), 
                     label = 'Countries', 
                     choices = country_names, 
                     selected = country_names,
+                    options = list(`actions-box`=TRUE,
+                        `style` = "btn-primary"),
                     multiple = TRUE),
         sliderInput(inputId = session$ns('date_range'),
                     label = 'Date range',
@@ -486,6 +496,7 @@ mod_dat_ind_server <- function(input, output, session){
         } 
         fig <- empty_plot("No data available for the selected inputs")
       } else {
+        # save(dat_list, file = 'temp_dat_list.rda')
         temp_data <- dat_list[[1]]
         date_range <- dat_list[[2]]
         col_vec <- dat_list[[3]]
@@ -504,9 +515,9 @@ mod_dat_ind_server <- function(input, output, session){
         if(plot_height < 250){
           plot_height <- 250
         }
-        p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2, text =mytext)) + 
+        p <- ggplot(temp_data, aes(as.numeric(year),country, fill =level2, text =mytext)) + 
           geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
-          scale_y_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
+          scale_x_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
                              breaks = seq(from = min(temp_data$year),
                                           to =max(temp_data$year), by = 1),
                              expand = c(0,-0.5)) +
@@ -515,15 +526,15 @@ mod_dat_ind_server <- function(input, output, session){
           labs(x = '',
                y = 'Year',
                title = plot_title) +
-          coord_flip() +
           theme(legend.position = "none") 
         
         p <- p +
           hefpi::theme_hefpi(x_axis_angle = 90,
-                             x_axis_vjust = 0.5, 
+                             x_axis_hjust = 0.5,
+                             y_axis_hjust = 1,
+                             y_axis_vjust = 0.5,
                              x_axis_size = 10,
                              y_axis_size = 10,
-                             y_axis_hjust = 1,
                              grid_major_x = NA,
                              grid_major_y = NA,
                              grid_minor_x = NA,
@@ -531,11 +542,13 @@ mod_dat_ind_server <- function(input, output, session){
                              y_axis_line = 'white',
                              x_axis_line = 'white',
                              legend_position = 'none') 
+        p
       
         fig <- ggplotly(p, 
                         tooltip = 'text',
                         height = plot_height) %>%
-          config(displayModeBar = F)
+          config(displayModeBar = F) %>%
+          layout(xaxis = list(side ="top" ), margin = list(t=130))  
         fig
       }
     }
