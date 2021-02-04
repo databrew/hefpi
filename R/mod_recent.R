@@ -31,13 +31,9 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_leaf'), height = 700 ),
       ),
       column(4,
-             pickerInput(ns('indicator'), 'Indicator',
+             selectInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         # selected = indicators_list[[1]][1],
-                         options = list(
-                           `actions-box` = TRUE,
-                           style = "btn-primary")
-             ),
+                         selected = 'Inpatient care use, adults'),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
