@@ -41,9 +41,8 @@ mod_trends_mean_ui <- function(id){
                          label = 'Region', 
                          choices = as.character(region_list$region),
                          # selected = as.character(region_list$region)[1],
-                         options = list(
-                           `actions-box` = TRUE,
-                           style = "btn-primary"),
+                         options = pickerOptions(
+                           `actions-box` = TRUE),
                          multiple = TRUE),
              uiOutput(ns('ui_outputs')),
              sliderInput(ns('date_range'),
