@@ -31,7 +31,7 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_leaf'), height = 700 ),
       ),
       column(4,
-             pikerInput(ns('indicator'), 'Indicator',
+             pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
                          selected = 'Inpatient care use, adults',
                         options = list(`style-base` = "form-control", style = ""),
