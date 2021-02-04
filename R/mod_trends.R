@@ -36,15 +36,13 @@ mod_trends_mean_ui <- function(id){
                          'Indicator',
                          choices = indicators_list,
                          selected = '4+ antenatal care visits'),
-             dropdown(label = 'Region',
+             
                pickerInput(inputId = ns("region"),
                            label = '', 
                            choices = as.character(region_list$region),
                            selected = as.character(region_list$region)[1],
-                           options = pickerOptions(
-                             `actions-box` = TRUE),
-                           multiple = TRUE)
-             ),
+                           multiple = TRUE),
+            
              
              uiOutput(ns('ui_outputs')),
              sliderInput(ns('date_range'),
