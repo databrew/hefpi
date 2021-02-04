@@ -20,7 +20,7 @@
 #' @importFrom shiny NS tagList 
 mod_recent_mean_ui <- function(id){
   # let leaflet know that selections should persist
-  options(persistent = TRUE)
+  # options(persistent = TRUE)
   ns <- NS(id)
   # tagList(
   fluidPage(
