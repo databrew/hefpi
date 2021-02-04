@@ -14,7 +14,6 @@
 #' @export 
 #' @import tidyverse
 #' @import ggplot2
-#' @import shinyjs
 #' @import shinyWidgets
 #' @import reshape2
 #' @importFrom shiny NS tagList 
@@ -29,7 +28,7 @@ mod_trends_mean_ui <- function(id){
                ns('trends_mean'), height = '600px'
              )),
       column(3,
-             useShinyalert(), 
+             # useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              br(), br(),
@@ -40,7 +39,7 @@ mod_trends_mean_ui <- function(id){
              pickerInput(inputId = ns("region"),
                          label = 'Region', 
                          choices = as.character(region_list$region),
-                         # selected = as.character(region_list$region)[1],
+                         selected = as.character(region_list$region)[1],
                          options = pickerOptions(
                            `actions-box` = TRUE),
                          multiple = TRUE),
