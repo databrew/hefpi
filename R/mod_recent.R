@@ -31,9 +31,11 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_leaf'), height = 700 ),
       ),
       column(4,
-             selectInput(ns('indicator'), 'Indicator',
+             pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults'
+                         selected = 'Inpatient care use, adults',
+                         options = list(`actions-box`=TRUE,
+                                        `style` = "btn-primary")
              ),
              sliderInput(ns('date_range'),
                          'Date range',
@@ -59,7 +61,11 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_plot'), height = 550
              )),
       column(4,
-             selectInput(ns('country'), 'Choose country to highlight', choices = country_list, selected = 'Brazil'))
+             pickerInput(ns('country'), 
+                         'Choose country to highlight', 
+                         choices = country_list, selected = 'Brazil', 
+                         options = list(`actions-box`=TRUE,
+                                        `style` = "btn-primary")))
 
              ))
 }
@@ -447,9 +453,11 @@ mod_recent_con_ui <- function(id){
                ns('recent_con_leaf'), height = 700),
       ),
       column(4,
-             selectInput(ns('indicator'), 'Indicator',
+             pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults'),
+                         selected = 'Inpatient care use, adults',
+                         options = list(`actions-box`=TRUE,
+                                        `style` = "btn-primary")),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
@@ -475,7 +483,12 @@ mod_recent_con_ui <- function(id){
 
              )),
       column(4,
-             selectInput(ns('country'), 'Choose country to highlight', choices = country_list, selected = 'Brazil'))
+             pickerInput(ns('country'), 
+                         'Choose country to highlight', 
+                         choices = country_list, 
+                         selected = 'Brazil',
+                         options = list(`actions-box`=TRUE,
+                                        `style` = "btn-primary")))
 
              ))
 }
