@@ -33,7 +33,7 @@ mod_recent_mean_ui <- function(id){
       column(4,
              selectInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults'),
+                         selected = 'Inpatient care use, adults'
              ),
              sliderInput(ns('date_range'),
                          'Date range',
