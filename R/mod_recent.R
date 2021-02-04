@@ -31,10 +31,9 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_leaf'), height = 700 ),
       ),
       column(4,
-             
-             shinyWidgets::pickerInput(ns('indicator'), 'Indicator',
-                         choices = indicators$indicator_short_name,
-                         selected = 'Inpatient care use, adults'),
+             pickerInput(ns('indicator'), 'Indicator',
+                         choices = indicators_list,
+                         selected = indicators_list[[1]][1]),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
