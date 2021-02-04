@@ -33,7 +33,11 @@ mod_recent_mean_ui <- function(id){
       column(4,
              pickerInput(ns('indicator'), 'Indicator',
                          choices = indicators_list,
-                         selected = indicators_list[[1]][1]),
+                         # selected = indicators_list[[1]][1],
+                         options = list(
+                           `actions-box` = TRUE,
+                           style = "btn-primary")
+             ),
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
