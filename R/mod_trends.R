@@ -38,14 +38,23 @@ mod_trends_mean_ui <- function(id){
                          selected = '4+ antenatal care visits',
                          options = list(`actions-box`=TRUE,
                                         `style` = "btn-primary")),
+             # here need to create custom css for this to make size right
+             shinyWidgets::dropdownButton(circle = FALSE, 
+                            label = "Region", 
+                            status = "primary",
+                            checkboxGroupInput(ns('region'),
+                                               width = '100px', 
+                                               label = "", 
+                                               choices = as.character(region_list$region),selected = as.character(region_list$region)[1])
+             ),
              
-               pickerInput(inputId = ns("region"),
-                           label = 'Region', 
-                           choices = as.character(region_list$region),
-                           selected = as.character(region_list$region)[1],
-                           options = list(`actions-box`=TRUE,
-                                          `style` = "btn-primary"),
-                           multiple = TRUE),
+               # pickerInput(inputId = ns("region"),
+               #             label = 'Region', 
+               #             choices = as.character(region_list$region),
+               #             selected = as.character(region_list$region)[1],
+               #             options = list(`actions-box`=TRUE,
+               #                            `style` = "btn-primary"),
+               #             multiple = TRUE),
             
              
              uiOutput(ns('ui_outputs')),
