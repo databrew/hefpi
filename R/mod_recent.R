@@ -18,6 +18,7 @@
 #' @import shinyjs
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
+
 mod_recent_mean_ui <- function(id){
   # let leaflet know that selections should persist
   # options(persistent = TRUE)
@@ -31,14 +32,14 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_leaf'), height = 700 ),
       ),
       column(4,
-             pickerInput(ns('indicator'), 'Indicator',
+             p('Indicator'),
+             selectInput(ns('indicator'), 
+                         label = NULL,
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults',
-                         options = list(`actions-box`=TRUE,
-                                        `style` = "btn-primary")
-             ),
+                         selected = 'Inpatient care use, adults'),
+             p('Date range'),
              sliderInput(ns('date_range'),
-                         'Date range',
+                         label = NULL,
                          min = 1982,
                          max = 2017,
                          value = c(1982, 2017),
@@ -61,11 +62,10 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_plot'), height = 550
              )),
       column(4,
-             pickerInput(ns('country'), 
-                         'Choose country to highlight', 
-                         choices = country_list, selected = 'Brazil', 
-                         options = list(`actions-box`=TRUE,
-                                        `style` = "btn-primary")))
+             p('Choose country to highlight'),
+             selectInput(ns('country'), 
+                         label = NULL,
+                         choices = country_list, selected = 'Brazil'))
 
              ))
 }
@@ -453,13 +453,14 @@ mod_recent_con_ui <- function(id){
                ns('recent_con_leaf'), height = 700),
       ),
       column(4,
-             pickerInput(ns('indicator'), 'Indicator',
+             p('Indicator'),
+             selectInput(ns('indicator'),
+                         label = NULL,
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults',
-                         options = list(`actions-box`=TRUE,
-                                        `style` = "btn-primary")),
+                         selected = 'Inpatient care use, adults'),
+             p('Date range'),
              sliderInput(ns('date_range'),
-                         'Date range',
+                         label = NULL,
                          min = 1982,
                          max = 2017,
                          value = c(1982, 2017),
@@ -483,12 +484,11 @@ mod_recent_con_ui <- function(id){
 
              )),
       column(4,
-             pickerInput(ns('country'), 
-                         'Choose country to highlight', 
+             p('Choose country to highlight'),
+             selectInput(ns('country'), 
+                         label = NULL, 
                          choices = country_list, 
-                         selected = 'Brazil',
-                         options = list(`actions-box`=TRUE,
-                                        `style` = "btn-primary")))
+                         selected = 'Brazil'))
 
              ))
 }
