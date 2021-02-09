@@ -568,9 +568,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
                     value = c(1982, 2018),
                     step = 1,
                     sep = ''),
-        p('Interpolate missing values'),
         checkboxInput(session$ns('interpolate'), 
-                      label = NULL,
+                      label = 'Interpolate missing values',
                       value = TRUE)
       )
     )

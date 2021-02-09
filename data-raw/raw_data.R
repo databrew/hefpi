@@ -58,6 +58,7 @@ usethis::use_data(sub_national_shp, overwrite = T)
 indicators <- readxl::read_excel('from_wb/indicator_description.xlsx')
 names(indicators)[1:2] <- c('level 1', 'level 2')
 names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
+indicators <- indicators[!is.na(indicators$indicator_short_name),]
 
 usethis::use_data(indicators, overwrite = T)
 
