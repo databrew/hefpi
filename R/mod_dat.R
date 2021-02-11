@@ -35,6 +35,7 @@ mod_dat_country_ui <- function(id){
              shinyWidgets::dropdownButton(circle = FALSE,  
                                           label = 'Select indicators', 
                                           status = "danger",
+                                          actionButton(ns("all_inds"), label="Select/Deselect all"),
              div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = ns("indicator"),
                          label = NULL, 
                          choices = indicators$indicator_short_name,
@@ -82,6 +83,32 @@ mod_dat_country_server <- function(input, output, session){
                showCancelButton = FALSE, 
                showConfirmButton = FALSE)
   })
+  # ---- SELECT/DESLECT ALL BUTTONS ---- #
+  # INDICATORS
+  observe({
+    all_inds <- input$all_inds
+    message(all_inds)
+    if(is.null(all_inds)){
+      NULL
+    } else {
+      if (all_inds > 0) {
+        if (all_inds %% 2 == 0){
+          updateCheckboxGroupInput(session=session,
+                                   inputId ="indicator",
+                                   choices = indicators$indicator_short_name,
+                                   selected = indicators$indicator_short_name)
+          
+        } else {
+          updateCheckboxGroupInput(session=session,  
+                                   inputId ="indicator",
+                                   choices = indicators$indicator_short_name,
+                                   selected = c())
+          
+        }}
+    }
+    
+  })
+  
   chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
@@ -270,6 +297,7 @@ mod_dat_ind_ui <- function(id){
              shinyWidgets::dropdownButton(circle = FALSE,  
                                           label = 'Select the region(s)', 
                                           status = "danger",
+                                          actionButton(ns("all_regions"), label="Select/Deselect all"),
              div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(ns('region'),
                          label = NULL,
                          choices = as.character(region_list$region),
@@ -327,6 +355,7 @@ mod_dat_ind_server <- function(input, output, session){
        shinyWidgets::dropdownButton(circle = FALSE,  
                                     label = 'Select the countries)', 
                                     status = "danger",
+                                    actionButton(session$ns("all_countries"), label="Select/Deselect all"),
        div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = session$ns("country"), 
                     label = NULL, 
                     choices = country_names, 
@@ -341,6 +370,73 @@ mod_dat_ind_server <- function(input, output, session){
                     sep = '')
       )
     )
+  })
+  
+  # ---- SELECT/DESLECT ALL BUTTONS ---- #
+  # REGIONS
+  observe({
+    all_regions <- input$all_regions
+    message(all_regions)
+    if(is.null(all_regions)){
+      NULL
+    } else {
+      if (all_regions > 0) {
+        if (all_regions %% 2 == 0){
+          message(region_list$region)
+          updateCheckboxGroupInput(session=session,
+                                   inputId ="region",
+                                   choices = as.character(region_list$region),
+                                   selected = as.character(region_list$region))
+          
+        } else {
+          updateCheckboxGroupInput(session=session,  
+                                   inputId ="region",
+                                   choices = as.character(region_list$region),
+                                   selected = c())
+          
+        }}
+    }
+    
+  })
+  
+  
+  
+  # COUNTRY
+  observe({
+    all_countries <- input$all_countries
+    message(all_countries)
+    if(is.null(all_countries)){
+      NULL
+    } else {
+      if (all_countries > 0) {
+        # region = as.character(region_list$region)[1]
+        region <- input$region
+        # get region code
+        region_list <- hefpi::region_list
+        region_code <- as.character(region_list$region_code[region_list$region %in% region])
+        # subset data by variable and region code - HERE need to get level2 for plot
+        df<- hefpi::df %>%
+          # filter(indic == variable) %>%
+          filter(regioncode %in% region_code) %>%
+          # filter(country %in% country_name) %>%
+          select(year,country, indic, regioncode, referenceid_list) 
+        country_names <- sort(unique(df$country))
+        if (all_countries %% 2 == 0){
+          
+          updateCheckboxGroupInput(session=session,
+                                   "country",
+                                   choices = country_names,
+                                   selected = country_names)
+          
+        } else {
+          updateCheckboxGroupInput(session=session, 
+                                   "country",
+                                   choices = country_names,
+                                   selected = c())
+          
+        }}
+    }
+    
   })
   chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
