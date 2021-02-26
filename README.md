@@ -57,3 +57,40 @@ should:
 4.  Run the script in the same directory to generate R-compatible data
     files: `Rscript raw_data.R`
 5.  Run `Rscript dev/run_dev.R`
+
+## The package
+
+The HEFPI dashboard is structured as a R package (created with golem https://cran.r-project.org/web/packages/golem/vignettes/a_start.html)
+
+![](inst/app/www/golem.png)
+
+
+The primary files:
+- `dev/run_dev.R`: The code you'll use to run the app locally after making changes
+- `inst/app/www/*`: logos, fonts, and the `custom.css` file that controls the CSS for the app.
+- `misc/guide.md`: AWS admin guide for setting up shiny app.
+- `data-raw/from_other/*`
+- `data-raw/from_wb/*`
+- `data-raw/from_website/*`
+- `data-raw/raw_data.R`
+- `data/*`
+- `R/app_config.R`: Used to read insdie golem config file `inst/golem-config.yml`
+- `R/app_ui.R`: all ui modules (top level)
+- `R/app_server.R`: all server side modules (top level)
+- `R/mod_dat.R`: 
+  - Data availability by country
+  - Data availability by indicator
+- `R/mod_trends.R`
+  - Trends national mean
+  - Trends subnational mean
+  - Trends concentration index
+  - Trends quintiles
+- `R/mod_recent.R` 
+  - Most recent value national mean 
+  - Most recent value concentration index 
+- `R/mod_recent_sub.R`
+  - Most recent value subnational mean
+- `R/mod_dots.R`
+  - Quintiles by country
+  - Quintiles by indicator
+- `R/plot_theme_new.R`: plot theme function
