@@ -1,24 +1,25 @@
 # Module recent value UI
 
-#' @title   mod_recent_value 
+#' @title   mod_recent 
 #' @description  A shiny Module.
 #'
 #' @param id shiny id
 #' @param input internal
 #' @param output internal
 #' @param session internal
-#'
-#' @rdname mod_recent_mean_ui
-#' @title mod_leaflet_mean_ui
-#' @keywords internal
-#' @export 
+#' 
 #' @import leaflet
 #' @import shinyWidgets
 #' @import webshot
 #' @import shinyjs
 #' @import shinyalert
+#' @import RColorBrewer
+#' @import plotly
+#' @import sp
+#' @import htmltools
 #' @importFrom shiny NS tagList 
 
+# UI FOR MOST RECENT VALUE MAP
 mod_recent_mean_ui <- function(id){
   # let leaflet know that selections should persist
   # options(persistent = TRUE)
@@ -70,19 +71,7 @@ mod_recent_mean_ui <- function(id){
              ))
 }
 
-# Module Server
-#' @rdname mod_recent_mean_server
-#' @title mod_recent_mean_server
-#' @keywords internal
-#' @export 
-#' @import leaflet
-#' @import RColorBrewer
-#' @import plotly
-#' @import sp
-#' @import webshot
-#' @import htmltools
-#' @keywords internal
-
+# SERVER FOR MOST RECENT VALUE MAP
 mod_recent_mean_server <- function(input, output, session){
   
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
@@ -149,8 +138,7 @@ mod_recent_mean_server <- function(input, output, session){
       } else {
         map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE")
       }
-      
-      # Create map
+      # text for map
       map_text <- paste(
         "Indicator: ",  indicator,"<br>",
         "Economy: ", as.character(shp@data$NAME),"<br/>", 
@@ -160,13 +148,10 @@ mod_recent_mean_server <- function(input, output, session){
         sep="") %>%
         lapply(htmltools::HTML)
       year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
-      # carto = "http://a.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
       pop_map <- leaflet(shp, 
                          options = leafletOptions(minZoom = 1, 
                                                   maxZoom = 10)) %>% 
-        # addMapPane("mover", zIndex = 100) %>%
         addProviderTiles('Esri.WorldShadedRelief') %>%
-        # addTiles(carto) %>%
         addPolygons( 
           # options = pathOptions(pane = "mover"),
           color = 'black',
@@ -435,13 +420,8 @@ mod_recent_mean_server <- function(input, output, session){
 }
 
 # -------------------------------------------------------------------------------------
-#' @rdname mod_recent_con_ui
-#' @export 
-#' @import webshot
-#' @import shinyalert
-#' @import leaflet
-#' @importFrom shiny NS tagList 
 
+# UI FOR MOST RECENT VALUE (CONCENTRATION INDEX) MAP
 mod_recent_con_ui <- function(id){
   ns <- NS(id)
   # tagList(
@@ -493,14 +473,7 @@ mod_recent_con_ui <- function(id){
              ))
 }
 
-# Module Server
-#' @rdname mod_recent_con_server
-#' @import leaflet
-#' @import RColorBrewer
-#' @import plotly
-#' @import htmltools
-#' @keywords internal
-
+# SERVER FOR MOST RECENT VALUE (CONCENTRATION INDEX) MAP
 mod_recent_con_server <- function(input, output, session){
   
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
@@ -787,7 +760,7 @@ mod_recent_con_server <- function(input, output, session){
         y_axis_text = paste0('CI - ', indicator)
         plot_title = 'Concentration index - Most recent value'
         plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
-        # here - create value_color vector, identical to value
+        # create value_color vector, identical to value
         temp$value_col <- temp$value
         # the selected country gets a value of NA which the palette will make black.
         temp$value_col[temp$NAME == country_name] <- NA
@@ -817,11 +790,3 @@ mod_recent_con_server <- function(input, output, session){
     }
   })
 }
-
-## To be copied in the UI
-# mod_recent_mean_ui("leaf1")
-# mod_recent_con_ui("con1")
-
-## To be copied in the server
-# callModule(mod_recent_mean_server, 'leaf1')
-# callModule(mod_recent_con_server, 'con1')

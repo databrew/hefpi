@@ -17,7 +17,8 @@
 #' @import shinyjs
 #' @import reshape2
 #' @importFrom shiny NS tagList 
-#' 
+
+# UI QUINTILES COUNTRY
 mod_dots_country_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -51,20 +52,7 @@ mod_dots_country_ui <- function(id){
   )
 }
 
-# Module Server
-#' @rdname mod_dots_country_server
-#' @export
-#' @import tidyverse
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import shinyWidgets
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import htmltools
-#' @keywords internal
-
-# HERE IMPLEMENT CORRECT DATA DOWNLOAD FOR DOT PLOTS AND THEN DATA AVAILABILITY
+# SERVER QUINTILES COUNTRY
 mod_dots_country_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -80,8 +68,6 @@ mod_dots_country_server <- function(input, output, session){
   
   # ---- GET UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
-    indicator = "4+ antenatal care visits"
-    region = as.character(region_list$region)
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -221,11 +207,6 @@ mod_dots_country_server <- function(input, output, session){
   chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
-    # indicator = "4+ antenatal care visits"
-    # region = as.character(region_list$region)
-    # date_range = c(1982, 2018)
-    # country_names <- countries
-    # value_range = c(min_value, max_value)
     # get input data
     region <- input$region
     indicator <- input$indicator
@@ -276,11 +257,8 @@ mod_dots_country_server <- function(input, output, session){
 
       # just save data, not implement 
       dot_list <- list(df,unit_of_measure, indicator, value_range,date_range)
-
     }
-    
     chart_data$plot_data <- dot_list
-    
   },
   
   ignoreNULL = FALSE,
@@ -471,14 +449,8 @@ mod_dots_country_server <- function(input, output, session){
 }
 
 # -----------------------------------------------------------------------------------------------------------------------------
-#' @rdname mod_dots_ind_ui
-#'
-#' @keywords internal
-#' @export 
-#' @import tidyverse
-#' @import ggplot2
-#' @import reshape2
-#' @importFrom shiny NS tagList 
+
+# UI QUINTILES INDICATOR
 mod_dots_ind_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -520,19 +492,7 @@ mod_dots_ind_ui <- function(id){
   )
 }
 
-# Module Server
-#' @rdname mod_dots_ind_server
-#' @export
-#' @import tidyverse
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import plotly
-#' @import htmltools
-#' @keywords internal
-
+# SERVER QUINTILES INDICATOR
 mod_dots_ind_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -545,8 +505,6 @@ mod_dots_ind_server <- function(input, output, session){
                showCancelButton = FALSE, 
                showConfirmButton = FALSE)
   })
-  
-  
   
   # ---- GENERATE UI OUTPUTS---- #
   output$ui_outputs <- renderUI({
@@ -640,8 +598,6 @@ mod_dots_ind_server <- function(input, output, session){
     
   })
   
-  
-  
   chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
@@ -711,9 +667,6 @@ mod_dots_ind_server <- function(input, output, session){
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
-  
-  
- 
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
@@ -809,8 +762,6 @@ mod_dots_ind_server <- function(input, output, session){
                                       }
                                     })
   
-  
-  
   # ---- GENERATE PLOT ---- #
   output$dots_ind <- renderPlotly({
     dot_list <- chart_data$plot_data
@@ -900,11 +851,3 @@ mod_dots_ind_server <- function(input, output, session){
     }
   })
 }
-
-## To be copied in the UI
-# mod_dots_country_ui("dots_country1")
-# mod_dots_country_ui("dots_ind1")
-
-## To be copied in the server
-# callModule(mod_dots_country_server, 'dots_country1')
-# callModule(mod_dots_country_server, 'dots_ind1')
