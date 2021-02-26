@@ -76,6 +76,8 @@ The primary files:
 - `R/mod_dat.R`: 
   - Data availability by country
   - Data availability by indicator
+  ![](inst/app/www/mod_dat.png)
+
 - `R/mod_trends.R`
   - Trends national mean
   - Trends subnational mean
