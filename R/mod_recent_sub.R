@@ -17,6 +17,7 @@
 #' @import shinyWidgets
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
+
 mod_recent_mean_sub_ui <- function(id){
   
   ns <- NS(id)
@@ -52,16 +53,7 @@ mod_recent_mean_sub_ui <- function(id){
   )
 }
 
-# Module Server
-#' @rdname mod_recent_mean_sub_server
-#' @export
-#' @import leaflet
-#' @import RColorBrewer
-#' @import plotly
-#' @import rmapshaper
-#' @import htmltools
-#' @keywords internal
-
+# SERVER FOR MOST RECENT VALUE SUBNATIONAL MEAN
 mod_recent_mean_sub_server <- function(input, output, session){
   
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #

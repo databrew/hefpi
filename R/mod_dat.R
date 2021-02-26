@@ -16,8 +16,16 @@
 #' @import ggplot2
 #' @import shinyWidgets
 #' @import shinyjs
-#' @import reshape2
 #' @importFrom shiny NS tagList 
+#' @import RColorBrewer
+#' @import ggplot2
+#' @import tidyr
+#' @import ggthemes
+#' @import scales
+#' @import reshape2
+#' @import htmltools
+
+# UI FOR DATA AVAILABILITY (COUNTRY)
 mod_dat_country_ui <- function(id){
   ns <- NS(id)
   #tagList(
@@ -58,19 +66,7 @@ mod_dat_country_ui <- function(id){
   #)
 }
 
-# Module Server
-#' @rdname mod_dat_country_server
-#' @export
-#' @import tidyverse
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import tidyr
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import htmltools
-#' @keywords internal
-
+# SERVER FOR DATA AVAILABILITY (COUNTRY)
 mod_dat_country_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -108,7 +104,6 @@ mod_dat_country_server <- function(input, output, session){
     }
     
   })
-  
   chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
@@ -152,10 +147,7 @@ mod_dat_country_server <- function(input, output, session){
     # order level2
     df$level2 <- factor(df$level2, levels =level2_levels )
     df$indicator_short_name <- factor(df$indicator_short_name, levels = rev(all_ind))
-    
     dat_list <- list(df, date_range, col_vec)
-
-    
     chart_data$plot_data <- dat_list
   },
   
@@ -169,7 +161,6 @@ mod_dat_country_server <- function(input, output, session){
                                       dat_list <- chart_data$plot_data
                                       if(length(dat_list)==1){
                                         dat_list <- hefpi::dat_country_default
-                                        
                                       }
                                       if(is.null(dat_list)){
                                         NULL
@@ -268,14 +259,7 @@ mod_dat_country_server <- function(input, output, session){
 }
 
 #-------------------------------------------------------------------------------------------------------------
-#' @rdname mod_dat_ind_ui
-#'
-#' @keywords internal
-#' @export 
-#' @import tidyverse
-#' @import ggplot2
-#' @import reshape2
-#' @importFrom shiny NS tagList 
+# UI FOR DATA AVAILABILITY (INDICATOR)
 mod_dat_ind_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -308,18 +292,7 @@ mod_dat_ind_ui <- function(id){
   )
 }
 
-# Module Server
-#' @rdname mod_dat_ind_alt_server
-#' @export
-#' @import tidyverse
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import htmltools
-#' @keywords internal
-
+# SERVER FOR DATA AVAILABILITY (INDICATOR)
 mod_dat_ind_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -335,8 +308,6 @@ mod_dat_ind_server <- function(input, output, session){
   
   # ---- GENERATE UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
-    # get inputs
-    # region = as.character(region_list$region)[1]
     region <- input$region
     # get region code
     region_list <- hefpi::region_list
@@ -505,9 +476,6 @@ mod_dat_ind_server <- function(input, output, session){
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
-  
-  
- 
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("data_indicators_",Sys.Date(), ".png"),
                                     content = function(file) {
@@ -656,11 +624,3 @@ mod_dat_ind_server <- function(input, output, session){
     }
   })
 }
-
-## To be copied in the UI
-# mod_dat_country_ui("dat_country1")
-# mod_dat_country_ui("dat_ind1")
-
-## To be copied in the server
-# callModule(mod_dat_country_server, 'dat_country1')
-# callModule(mod_dat_ind_server, 'dat_ind1')

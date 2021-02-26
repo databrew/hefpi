@@ -17,8 +17,8 @@
 #' @import shinyWidgets
 #' @import reshape2
 #' @importFrom shiny NS tagList 
-#' 
-#' 
+
+# UI FOR TRENDS (NATIONAL MEAN)
 mod_trends_mean_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -49,16 +49,6 @@ mod_trends_mean_ui <- function(id){
                                                label = "", 
                                                choices = as.character(region_list$region),selected = as.character(region_list$region)[1])
              )),
-             
-               # pickerInput(inputId = ns("region"),
-               #             label = 'Region', 
-               #             choices = as.character(region_list$region),
-               #             selected = as.character(region_list$region)[1],
-               #             options = list(`actions-box`=TRUE,
-               #                            `style` = "btn-primary"),
-               #             multiple = TRUE),
-            
-             
              uiOutput(ns('ui_outputs')),
              p('Date range'),
              sliderInput(ns('date_range'),
@@ -76,19 +66,7 @@ mod_trends_mean_ui <- function(id){
   )
 }
 
-# Module Server
-#' @rdname mod_trends_mean_server
-#' @export
-#' @import tidyverse
-#' @import plotly
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import htmltools
-#' @keywords internal
-
+# SERVER FOR TRENDS (NATIONAL MEAN)
 mod_trends_mean_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
@@ -104,8 +82,6 @@ mod_trends_mean_server <- function(input, output, session){
   
   # ---- GENERATE UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
-    indicator <- '4+ antenatal care visits'
-    region = region_list$region[1]
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -155,7 +131,7 @@ mod_trends_mean_server <- function(input, output, session){
   })
   
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
-  # REGIONS
+  # REGION
   observe({
     all_regions <- input$all_regions
     message(all_regions)
@@ -224,14 +200,9 @@ mod_trends_mean_server <- function(input, output, session){
     
   })
   # Observe the "generate chart" button to put together the data for the chart
-  
   chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
-    # get inputs
-    # date_range = c(1982, 2018)
-    # value_range = c(0,1)
-    # country_names = countries
     pop_list <- list()
     indicator <- input$indicator
     region <- input$region
@@ -262,19 +233,12 @@ mod_trends_mean_server <- function(input, output, session){
                           year <= max(date_range)) 
       pd <- pd %>% filter(pop >= min(value_range),
                           pop <= max(value_range)) 
-      
-      
       pop_list <- list(pd, unit_of_measure, indicator, date_range, value_range,yn)
-      # trends_national_mean <- pop_list
       chart_data$plot_data <- pop_list
-      # message('pop_list is of type:')
-      # print(str(pop_list))
     }
   },
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
-  
-  
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
@@ -459,7 +423,6 @@ mod_trends_mean_server <- function(input, output, session){
         temp <- tableau_color_pal(palette = "Tableau 20")
         trend_palette <- rep(temp(n = 20), 10)
         
-        
         if(unit_of_measure == '%'){
           pd$pop <- pd$pop*100
           value_range[2] <- value_range[2]*100
@@ -510,16 +473,8 @@ mod_trends_mean_server <- function(input, output, session){
   })
 }
 
-
-#' @rdname mod_trends_mean_sub_ui
-#'
-#' @keywords internal
-#' @export 
-#' @import tidyverse
-#' @import ggplot2
-#' @import reshape2
-#' @importFrom shiny NS tagList 
-
+# ---------------------------------------------------------------------------------
+# UI FOR TRENDS (SUBNATIONAL MEAN)
 mod_trends_mean_sub_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -550,19 +505,7 @@ mod_trends_mean_sub_ui <- function(id){
   )
 }
 
-# Module Server
-#' @rdname mod_trends_mean_server
-#' @export
-#' @import tidyverse
-#' @import plotly
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import htmltools
-#' @keywords internal
-
+# SERVER FOR TRENDS (SUBNATIONAL MEAN)
 mod_trends_mean_sub_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -582,6 +525,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     indicator <- input$indicator
     country_name <- input$country
     date_range <- c(1982, 2018)
+    
     # Get the data to be plotted
     pd <- hefpi::sub_national %>%
       filter(country == country_name)%>%
@@ -701,7 +645,6 @@ mod_trends_mean_sub_server <- function(input, output, session){
     
   })
   
- 
   chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
@@ -968,7 +911,6 @@ mod_trends_mean_sub_server <- function(input, output, session){
         temp <- tableau_color_pal(palette = "Tableau 20")
         trend_palette <- rep(temp(n = 20), 50)
         
-        
         if(yn){
           # condition if we connect the dots
           p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME, text=mytext)) +
@@ -1022,15 +964,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
 
 
 #-----------------------------------------------------------------------------------------------------
-#' @rdname mod_trends_con_sub_ui
-#'
-#' @keywords internal
-#' @export 
-#' @import tidyverse
-#' @import ggplot2
-#' @import reshape2
-#' @importFrom shiny NS tagList 
 
+# UI FOR TRENDS (CONENTRATION INDEX)
 mod_trends_con_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -1076,19 +1011,7 @@ mod_trends_con_ui <- function(id){
   )
 }
 
-# Module Server
-#' @rdname mod_trends_con_sub_server
-#' @export
-#' @import tidyverse
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import htmltools
-#' @keywords internal
-
-### HERE NEED TO IMPLEMENT CORRECT DATA DOWNLOAD FOR REST OF TREND DATA
+# SERVER FOR TRENDS (CONENTRATION INDEX)
 mod_trends_con_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -1168,7 +1091,6 @@ mod_trends_con_server <- function(input, output, session){
           
         }}
     }
-    
   })
   
   # COUNTRY
@@ -1209,7 +1131,6 @@ mod_trends_con_server <- function(input, output, session){
           
         }}
     }
-    
   })
   
   chart_data <- reactiveValues(plot_data = 'new') 
@@ -1217,12 +1138,6 @@ mod_trends_con_server <- function(input, output, session){
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
     con_list <- list()
-    # indicator ='4+ antenatal care visits'
-    # region = as.character(region_list$region)[1]
-    # date_range = c(1982, 2018)
-    # country_names = countries
-    # value_range = c(min_value, max_value)
-    #yn = TRUE
     indicator <- input$indicator
     region <- input$region
     country_names <- input$country
@@ -1249,12 +1164,8 @@ mod_trends_con_server <- function(input, output, session){
       pd <- pd %>% filter(year >= min(date_range),
                           year <= max(date_range)) 
       pd$unit_of_measure <- 'CI'
-    
       con_list <- list(pd, indicator, date_range, value_range,yn)
-      
     }
-    
-    
     chart_data$plot_data <- con_list
   },
   ignoreNULL = FALSE,
@@ -1270,7 +1181,6 @@ mod_trends_con_server <- function(input, output, session){
       con_list <- chart_data$plot_data
       if(length(con_list)==1){
         con_list <- hefpi::trends_national_ci_default
-        
       }
       if(is.null(con_list)){
         NULL
@@ -1279,7 +1189,6 @@ mod_trends_con_server <- function(input, output, session){
         if(nrow(pd)==0){
           temp <- data_frame()
           write.csv(temp, file)
-          
         } else {
           temp <- pd
           temp <- temp %>% filter(!is.na(CI))
@@ -1481,15 +1390,7 @@ mod_trends_con_server <- function(input, output, session){
 
 
 #-----------------------------------------------------------------------------------------------------
-#' @rdname mod_trends_quin_ui
-#'
-#' @keywords internal
-#' @export 
-#' @import tidyverse
-#' @import ggplot2
-#' @import reshape2
-#' @importFrom shiny NS tagList 
-
+# UI FOR TRENDS (QUINTILE)
 mod_trends_quin_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -1520,18 +1421,7 @@ mod_trends_quin_ui <- function(id){
   )
 }
 
-# Module Server
-#' @rdname mod_trends_quin_server
-#' @export
-#' @import tidyverse
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import htmltools
-#' @keywords internal
-
+# SERVER FOR TRENDS (QUINTILE)
 mod_trends_quin_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
@@ -1649,14 +1539,9 @@ mod_trends_quin_server <- function(input, output, session){
       
      
       quin_list <- list(df, unit_of_measure, indicator, date_range, value_range, view_as, country_names)
-     
-
     }
-    
     chart_data$plot_data <- quin_list
-    
   },
-  
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
@@ -1671,7 +1556,6 @@ mod_trends_quin_server <- function(input, output, session){
       quin_list <- chart_data$plot_data
       if(length(quin_list)==1){
         quin_list <- hefpi::trends_national_quin_default
-        
       }
       if(is.null(quin_list)){
         NULL
@@ -1809,7 +1693,6 @@ mod_trends_quin_server <- function(input, output, session){
         fig <- empty_plot("No data available for the selected inputs")
       } else {
         
-        
         df <- quin_list[[1]]
         unit_of_measure <- quin_list[[2]]
         indicator <- quin_list[[3]]
@@ -1817,7 +1700,6 @@ mod_trends_quin_server <- function(input, output, session){
         value_range <- quin_list[[5]]
         view_as<- quin_list[[6]]
         country_names <- quin_list[[7]]
-        
         # get color graident 
         col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
         col_vec <- col_vec[-1]
@@ -1862,14 +1744,3 @@ mod_trends_quin_server <- function(input, output, session){
     }
   })
 }
-
-## To be copied in the UI
-# mod_trends_mean_ui("trends_mean1")
-# mod_trends_quin_ui("trends_quin1")
-# mod_trends_con_ui("trends_con1")
-
-
-## To be copied in the server
-# callModule(mod_trends_mean_server, 'trends_mean1')
-# callModule(mod_trends_quin_server, 'trends_quin1')
-# callModule(mod_trends_con_server, 'trends_con1')
