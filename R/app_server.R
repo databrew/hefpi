@@ -4,32 +4,30 @@ app_server <- function(input, output,session) {
   
   # Capture URL parameters
   shinyURL.server()
-  
-  ## Social
-  callModule(mod_social_server, "social_module_1")
-  
-  # List the first level callModules here
-  
-  # recent tab
-  callModule(mod_recent_mean_server, 'recent_mean_leaf1')
-  callModule(mod_recent_con_server, 'recent_con_leaf1')
-  callModule(mod_recent_mean_sub_server, 'recent_mean_sub_leaf1')
+
+  # MOST RECENT VALUE MAPS
+  callModule(mod_recent_mean_server, 'recent_mean_leaf')
+  callModule(mod_recent_con_server, 'recent_con_leaf')
+  callModule(mod_recent_mean_sub_server, 'recent_mean_sub_leaf')
   # callModule(mod_recent_con_sub_server, 'recent_con_sub_leaf1')
   
-  # trends tab
-  callModule(mod_trends_mean_server, 'trends_mean1')
-  callModule(mod_trends_mean_sub_server, 'trends_sub_mean1')
+  # TRENDS TAB
+  callModule(mod_trends_mean_server, 'trends_mean')
+  callModule(mod_trends_mean_sub_server, 'trends_sub_mean')
   
-  callModule(mod_trends_quin_server, 'trends_quin1')
-  callModule(mod_trends_con_server, 'trends_con1')
+  callModule(mod_trends_quin_server, 'trends_quin')
+  callModule(mod_trends_con_server, 'trends_con')
   
-  # dotplot tab
-  callModule(mod_dots_country_server, 'dots_country1')
-  callModule(mod_dots_ind_server, 'dots_ind1')
+  # QUINTILES TAB
+  callModule(mod_dots_country_server, 'dots_country')
+  callModule(mod_dots_ind_server, 'dots_ind')
   
-  # data availability tab
-  callModule(mod_dat_country_server, 'dat_country1')
-  callModule(mod_dat_ind_server, 'dat_ind1')
+  # DATA AVAILABILITY TAB
+  callModule(mod_dat_country_server, 'dat_country')
+  callModule(mod_dat_ind_server, 'dat_ind')
+  
+  ## Social
+  # callModule(mod_social_server, "social_module_1")
   
   # data availability alternate tab
   # callModule(mod_dat_country_alt_server, 'dat_country_alt1')
