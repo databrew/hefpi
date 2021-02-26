@@ -56,7 +56,6 @@ should:
 
 The HEFPI dashboard is structured as a R package (created with golem https://cran.r-project.org/web/packages/golem/vignettes/a_start.html)
 
-
 The primary files:
 - `dev/run_dev.R`: The code you'll use to run the app locally after making changes
 - `inst/app/www/*`: logos, fonts, and the `custom.css` file that controls the CSS for the app.
@@ -68,7 +67,12 @@ The primary files:
 - `data/*`
 - `R/app_config.R`: Used to read insdie golem config file `inst/golem-config.yml`
 - `R/app_ui.R`: all ui modules (top level)
+![](inst/app/www/app_ui.png)
+
+
 - `R/app_server.R`: all server side modules (top level)
+![](inst/app/www/app_server.png)
+
 - `R/mod_dat.R`: 
   - Data availability by country
   - Data availability by indicator
