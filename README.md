@@ -46,23 +46,16 @@ run_app()
 In order to build this package and run the application correctly, one
 should:
 
-1.  Clone this repository: `git clone
+1.  Clone this repository from the command line: `git clone
     https://github.com/databrew/hefpi`.  
-2.  Populate the `data-raw/from_web` directory with the following two
-    files (supplied directly from the WB): (a) `hefpi_full_database.dta`
-    and (b) `Indicator_description.xlsx`.
-3.  Populate the `data-raw/from_website` directory with the following
-    three files (taken from the HEFPI website): (a) `HEFPICountry.csv`,
-    (b) `HEFPIData.csv`, and (c) `HEFPISeries.csv`.
-4.  Run the script in the same directory to generate R-compatible data
-    files: `Rscript raw_data.R`
-5.  Run `Rscript dev/run_dev.R`
+2.  Install the hefpi package in R: `devtools::install_github('databrew/hefpi')`
+3.  Run `Rscript dev/run_dev.R` from the command line or in Rstudio.
 
 ## The package
 
 The HEFPI dashboard is structured as a R package (created with golem https://cran.r-project.org/web/packages/golem/vignettes/a_start.html)
 
-![](inst/app/www/golem.png)
+![](inst/app/www/golem_repo.png)
 
 
 The primary files:
