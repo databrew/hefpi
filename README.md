@@ -56,7 +56,6 @@ should:
 
 The HEFPI dashboard is structured as a R package (created with golem https://cran.r-project.org/web/packages/golem/vignettes/a_start.html)
 
-![](inst/app/www/golem_repo.png)
 
 The primary files:
 - `dev/run_dev.R`: The code you'll use to run the app locally after making changes
