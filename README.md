@@ -51,14 +51,12 @@ should:
 2.  Install the hefpi package in R: `devtools::install_github('databrew/hefpi')`
 3.  Run `Rscript dev/run_dev.R` from the command line or in Rstudio.
 
-![](inst/app/www/golem_repo.png)
-
 
 ## The package
 
 The HEFPI dashboard is structured as a R package (created with golem https://cran.r-project.org/web/packages/golem/vignettes/a_start.html)
 
-
+![](inst/app/www/golem_repo.png)
 
 The primary files:
 - `dev/run_dev.R`: The code you'll use to run the app locally after making changes
