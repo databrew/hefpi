@@ -1,4 +1,14 @@
 # Module recent value UI
+#' @title mod_recent.R
+#' @description  A shiny Module.
+#'
+#' @param id shiny id
+#' @param input internal
+#' @param output internal
+#' @param session internal
+#'
+#' @keywords internal
+#' @export 
 # UI FOR MOST RECENT VALUE MAP
 mod_recent_mean_ui <- function(id){
   # let leaflet know that selections should persist

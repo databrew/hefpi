@@ -1,4 +1,14 @@
 # Module dotplots
+#' @title mod_dots.R
+#' @description  A shiny Module.
+#'
+#' @param id shiny id
+#' @param input internal
+#' @param output internal
+#' @param session internal
+#'
+#' @keywords internal
+#' @export 
 # UI QUINTILES COUNTRY
 mod_dots_country_ui <- function(id){
   ns <- NS(id)

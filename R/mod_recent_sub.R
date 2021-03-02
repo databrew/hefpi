@@ -1,4 +1,14 @@
-# Module recent value sub UI
+# Module recent value subnational
+#' @title mod_recent_sub.R
+#' @description  A shiny Module.
+#'
+#' @param id shiny id
+#' @param input internal
+#' @param output internal
+#' @param session internal
+#'
+#' @keywords internal
+#' @export 
 mod_recent_mean_sub_ui <- function(id){
   
   ns <- NS(id)
