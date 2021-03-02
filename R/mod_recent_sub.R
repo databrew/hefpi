@@ -1,23 +1,4 @@
 # Module recent value sub UI
-
-#' @title   mod_recent_sub_value 
-#' @description  A shiny Module.
-#'
-#' @param id shiny id
-#' @param input internal
-#' @param output internal
-#' @param session internal
-#'
-#' @rdname mod_recent_mean_sub_ui
-#' @title mod_leaflet_mean_ui
-#' @keywords internal
-#' @export 
-#' @import leaflet
-#' @import shinyjs
-#' @import shinyWidgets
-#' @import shinyalert
-#' @importFrom shiny NS tagList 
-
 mod_recent_mean_sub_ui <- function(id){
   
   ns <- NS(id)
@@ -29,23 +10,18 @@ mod_recent_mean_sub_ui <- function(id){
                ns('recent_mean_sub_leaf'), height  = 700),
       ),
       column(4,
-             pickerInput(ns('indicator'), 'Indicator',
+             selectInput(ns('indicator'), 'Indicator',
                          choices = sort(unique(sub_national$indicator_short_name)),
-                         selected = sort(unique(sub_national$indicator_short_name))[1],
-                         options = list(`actions-box`=TRUE,
-                              `style` = "btn-primary")),
-             pickerInput(ns('region'), 'Region',
+                         selected = sort(unique(sub_national$indicator_short_name))[1]),
+             selectInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
-                         selected = as.character(region_list$region)[[2]],
-                         options = list(`actions-box`=TRUE,
-                              `style` = "btn-primary")),
+                         selected = as.character(region_list$region)[[2]]),
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(),br(),
              fluidPage(
                fluidRow(
-                 useShinyalert(),  # Set up shinyalert
                  actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              ))
     ),
@@ -111,12 +87,10 @@ mod_recent_mean_sub_server <- function(input, output, session){
     # get ui inputs
     fluidPage(
       fluidRow(
-        pickerInput(inputId = session$ns("country"),
+        selectInput(inputId = session$ns("country"),
                     label = 'Country', 
                     choices = country_names,
-                    selected = country_names[1],
-                    options = list(`actions-box`=TRUE,
-                         `style` = "btn-primary")),
+                    selected = country_names[1]),
         sliderInput(inputId = session$ns('date_range'),
                     label = 'Date range',
                     min = 1982,

@@ -1,30 +1,5 @@
 # Module data availability
 
-#' @title   mod_dat.R
-#' @description  A shiny Module.
-#'
-#' @param id shiny id
-#' @param input internal
-#' @param output internal
-#' @param session internal
-#'
-#' @rdname mod_dat_country_ui
-#'
-#' @keywords internal
-#' @export 
-#' @import tidyverse
-#' @import ggplot2
-#' @import shinyWidgets
-#' @import shinyjs
-#' @importFrom shiny NS tagList 
-#' @import RColorBrewer
-#' @import ggplot2
-#' @import tidyr
-#' @import ggthemes
-#' @import scales
-#' @import reshape2
-#' @import htmltools
-
 # UI FOR DATA AVAILABILITY (COUNTRY)
 mod_dat_country_ui <- function(id){
   ns <- NS(id)
@@ -35,7 +10,6 @@ mod_dat_country_ui <- function(id){
                ns('dat_country'), height = '800px', width = '1000px', 
              )),
       column(3,
-             useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
@@ -268,7 +242,6 @@ mod_dat_ind_ui <- function(id){
              tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '1000px') )
              ),
       column(3,
-             useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
