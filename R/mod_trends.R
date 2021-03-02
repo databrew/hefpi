@@ -1,4 +1,14 @@
 # Module Trends 
+#' @title mod_trends.R
+#' @description  A shiny Module.
+#'
+#' @param id shiny id
+#' @param input internal
+#' @param output internal
+#' @param session internal
+#'
+#' @keywords internal
+#' @export 
 # UI FOR TRENDS (NATIONAL MEAN)
 mod_trends_mean_ui <- function(id){
   ns <- NS(id)
