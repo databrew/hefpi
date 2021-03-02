@@ -5,9 +5,9 @@ golem::fill_desc(
   pkg_name = "hefpi", 
   pkg_title = "Health Equity and Financial Protection Indicators", 
   pkg_description = "A Shiny app / R package for the visualization of the World Bank's Health Equity and Financial Protection Indicators", 
-  author_first_name = "Joe", 
+  author_first_name = "Ben", 
   author_last_name = "Brew", 
-  author_email = "joe@databrew.cc", 
+  author_email = "ben@databrew.cc", 
   repo_url = "https://github.com/databrew/hefpi")     
 
 ## Use this desc to set {golem} options
