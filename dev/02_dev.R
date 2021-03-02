@@ -10,24 +10,13 @@ usethis::use_package("ggplot2")
 usethis::use_package("leaflet") 
 usethis::use_package("RColorBrewer") 
 usethis::use_package("sp") 
-usethis::use_package("webshot") 
-usethis::use_package("shinyalert") 
 usethis::use_package("shinyjs")
 usethis::use_package("shinydashboard")
 usethis::use_package("ggimage") 
 usethis::use_package("hexSticker") 
 usethis::use_package("extrafont") 
-usethis::use_package("shinyWidgets")
-usethis::use_package("plotly")
 usethis::use_package("htmltools")
-usethis::use_package("tidyverse")
-usethis::use_package("ggthemes")
-usethis::use_package("scales")
-usethis::use_package("reshape2")
-
-
-
-
+usethis::use_package("plotly")
 
 
 

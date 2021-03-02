@@ -1,23 +1,4 @@
 # Module Trends 
-
-#' @title mod_trends.R
-#' @description  A shiny Module.
-#'
-#' @param id shiny id
-#' @param input internal
-#' @param output internal
-#' @param session internal
-#'
-#' @rdname mod_trends_mean_ui
-#'
-#' @keywords internal
-#' @export 
-#' @import tidyverse
-#' @import ggplot2
-#' @import shinyWidgets
-#' @import reshape2
-#' @importFrom shiny NS tagList 
-
 # UI FOR TRENDS (NATIONAL MEAN)
 mod_trends_mean_ui <- function(id){
   ns <- NS(id)
@@ -28,7 +9,6 @@ mod_trends_mean_ui <- function(id){
                ns('trends_mean'), height = '600px'
              )),
       column(3,
-             # useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              br(), br(),
@@ -485,7 +465,6 @@ mod_trends_mean_sub_ui <- function(id){
              )),
       
       column(3,
-             useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), label = 'Generate chart'),
              br(), br(),
@@ -975,7 +954,6 @@ mod_trends_con_ui <- function(id){
                ns('trends_con'), height = '600px'
              )),
       column(3,
-             useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
@@ -1400,7 +1378,6 @@ mod_trends_quin_ui <- function(id){
                ns('trends_quin'),  height = '600px'
              )),
       column(3,
-             useShinyalert(), 
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              br(), br(),

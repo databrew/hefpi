@@ -1,24 +1,4 @@
 # Module recent value UI
-
-#' @title   mod_recent 
-#' @description  A shiny Module.
-#'
-#' @param id shiny id
-#' @param input internal
-#' @param output internal
-#' @param session internal
-#' 
-#' @import leaflet
-#' @import shinyWidgets
-#' @import webshot
-#' @import shinyjs
-#' @import shinyalert
-#' @import RColorBrewer
-#' @import plotly
-#' @import sp
-#' @import htmltools
-#' @importFrom shiny NS tagList 
-
 # UI FOR MOST RECENT VALUE MAP
 mod_recent_mean_ui <- function(id){
   # let leaflet know that selections should persist
@@ -51,7 +31,6 @@ mod_recent_mean_ui <- function(id){
              br(),br(),
              fluidPage(
                fluidRow(
-                 useShinyalert(),  # Set up shinyalert
                  actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              )
       )
@@ -451,7 +430,6 @@ mod_recent_con_ui <- function(id){
              br(),br(),
              fluidPage(
                fluidRow(
-                 useShinyalert(),  # Set up shinyalert
                  actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              )
       )
