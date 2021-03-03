@@ -1,4 +1,4 @@
-# Module recent value UI
+# Module recent value
 #' @title mod_recent.R
 #' @description  A shiny Module.
 #'
@@ -7,7 +7,8 @@
 #' @param output internal
 #' @param session internal
 
-#' @importFrom shiny NS tagList 
+#' @keywords internal
+#' @export 
 # UI FOR MOST RECENT VALUE MAP
 mod_recent_mean_ui <- function(id){
   # let leaflet know that selections should persist
@@ -115,7 +116,11 @@ mod_recent_mean_server <- function(input, output, session){
     } else {
       # get world map shape files and join to data
       shp <- world
+      shp <- rbind(shp, wb_bound)
+      
       shp@data <- shp@data %>% left_join(pd)
+      shp@data$value[shp@data$NAME == 'Cyprus No Mans Land'] <- 0.2
+      shp@data$value[shp@data$NAME == 'Sahrawi Arab Democratic Republic'] <- 0.2
       
       # adjust value and color palette based indicator info
       if(unit_of_measure == '%'){
