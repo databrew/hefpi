@@ -7,8 +7,8 @@
 #' @param output internal
 #' @param session internal
 #'
-#' @keywords internal
-#' @export 
+#' @importFrom shiny NS tagList 
+
 # UI FOR TRENDS (NATIONAL MEAN)
 mod_trends_mean_ui <- function(id){
   ns <- NS(id)
