@@ -1,4 +1,5 @@
 context("golem tests")
+#' @importFrom testthat expect_equal quasi_label expect_running expect
 
 library(golem)
 
