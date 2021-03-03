@@ -7,8 +7,8 @@
 #' @param output internal
 #' @param session internal
 #'
-#' @importFrom shiny NS tagList 
-
+#' @keywords internal
+#' @export 
 # UI FOR DATA AVAILABILITY (COUNTRY)
 mod_dat_country_ui <- function(id){
   ns <- NS(id)

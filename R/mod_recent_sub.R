@@ -7,8 +7,8 @@
 #' @param output internal
 #' @param session internal
 #'
-#' @importFrom shiny NS tagList 
-
+#' @keywords internal
+#' @export 
 mod_recent_mean_sub_ui <- function(id){
   
   ns <- NS(id)

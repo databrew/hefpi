@@ -6,11 +6,28 @@ library(sp)
 library(rgdal)
 library(tidyverse)
 
+# read in WB boundaries (disputed)
+wb_bound <- readOGR('from_wb/WB_disputed_areas_Admin0_10m/')
+
+wb_bound@data <- wb_bound@data %>% dplyr::select(FORMAL_EN, REGION_WB)
+names(wb_bound@data) <- c('NAME','REGION')
+wb_bound@data$FIPS <- NA
+wb_bound@data$ISO2 <- NA
+wb_bound@data$ISO3 <- NA
+wb_bound@data$UN <- NA
+wb_bound@data$AREA <- NA
+wb_bound@data$POP2005 <- NA
+wb_bound@data$SUBREGION <- NA
+wb_bound@data$LON <- NA
+wb_bound@data$LAT <- NA
+usethis::use_data(wb_bound, overwrite = T)
 
 # read in default map parameters
 sn_map_params <- read.csv('from_other/default_map_parameters.csv')
 usethis::use_data(sn_map_params, overwrite = TRUE)
 world <- readOGR('from_other/world_small/', 'TM_WORLD_BORDERS_SIMPL-0.3')
+
+# merget wb_bound and world 
 usethis::use_data(world, overwrite = T)
 
 # # Read in gaul codes (downloaded from https://blog.gdeltproject.org/global-second-order-administrative-divisions-now-available-from-gaul/)
