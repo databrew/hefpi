@@ -23,6 +23,9 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_leaf'), height = 700 ),
       ),
       column(4,
+             useShinyalert(),
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             br(), br(),
              p('Indicator'),
              selectInput(ns('indicator'), 
                          label = NULL,
@@ -37,12 +40,7 @@ mod_recent_mean_ui <- function(id){
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             )
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
       )
     ),
     br(), br(),
@@ -444,6 +442,7 @@ mod_recent_con_ui <- function(id){
              br(),br(),
              fluidPage(
                fluidRow(
+                 useShinyalert(),
                  actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
              )
       )

@@ -19,6 +19,7 @@ mod_dat_country_ui <- function(id){
                ns('dat_country'), height = '800px', width = '1000px', 
              )),
       column(3,
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
@@ -251,6 +252,7 @@ mod_dat_ind_ui <- function(id){
              tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '1000px') )
              ),
       column(3,
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
@@ -548,7 +550,6 @@ mod_dat_ind_server <- function(input, output, session){
         } 
         fig <- empty_plot("No data available for the selected inputs")
       } else {
-        # save(dat_list, file = 'temp_dat_list.rda')
         temp_data <- dat_list[[1]]
         date_range <- dat_list[[2]]
         col_vec <- dat_list[[3]]
@@ -556,7 +557,7 @@ mod_dat_ind_server <- function(input, output, session){
         
         
         # make plot title 
-        plot_title = paste0('Data availability',' - By ', 'indicator')
+        plot_title = paste0('Data availability',' - By ', 'indicator: ', indicator)
         mytext <- paste(
           "Economy: ", as.character(temp_data$country), "\n",
           "Indicator class: ", as.character(temp_data$level2), "\n",

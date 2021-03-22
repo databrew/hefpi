@@ -30,6 +30,8 @@ Imports:
     sp,
     shinyjs,
     shinydashboard,
+    shinyalert,
+    mapview,
     pkgload,
     extrafont,
     ggimage,

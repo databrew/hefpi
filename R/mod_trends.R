@@ -9,6 +9,7 @@
 #'
 #' @keywords internal
 #' @export 
+
 # UI FOR TRENDS (NATIONAL MEAN)
 mod_trends_mean_ui <- function(id){
   ns <- NS(id)
@@ -475,6 +476,7 @@ mod_trends_mean_sub_ui <- function(id){
              )),
       
       column(3,
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), label = 'Generate chart'),
              br(), br(),
@@ -964,6 +966,7 @@ mod_trends_con_ui <- function(id){
                ns('trends_con'), height = '600px'
              )),
       column(3,
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
@@ -1388,6 +1391,7 @@ mod_trends_quin_ui <- function(id){
                ns('trends_quin'),  height = '600px'
              )),
       column(3,
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              br(), br(),
@@ -1414,7 +1418,7 @@ mod_trends_quin_server <- function(input, output, session){
   # Observe changes to inputs in order to generate changes to the map
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "quinile - Trends", 
+    shinyalert(title = "Quintile - Trends", 
                text = "This chart shows HEFPI indicator trends at the wealth quinile level, revealing if any inequalities have reduced, remained stable, or increased over time. How wealth is measured for a data point – by a wealth index, consumption, or income – depends on the underlying survey. Users can tailor the charts to their time period of interest.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
