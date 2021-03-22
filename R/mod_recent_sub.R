@@ -20,6 +20,9 @@ mod_recent_mean_sub_ui <- function(id){
                ns('recent_mean_sub_leaf'), height  = 700),
       ),
       column(4,
+             useShinyalert(),
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             br(), br(),
              selectInput(ns('indicator'), 'Indicator',
                          choices = sort(unique(sub_national$indicator_short_name)),
                          selected = sort(unique(sub_national$indicator_short_name))[1]),
@@ -28,14 +31,8 @@ mod_recent_mean_sub_ui <- function(id){
                          selected = as.character(region_list$region)[[2]]),
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             ))
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     ),
-    br(), br(),
   )
 }
 

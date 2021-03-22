@@ -20,6 +20,7 @@ mod_dots_country_ui <- function(id){
                  tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dots_country'), height = '600px', width = '1000px') )
       ),
       column(3,
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
@@ -451,6 +452,7 @@ mod_dots_ind_ui <- function(id){
              tags$div(style='overflow-y: scroll; position: relative', 
                       plotlyOutput(ns('dots_ind'), height = '600px', width = '1000px') )),
       column(3,
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
