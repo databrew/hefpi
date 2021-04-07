@@ -60,13 +60,13 @@ body {
 }
 .content-wrapper,.right-side {
     min-height: 100%;
-    background-color: #ecf0f5;
+    background-color: #ecf0f5; /* color light grayish blue */
     z-index: 800}
 
 .main-footer {
-    background: #fff;
+    background: #fff; /*color white */
     padding: 15px;
-    color: #444;
+    color: #444;/* color very dark gray */
     border-top: 1px solid #d2d6de}
 .fixed .left-side,.fixed .main-header,.fixed .main-sidebar {
     position: fixed}
@@ -95,7 +95,7 @@ body.hold-transition .content-wrapper,body.hold-transition .left-side,body.hold-
     padding-right: 20px}
 .h1,.h2,.h3,.h4,.h5,.h6,h1,h2,h3,h4,h5,h6 {
     font-family:'MuseoSans-300', 'Helvetica', sans-serif;
-    color: #494A4B;
+    color: #494A4B;/* color very dark grayish blue */
 }
 
 .h1,h1{
@@ -123,7 +123,7 @@ body.hold-transition .content-wrapper,body.hold-transition .left-side,body.hold-
     font-weight: 150;
     line-height: 30px;
     font-size: 15pt;
-    color:#757575;
+    color:#757575;/* color dark grey */
     font-family:'MuseoSans-300', 'Helvetica', serif;
     padding-bottom: 0;
     padding-top: 0;
@@ -139,7 +139,7 @@ body.hold-transition .content-wrapper,body.hold-transition .left-side,body.hold-
     font-weight: 100;
     line-height: 30px;
     font-size: 9pt;
-    color:#757575;
+    color:#757575;/* color dark grey */
     font-family:'MuseoSans-300', 'Helvetica', sans-serif;
     padding-bottom: 0;
     padding-top: 0;
@@ -154,7 +154,7 @@ body.hold-transition .content-wrapper,body.hold-transition .left-side,body.hold-
     font-size: 18pt;
     color: #fff;
     text-transform: uppercase;
-    background-color: rgb(21,47,74); 
+    background-color: rgb(21,47,74); /* color very dark blue */
     padding-left: 8px;
     padding-right: 8px;
     margin-right: 20%;
@@ -170,7 +170,7 @@ a {
 a:active,a:focus,a:hover {
     outline: 0;
     text-decoration: none;
-    color: rgb(99,144,178)
+    color: rgb(99,144,178)/* color desaturated dark blue */
 }
 
 .page-header {
@@ -731,13 +731,15 @@ a:active,a:focus,a:hover {
     color: #5e5e5e}
 .dropdown-menu {
     box-shadow: none;
-    border-color: #eee}
+    border-color: #eee;
+    color:#e1e3e9; /*navbar here*/
+}
 .dropdown-menu>li>a {
     color: #777}
 .dropdown-menu>li>a>.fa,.dropdown-menu>li>a>.glyphicon,.dropdown-menu>li>a>.ion {
     margin-right: 10px}
 .dropdown-menu>li>a:hover {
-    background-color: #e1e3e9;
+    background-color: #002244; /* color when hovering drowpdown HERE */
     color: #333}
 .dropdown-menu>.divider {
     background-color: #eee}
@@ -1544,7 +1546,7 @@ label {
 
 /* button used in app */
 .btn-default {
-    background-color: rgb(28,114,188);
+    background-color: #009FDA;
     color: #fff;
     border-color: #fff;
     border-opacity: 0.1;
@@ -1552,7 +1554,7 @@ label {
    
 }
 .btn-default.hover,.btn-default:active,.btn-default:hover {
-    background-color: rgb(21,47,74);
+    background-color: #002244;
     color: #fff;
     border-opacity: 0.1;
     border-color: #fff;
@@ -1688,8 +1690,8 @@ label {
 .alert-success {
     border-color: #008d4c}
 .alert-danger,.alert-error {
-    border-color: #d73925
-    background-color: #fff;}
+    border-color: #d73925;
+    background-color: #fff}
 .alert-warning {
     border-color: #e08e0b}
 .alert-info {
@@ -1719,7 +1721,7 @@ label {
     border-left-color: #3c8dbc}
 .nav-stacked>li.header {
     border-bottom: 1px solid #ddd;
-    color: #777;
+    color: black;
     margin-bottom: 10px;
     padding: 5px 10px;
     text-transform: uppercase}
@@ -2335,24 +2337,24 @@ table.text-center,table.text-center td,table.text-center th {
 
 /* navbar (rest of the header) */
 .skin-blue .main-header .navbar {
-                      background-color: rgb(99,144,178);
+                      background-color: #002244; /*here for top of page dark blue*/
                       }
 
 /* main sidebar */
 .skin-blue .main-sidebar {
-                      background-color: #ffffff;
+                      background-color: #ffffff; /* here is unused sidebar*/
                       }
 
 /* active selected tab in the sidebarmenu */
 .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
-                      background-color: rgb(26,51,95);
-                      color: #FFFFFF;
+                      background-color: #009FDA; 
+                      color: #FFFFFF; /* highlighted sidebar*/
                       }
 
 /* other links in the sidebarmenu */
 .skin-blue .main-sidebar .sidebar .sidebar-menu a{
-                      background-color: rgb(109,143,150);
-                      color: #FFFFFF;
+                      background-color: #002244;  /*backgroun color */
+                      color: #FFFFFF; /* font color onside barwithout hover*/
                       }
 
 /* other links in the sidebarmenu when hovered */
@@ -2398,14 +2400,14 @@ background-color: #fff;
 
 /* Slider */
 .irs-bar {
-    background: rgb(28,114,188);
+    background: #009FDA;
 }
 
 .irs-bar-edge {
     background: transparent;
 }
 .irs-single {
-    background-color: rgb(28,114,188);
+    background-color: #009FDA;
 }
 
 /* Footer */
