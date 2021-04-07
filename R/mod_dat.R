@@ -22,6 +22,7 @@ mod_dat_country_ui <- function(id){
              useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
+             actionButton(ns('share_chart'), 'Share chart'),
              br(), br(),
              p('Indicator'),
              shinyWidgets::dropdownButton(circle = FALSE,  
@@ -255,6 +256,8 @@ mod_dat_ind_ui <- function(id){
              useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
+             actionButton(ns('share_chart'), 'Share chart'),
+
              br(), br(),
              p('Indicator'),
              div(style='border-color: grey; color:grey',selectInput(ns('indicator'),
