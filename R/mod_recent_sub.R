@@ -22,6 +22,8 @@ mod_recent_mean_sub_ui <- function(id){
       column(4,
              useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('share_chart'), 'Share chart'),
+
              br(), br(),
              selectInput(ns('indicator'), 'Indicator',
                          choices = sort(unique(sub_national$indicator_short_name)),

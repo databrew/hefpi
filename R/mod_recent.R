@@ -25,6 +25,7 @@ mod_recent_mean_ui <- function(id){
       column(4,
              useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('share_chart'), 'Share chart'),
              br(), br(),
              p('Indicator'),
              selectInput(ns('indicator'), 
@@ -398,7 +399,7 @@ mod_recent_mean_server <- function(input, output, session){
                            axis.ticks.x = element_blank()),
                    tooltip = 'text'))   
         p <- p %>% 
-          config(displayModeBar = F) %>%
+          config(displayModeBar = T) %>%
           highlight(on='plotly_hover',
                     persistent = FALSE,
                     color = 'white',
@@ -424,6 +425,9 @@ mod_recent_con_ui <- function(id){
                ns('recent_con_leaf'), height = 700),
       ),
       column(4,
+             useShinyalert(),
+             actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'),
+             actionButton(ns('share_chart'), 'Share chart'),
              p('Indicator'),
              selectInput(ns('indicator'),
                          label = NULL,
@@ -439,12 +443,7 @@ mod_recent_con_ui <- function(id){
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(),br(),
-             fluidPage(
-               fluidRow(
-                 useShinyalert(),
-                 actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'))
-             )
+             br(),br()
       )
     ),
     br(), br(),

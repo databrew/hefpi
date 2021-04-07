@@ -739,8 +739,8 @@ a:active,a:focus,a:hover {
 .dropdown-menu>li>a>.fa,.dropdown-menu>li>a>.glyphicon,.dropdown-menu>li>a>.ion {
     margin-right: 10px}
 .dropdown-menu>li>a:hover {
-    background-color: #002244; /* color when hovering drowpdown HERE */
-    color: #333}
+    background-color: #777; /* color when hovering drowpdown HERE */
+    color: #fff}
 .dropdown-menu>.divider {
     background-color: #eee}
 .navbar-nav>.messages-menu>.dropdown-menu,.navbar-nav>.notifications-menu>.dropdown-menu,.navbar-nav>.tasks-menu>.dropdown-menu {
@@ -1511,7 +1511,7 @@ label {
     border: 0.5px solid transparent;
     max-height: 80vh;
     border-opacity: 0.1;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 .btn.uppercase {
     text-transform: uppercase}

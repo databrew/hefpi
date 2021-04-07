@@ -86,19 +86,36 @@ app_ui <- function() {
         tabName = 'about',
         fluidPage(
           fluidRow(
-            div(img(src='www/logo.png', align = "center"), style="text-align: center;"),
-            h4('Built in partnership with ',
-               a(href = 'http://databrew.cc',
-                 target='_blank', 'Databrew'),
-               align = 'center'),
-            p('Empowering research and analysis through collaborative data science.', 
-              align = 'center'),
-            div(a(actionButton(inputId = "email", 
-                               label = "info@databrew.cc", 
-                               icon = icon("envelope", lib = "font-awesome")),
-                  href="mailto:info@databrew.cc",
-                  align = 'center')), 
-            style = 'text-align:center;'
+            column(12,
+                   h4('Health Equity and Financial Protection Indicators (HEFPI)'),
+                   br(),
+                   p('Most health systems aspire to deliver health services to people who need them, without causing financial hardship for the families involved. How close do health systems around the world come to achieving this goal of universal health coverage?'),
+                   p('What percentage of children and women in different countries get key preventive health interventions such as antenatal care and cervical cancer screening? How does this percentage differ between the poor and less poor? What percentage of adults in different countries receive inpatient care, and how does this percentage compare to the WHO benchmark? What does the gradient across socioeconomic groups look like, and does it look different in low-, middle- and high-income countries? What are the gaps between the poor and the less poor in health outcomes, such as childhood stunting and adult obesity?'),
+                   p('What fraction of households spend more than 10% of their income or out-of-pocket consumption on health care? Is the fraction higher among the poor? What fraction of households are impoverished by out-of-pocket health expenses? How do these numbers vary across countries? How have they changed over time?'),
+                   p('The Health Equity and Financial Protection Indicators (HEFPI) dataset allows you to answer these questions. The dataset has grown over time from the first dataset published in 2000 which pulled data from 42 surveys and one type of survey, covered just 42 countries, and included just 34 indicators, which all concerned maternal and child health. In 2013, for the first time, the database included household out-of-pocket health expenditures, noncommunicable disease indicators (NCD), and data from high-income countries. The 2018 database follows this trend by employing over 1,600 surveys, covering 183 countries, and encompassing multiple years of data, richer NCD data, and more extensive data on household out-of-pocket expenditures.')
+            )
+       
+          ),
+          br(), br(),
+          fluidRow(
+            column(3, 
+                   shiny::actionButton(inputId='link1', label="Download full data", 
+                                       icon = icon("bar-chart-o"), 
+                                       onclick ="window.open('https://datacatalog.worldbank.org/dataset/hefpi', '_blank')")),
+            
+            column(1, 
+                   shiny::actionButton(inputId='link2', label="Read publication", 
+                                       icon = icon("file-alt"), 
+                                       onclick ="window.open('https://openknowledge.worldbank.org/handle/10986/31869', '_blank')"))),
+        
+          br(), br(), br(), br(), br(),br(), br(), br(),br(), br(),br(), br(), br(),
+          fluidRow(
+            column(1, shinyWidgets::circleButton(inputId = 'fb', icon = icon('facebook'), status = "default", size ='default', onclick ="window.open('https://www.facebook.com/worldbank', '_blank')", style="float:middle")),
+            column(1,  shinyWidgets::circleButton('twitter', icon = icon('twitter'), status = "default", size = "default", onclick ="window.open('https://www.twitter.com/worldbank', '_blank')", style="float:middle")),
+            column(1,  shinyWidgets::circleButton('linkedin', icon = icon('linkedin'), status = "default", size = "default", onclick ="window.open('https://www.linkedin.com/company/the-world-bank/', '_blank')", style="float:middle")),
+            column(1,  shinyWidgets::circleButton('instagram', icon = icon('instagram'), status = "default", size = "default", onclick ="window.open('https://www.instagram.com/worldbank', '_blank')", style="float:middle")),
+            column(1,  shinyWidgets::circleButton('youtube', icon = icon('youtube'), status = "default", size = "default", onclick ="window.open('https://www.youtube.com/channel/UCE9mrcoX-oE-2f1BL-iPPoQ', '_blank')", style="float:middle")),
+            column(1,  shinyWidgets::circleButton('flickr', icon = icon('flickr'), status = "default", size = "default", onclick ="window.open('https://www.flickr.com/photos/worldbank', '_blank')", style="float:middle")),
           )
         )
       )
