@@ -34,10 +34,6 @@ app_ui <- function() {
         tabName="data"
       ),
       menuItem(
-        text="CSS page",
-        tabName="css_page"
-      ),
-      menuItem(
         text = 'About',
         tabName = 'about'
         )
@@ -86,63 +82,6 @@ app_ui <- function() {
                                        mod_dat_country_ui('dat_country')),
                               tabPanel('By indicator',
                                        mod_dat_ind_ui('dat_ind'))))),
-      tabItem(
-        tabName = 'css_page',
-        navbarPage(title ='Css',
-                   tabPanel(title = "CSS test page",
-                            fluidRow(
-                              shinydashboard::box(title = 'This is another box',
-                                                  width = 6,
-                                                  status = 'info',
-                                                  collapsible = TRUE,
-                                                  footer = 'This is a footer',
-                                                  plotOutput('plot1')),
-                              column(6,
-                                     textInput('text',
-                                               'Test'),
-                                     h1('Big heading (h1)'),
-                                     h2('Less big heading (h2)'),
-                                     h3('Sort of big heading (h3)'),
-                                     h4('Not so big heading (h4)'),
-                                     h5('Small heading (h5)'),
-                                     h6('Heading w/ background (h6)'))
-                            ),
-                            fluidRow(
-                              column(4,
-                                     h4('A bunch of inputs'),
-                                     selectInput('abc', 
-                                                 'Pick a place', 
-                                                 choices = c('Home', 'Away', 'In-between')),
-                                     radioButtons('xyz', 
-                                                  'What do you like?', 
-                                                  choices = c('Ice cream', 'Pizza', 'Both', 'Neither', 'Ice pizza')),
-                                     dateRangeInput('aslk', 
-                                                    'Date range', 
-                                                    start = Sys.Date() - 20, 
-                                                    end = Sys.Date() - 5),
-                                     actionButton('action', 
-                                                  'This is a button', 
-                                                  icon = icon('download')),
-                                     sliderInput('lakjaasa', 
-                                                 'This is a slider', 
-                                                 min = 0,
-                                                 max = 100, 
-                                                 value = 25),
-                                     textInput('qwer', 'This is some text input')),
-                              column(4,
-                                     h4('Here is some regular text'),
-                                     p('This is normal (ie, p) text, This is normal (ie, p) text, This is normal (ie, p) text,
-                                       This is normal (ie, p) text, This is normal (ie, p) text, This is normal (ie, p) text'),
-                                     helpText('This is "help text"')),
-                              shinydashboard::box(title = 'This is another box',
-                                                  width = 4,
-                                                  status = 'info',
-                                                  collapsible = TRUE,
-                                                  footer = 'This is a footer',
-                                                  leaflet::leafletOutput('l1')
-                              )))
-                   )
-      ),
       tabItem(
         tabName = 'about',
         fluidPage(
