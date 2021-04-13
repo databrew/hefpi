@@ -439,6 +439,12 @@ mod_recent_mean_sub_server <- function(input, output, session){
             names(temp) <- c('Region', 'Country_name', 'Subregion','Country_iso3', 'Year', 'Survey_name', 
                              'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                              'Value', 'Unit_of_measurement')
+            save(temp, file = 'temp_sub.rda')
+            # add stampe 
+            temp_stamp <- temp[1,]
+            temp_stamp$Region <- '© 2021 The World Bank Group'
+            temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Subregion<- temp_stamp$Year <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+            temp <- rbind(temp, temp_stamp)
             write.csv(temp, file)
           }
          
@@ -485,6 +491,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                           this_map <- pop_map
                                           this_map <- this_map %>%
                                             addMapPane("country_labels", zIndex = 410) %>%
+                                            addTiles(attribution = '© 2021 The World Bank Group') %>%
                                             addProviderTiles('CartoDB.PositronOnlyLabels',
                                                              options = pathOptions(pane = "country_labels"),
                                                              layerId = 'country_labs')

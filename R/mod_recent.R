@@ -115,11 +115,11 @@ mod_recent_mean_server <- function(input, output, session){
     } else {
       # get world map shape files and join to data
       shp <- world
-      shp <- rbind(shp, wb_bound)
+      # shp <- rbind(shp, wb_bound)
       
       shp@data <- shp@data %>% left_join(pd)
-      shp@data$value[shp@data$NAME == 'Cyprus No Mans Land'] <- 0.2
-      shp@data$value[shp@data$NAME == 'Sahrawi Arab Democratic Republic'] <- 0.2
+      # shp@data$value[shp@data$NAME == 'Cyprus No Mans Land'] <- 0.2
+      # shp@data$value[shp@data$NAME == 'Sahrawi Arab Democratic Republic'] <- 0.2
       
       # adjust value and color palette based indicator info
       if(unit_of_measure == '%'){
@@ -265,6 +265,12 @@ mod_recent_mean_server <- function(input, output, session){
           names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
+          # save(temp, file = 'temp_data.rda')
+          # add stampe 
+          temp_stamp <- temp[1,]
+          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp <- rbind(temp, temp_stamp)
           write.csv(temp, file)
         }
         
@@ -306,6 +312,7 @@ mod_recent_mean_server <- function(input, output, session){
                                           this_map <- pop_map
                                           this_map <- this_map %>%
                                             addMapPane("country_labels", zIndex = 410) %>%
+                                            addTiles(attribution = '© 2021 The World Bank Group') %>%
                                             addProviderTiles('CartoDB.PositronOnlyLabels',
                                                              options = pathOptions(pane = "country_labels"),
                                                              layerId = 'country_labs')
@@ -632,6 +639,11 @@ mod_recent_con_server <- function(input, output, session){
           names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
+          # add stampe 
+          temp_stamp <- temp[1,]
+          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp <- rbind(temp, temp_stamp)
           write.csv(temp, file)
         }
       }
@@ -687,11 +699,16 @@ mod_recent_con_server <- function(input, output, session){
                                                             selfcontained = FALSE)
                                         } else {
                                           this_map <- con_map
+                                          # save(this_map, file = 'this_map.rda')
+                                          # HERE need ot add image (inst/app/www/wb_stamp.png) over map
+                                          img <- "https://www.r-project.org/logo/Rlogo.svg"
+                                          
                                           this_map <- this_map %>%
                                             addMapPane("country_labels", zIndex = 410) %>%
+                                            addTiles(attribution = '© 2021 The World Bank Group') %>%
                                             addProviderTiles('CartoDB.PositronOnlyLabels',
                                                              options = pathOptions(pane = "country_labels"),
-                                                             layerId = 'country_labs')
+                                                             layerId = 'country_labs')  
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",
