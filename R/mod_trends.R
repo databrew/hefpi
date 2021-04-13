@@ -263,6 +263,10 @@ mod_trends_mean_server <- function(input, output, session){
           names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
+          temp_stamp <- temp[1,]
+          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp <- rbind(temp, temp_stamp)
         }
         write.csv(temp, file)
       }
@@ -732,6 +736,11 @@ mod_trends_mean_sub_server <- function(input, output, session){
           names(temp) <- c('Region', 'national','Country_iso3', 'Year', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
+          save(temp, file='temp_subdata.rda')
+          temp_stamp <- temp[1,]
+          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$national <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp <- rbind(temp, temp_stamp)
         }
         write.csv(x = temp, file)
       }
@@ -1195,6 +1204,10 @@ mod_trends_con_server <- function(input, output, session){
           names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
+          temp_stamp <- temp[1,]
+          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp <- rbind(temp, temp_stamp)
           write.csv(temp, file)
           
         }
@@ -1571,6 +1584,10 @@ mod_trends_quin_server <- function(input, output, session){
           names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
+          temp_stamp <- temp[1,]
+          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp <- rbind(temp, temp_stamp)
         }
         write.csv(temp, file)
       }
