@@ -324,6 +324,7 @@ mod_dots_country_server <- function(input, output, session){
                                         plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
                                         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
                                         y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+                                        caption_text = '© 2021 The World Bank Group'
                                         
                                         mytext <- paste(
                                           "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
@@ -347,7 +348,10 @@ mod_dots_country_server <- function(input, output, session){
                                                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                                                              expand = c(0,0)) +
                                           labs(title='',
-                                               subtitle = '', x= '', y = y_axis_text) +
+                                               subtitle = '', 
+                                               x= '', 
+                                               y = y_axis_text, 
+                                               caption=caption_text) +
                                           coord_flip() 
                                         
                                         p <- p +
@@ -732,6 +736,7 @@ mod_dots_ind_server <- function(input, output, session){
                                         plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
                                         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
                                         y_axis_text = paste0(indicator)
+                                        caption_text = '© 2021 The World Bank Group'
                                         
                                         
                                         # number of countries
@@ -749,8 +754,11 @@ mod_dots_ind_server <- function(input, output, session){
                                           scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)), 
                                                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                                                              expand = c(0,0)) +
-                                          labs(title='', x= '', y = '',
-                                               subtitle = '') +
+                                          labs(title='',
+                                               x= '', 
+                                               y = '',
+                                               subtitle = '',
+                                               caption = caption_text) +
                                           coord_flip()
                                         
                                         p <-  p + hefpi::theme_hefpi(grid_major_x = NA,
@@ -842,7 +850,7 @@ mod_dots_ind_server <- function(input, output, session){
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
                                     y_axis_vjust = 0.5) 
-        p
+        
         fig <- ggplotly(p, 
                         tooltip = 'text', 
                         height = plot_height) %>%

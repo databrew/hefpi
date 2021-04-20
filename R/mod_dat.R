@@ -155,6 +155,8 @@ mod_dat_country_server <- function(input, output, session){
                                         col_vec <-dat_list[[3]]
                                         # make plot title 
                                         plot_title = paste0('Data availability', ' - By country')
+                                        caption_text = '© 2021 The World Bank Group'
+                                        
                                         # plot
                                         p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
                                           geom_tile(alpha = 0.8, color = 'lightgrey') +
@@ -164,7 +166,8 @@ mod_dat_country_server <- function(input, output, session){
                                                             values = col_vec) +
                                           labs(x = 'Year',
                                                y = '',
-                                               title = '')
+                                               title = '',
+                                               caption=caption_text)
                                         
                                         p =  p + hefpi::theme_hefpi(grid_major_x = NA,
                                                                     grid_major_y = NA,
@@ -180,7 +183,8 @@ mod_dat_country_server <- function(input, output, session){
                                                                     legend_position = 'top',
                                                                     legend_direction = 'horizontal',
                                                                     legend_text_size = rel(1/2)) + 
-                                          labs(title = '')
+                                          labs(title = '',
+                                               caption = caption_text)
                                         p
                                         ggsave(file, width = 10, height = 8)
                                       }
@@ -481,6 +485,8 @@ mod_dat_ind_server <- function(input, output, session){
                                         
                                         # make plot title 
                                         plot_title = paste0('Data availability',' - By indicator')
+                                        caption_text = '© 2021 The World Bank Group'
+                                        
                                         mytext <- paste(
                                           "Economy: ", as.character(temp_data$country), "\n",
                                           "Indicator class: ", as.character(temp_data$level2), "\n",
@@ -501,7 +507,8 @@ mod_dat_ind_server <- function(input, output, session){
                                                             values = col_vec) +
                                           labs(x = '',
                                                y = 'Year',
-                                               title = '') +
+                                               title = '',
+                                               caption = caption_text) +
                                           coord_flip() +
                                           theme(legend.position = "none") 
                                         

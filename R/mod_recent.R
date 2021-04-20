@@ -17,6 +17,7 @@ mod_recent_mean_ui <- function(id){
   # tagList(
   fluidPage(
     fluidRow(
+      
       column(8,
              uiOutput(ns('map_title_ui')),
              leafletOutput(
@@ -216,7 +217,7 @@ mod_recent_mean_server <- function(input, output, session){
         this_map
       } else {
         this_map <- pop_map[[1]]
-        
+        this_map
       }
     }
   })
@@ -226,7 +227,7 @@ mod_recent_mean_server <- function(input, output, session){
     the_zoom <- input$recent_mean_leaf_zoom
     print('THE ZOOM LEVEL IS :')
     message('----', the_zoom)
-    if(the_zoom <= 4 & the_zoom >= 1){ # BEN, change this to 2 if you want to suppress the continent labels
+    if(the_zoom <= 4 & the_zoom >= 1){ # change this to 2 if you want to suppress the continent labels
       leafletProxy('recent_mean_leaf') %>%
         addMapPane("country_labels", zIndex = 410) %>%
         addProviderTiles('CartoDB.PositronOnlyLabels',
@@ -292,7 +293,7 @@ mod_recent_mean_server <- function(input, output, session){
   }) 
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".png"),
+  output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".jpg"),
                                     content = function(file) {
                                       pop_map <- user_zoom()
                                       if(is.null(pop_map)){
@@ -312,10 +313,10 @@ mod_recent_mean_server <- function(input, output, session){
                                           this_map <- pop_map
                                           this_map <- this_map %>%
                                             addMapPane("country_labels", zIndex = 410) %>%
-                                            addTiles(attribution = '© 2021 The World Bank Group') %>%
                                             addProviderTiles('CartoDB.PositronOnlyLabels',
                                                              options = pathOptions(pane = "country_labels"),
-                                                             layerId = 'country_labs')
+                                                             layerId = 'country_labs') %>%
+                                            addTiles(urlTemplate = "", attribution = '© 2021 The World Bank Group') 
                                       
                                           mapview::mapshot( x = this_map,
                                                             file = file,
@@ -324,7 +325,6 @@ mod_recent_mean_server <- function(input, output, session){
                                         }
                                       }
                                     })
-  
   
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_mean_plot <- renderPlotly({
@@ -701,14 +701,13 @@ mod_recent_con_server <- function(input, output, session){
                                           this_map <- con_map
                                           # save(this_map, file = 'this_map.rda')
                                           # HERE need ot add image (inst/app/www/wb_stamp.png) over map
-                                          img <- "https://www.r-project.org/logo/Rlogo.svg"
-                                          
+
                                           this_map <- this_map %>%
                                             addMapPane("country_labels", zIndex = 410) %>%
-                                            addTiles(attribution = '© 2021 The World Bank Group') %>%
                                             addProviderTiles('CartoDB.PositronOnlyLabels',
                                                              options = pathOptions(pane = "country_labels"),
-                                                             layerId = 'country_labs')  
+                                                             layerId = 'country_labs') %>%
+                                            addTiles(urlTemplate = "", attribution = '© 2021 The World Bank Group') 
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",

@@ -346,10 +346,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
     print('THE LON IS :')
     message('###  ', the_lon)
     
-    # JOE HERE
-    
-   
-    
     if(is.null(pop_map)){
       NULL
     } else {
@@ -491,10 +487,10 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                           this_map <- pop_map
                                           this_map <- this_map %>%
                                             addMapPane("country_labels", zIndex = 410) %>%
-                                            addTiles(attribution = '© 2021 The World Bank Group') %>%
                                             addProviderTiles('CartoDB.PositronOnlyLabels',
                                                              options = pathOptions(pane = "country_labels"),
-                                                             layerId = 'country_labs')
+                                                             layerId = 'country_labs') %>%
+                                            addTiles(urlTemplate = "",attribution = '© 2021 The World Bank Group') 
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",

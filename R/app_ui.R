@@ -16,7 +16,7 @@
 app_ui <- function() {
 
   # HEADER
-  header <- dashboardHeader(title = 'HEFPI')#tags$a(tags$img(src='www/wb_logo.png', alt = 'WBG')))
+  header <- dashboardHeader(title  =  'HEFPI')
   
   # SIDEBAR
   sidebar <- dashboardSidebar(
@@ -42,6 +42,22 @@ app_ui <- function() {
   
   # BODY
   body <- dashboardBody(
+    tags$head(tags$style(HTML(
+      '.myClass { 
+        font-size: 30px;
+        line-height: 100px;
+        text-align: center;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        padding: 0px 0px 0px 0px;
+        overflow: hidden;
+        color: white;
+      }
+    '))),
+    tags$script(HTML('
+      $(document).ready(function() {
+        $("header").find("nav").append(\'<span class="myClass"> Health Equity and Financial indicators </span>\');
+      })
+     ')),
     golem_add_external_resources(),
     tabItems(
       tabItem(
@@ -83,11 +99,12 @@ app_ui <- function() {
                               tabPanel('By indicator',
                                        mod_dat_ind_ui('dat_ind'))))),
       tabItem(
-        tabName = 'about',
+        tabName = 'about', 
         fluidPage(
           fluidRow(
+            div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;'),
+
             column(12,
-                   h4('Health Equity and Financial Protection Indicators (HEFPI)'),
                    br(),
                    p('Most health systems aspire to deliver health services to people who need them, without causing financial hardship for the families involved. How close do health systems around the world come to achieving this goal of universal health coverage?'),
                    p('What percentage of children and women in different countries get key preventive health interventions such as antenatal care and cervical cancer screening? How does this percentage differ between the poor and less poor? What percentage of adults in different countries receive inpatient care, and how does this percentage compare to the WHO benchmark? What does the gradient across socioeconomic groups look like, and does it look different in low-, middle- and high-income countries? What are the gaps between the poor and the less poor in health outcomes, such as childhood stunting and adult obesity?'),
@@ -96,26 +113,67 @@ app_ui <- function() {
             )
        
           ),
+          fluidRow(
+            column(4,
+                   box(
+                     fluidRow(
+                       div(img(src= 'www/card_1.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
+                       footer = tags$div(class="header", checked=NA,
+                                         tags$h4("A History of the World Bank's Health Equity and Financial Protection Indicators"),
+                                         tags$p("This project – a collaboration between the Bank’s research group, data group, and health, nutrition and population global – stretches back to 2000."),
+                                         tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/history.html", "Read more", style="color:#009FDA")
+                       ),
+                       width =10,
+                     
+                   )),
+            column(4,
+                   box(
+                     fluidRow(
+                       div(img(src= 'www/card_2.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
+                       footer = tags$div(class="header", checked=NA,
+                                       tags$h4("Did the Poor Get Left Behind by the Health MDGs?"),
+                                       tags$p("One question that is often asked is whether the focus on population averages in the MDGs resulted in the poor being left behind. The HEFPI dataset allows us to answer this with some precision."),
+                                       tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/left_behind.html", "Read more", style="color:#009FDA")
+                     ),
+                       width =10,
+                     
+                   )),
+            column(4,
+                   box(
+                     fluidRow(
+                       div(img(src= 'www/card_3.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
+                       footer = tags$div(class="header", checked=NA,
+                                       tags$h4("Tracking Progress Towards UHC Using the HEFPI Database"),
+                                       tags$p("The idea underlying Universal Health Coverage (UHC) is that everyone, irrespective of their means, receives the health services they need, without suffering financial hardship in the process."),
+                                       tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/tracking_progress.html", "Read more", style="color:#009FDA")
+                     ),
+                       width =10,
+                     
+                   ))
+          ),
           br(), br(),
           fluidRow(
-            column(3, 
-                   shiny::actionButton(inputId='link1', label="Download full data", 
-                                       icon = icon("bar-chart-o"), 
-                                       onclick ="window.open('https://datacatalog.worldbank.org/dataset/hefpi', '_blank')")),
-            
-            column(1, 
-                   shiny::actionButton(inputId='link2', label="Read publication", 
-                                       icon = icon("file-alt"), 
-                                       onclick ="window.open('https://openknowledge.worldbank.org/handle/10986/31869', '_blank')"))),
+            column(6,
+            shiny::actionButton(inputId='link1', label="Download full data", 
+                                icon = icon("bar-chart-o"), 
+                                onclick ="window.open('https://datacatalog.worldbank.org/dataset/hefpi', '_blank')"), align = 'center'),
+            column(6,
+                   
+            shiny::actionButton(inputId='link2', label="Documentation", 
+                                icon = icon("file-alt"), 
+                                onclick ="window.open('https://openknowledge.worldbank.org/handle/10986/31869', '_blank')"), align = 'center'),
+                   ),
         
-          br(), br(), br(), br(), br(),br(), br(), br(),br(), br(),br(), br(), br(),
+          br(), br(), br(), br(), br(),
           fluidRow(
-            column(1, shinyWidgets::circleButton(inputId = 'fb', icon = icon('facebook'), status = "default", size ='default', onclick ="window.open('https://www.facebook.com/worldbank', '_blank')", style="float:middle")),
-            column(1,  shinyWidgets::circleButton('twitter', icon = icon('twitter'), status = "default", size = "default", onclick ="window.open('https://www.twitter.com/worldbank', '_blank')", style="float:middle")),
-            column(1,  shinyWidgets::circleButton('linkedin', icon = icon('linkedin'), status = "default", size = "default", onclick ="window.open('https://www.linkedin.com/company/the-world-bank/', '_blank')", style="float:middle")),
-            column(1,  shinyWidgets::circleButton('instagram', icon = icon('instagram'), status = "default", size = "default", onclick ="window.open('https://www.instagram.com/worldbank', '_blank')", style="float:middle")),
-            column(1,  shinyWidgets::circleButton('youtube', icon = icon('youtube'), status = "default", size = "default", onclick ="window.open('https://www.youtube.com/channel/UCE9mrcoX-oE-2f1BL-iPPoQ', '_blank')", style="float:middle")),
-            column(1,  shinyWidgets::circleButton('flickr', icon = icon('flickr'), status = "default", size = "default", onclick ="window.open('https://www.flickr.com/photos/worldbank', '_blank')", style="float:middle")),
+            column(12,
+            shinyWidgets::circleButton(inputId = 'fb', icon = icon('facebook'), status = "default", size ='default', onclick ="window.open('https://www.facebook.com/worldbank', '_blank')"),
+            shinyWidgets::circleButton('twitter', icon = icon('twitter'), status = "default", size = "default", onclick ="window.open('https://www.twitter.com/worldbank', '_blank')"),
+            shinyWidgets::circleButton('linkedin', icon = icon('linkedin'), status = "default", size = "default", onclick ="window.open('https://www.linkedin.com/company/the-world-bank/', '_blank')"),
+            shinyWidgets::circleButton('instagram', icon = icon('instagram'), status = "default", size = "default", onclick ="window.open('https://www.instagram.com/worldbank', '_blank')", style="float:middle"),
+            shinyWidgets::circleButton('youtube', icon = icon('youtube'), status = "default", size = "default", onclick ="window.open('https://www.youtube.com/channel/UCE9mrcoX-oE-2f1BL-iPPoQ', '_blank')"),
+            shinyWidgets::circleButton('flickr', icon = icon('flickr'), status = "default", size = "default", onclick ="window.open('https://www.flickr.com/photos/worldbank', '_blank')", style="float:middle"), 
+            align = 'center')
           )
         )
       )
@@ -128,8 +186,7 @@ app_ui <- function() {
     dashboardPage(
       header = header,
       sidebar = sidebar,
-      body = body, 
-      skin="blue", title = 'databrew')
+      body = body)
   )
 }
 
