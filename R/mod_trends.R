@@ -314,6 +314,8 @@ mod_trends_mean_server <- function(input, output, session){
                                           # get title and subtitle
                                           y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
                                           x_axis_text <- paste0('', '\n', 'Year')
+                                          caption_text = '© 2021 The World Bank Group'
+                                          
                                           temp <- tableau_color_pal(palette = "Tableau 20")
                                           trend_palette <- rep(temp(n = 20), 10)
                                          
@@ -337,7 +339,8 @@ mod_trends_mean_server <- function(input, output, session){
                                                                  expand = c(0,0)) +
                                               labs(x=x_axis_text,
                                                    y = y_axis_text,
-                                                   title = '')
+                                                   title = '',
+                                                   caption=caption_text)
                                           } else {
                                             # condition if we connect the dots
                                             p <- ggplot(data = pd, aes(year, pop, color= country)) +
@@ -351,7 +354,8 @@ mod_trends_mean_server <- function(input, output, session){
                                                                  expand = c(0,0)) +
                                               labs(x='Year',
                                                    y = y_axis_text,
-                                                   title = '') 
+                                                   title = '',
+                                                   caption = caption_text) 
                                           }
                                           p <- p +
                                             hefpi::theme_hefpi(grid_major_x = NA,
@@ -786,6 +790,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                           plot_title <- paste0('Trends - Subnational mean - ', indicator)
                                           y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
                                           x_axis_text <- paste0('', '\n', 'Year')
+                                          caption_text = '© 2021 The World Bank Group'
+                                          
                                           # condition on unit of measure
                                           if(unit_of_measure == '%'){
                                             pd$value<- pd$value*100
@@ -822,7 +828,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                                                  expand = c(0,0)) +
                                               labs(x=x_axis_text,
                                                    y = y_axis_text,
-                                                   title = '') 
+                                                   title = '',
+                                                   caption = caption_text) 
                                           } else {
                                             # condition if we connect the dots
                                             p <- ggplot(data = pd, aes(as.numeric(year), value, color= ADM1_NAME)) +
@@ -837,7 +844,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                                                  expand = c(0,0)) +
                                               labs(x=x_axis_text,
                                                    y=y_axis_text,
-                                                   title = '') 
+                                                   title = '',
+                                                   caption = caption_text) 
                                             p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                                                         x_axis_angle = 90,
                                                                         x_axis_hjust = 1)
@@ -1254,6 +1262,7 @@ mod_trends_con_server <- function(input, output, session){
                                           plot_title <- paste0('Trends - Concentration index - ', indicator)
                                           y_axis_text <- paste0(indicator, ' (CI) ')
                                           x_axis_text <- paste0('', '\n', 'Year')
+                                          caption_text = '© 2021 The World Bank Group'
                                           
                                           temp <- tableau_color_pal(palette = "Tableau 20")
                                           trend_palette <- rep(temp(n = 20), 10)
@@ -1271,7 +1280,8 @@ mod_trends_con_server <- function(input, output, session){
                                                                  expand = c(0,0)) +
                                               labs(title = plot_title,
                                                    x=x_axis_text,
-                                                   y = y_axis_text) 
+                                                   y = y_axis_text,
+                                                   caption=caption_text) 
                                           } else {
                                             # condition if we connect the dots
                                             p <- ggplot(data = pd, aes(year, CI, color= country)) +
@@ -1284,7 +1294,8 @@ mod_trends_con_server <- function(input, output, session){
                                                                  breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                                                  expand = c(0,0)) +
                                               labs(x=x_axis_text,
-                                                   y = y_axis_text) 
+                                                   y = y_axis_text,
+                                                   caption = caption_text) 
                                           }                                         
                                           p <- p + ggtitle('') +
                                             hefpi::theme_hefpi(grid_major_x = NA,
@@ -1640,6 +1651,8 @@ mod_trends_quin_server <- function(input, output, session){
                                           plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
                                           y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
                                           x_axis_text = paste0('', '\n', 'Year')
+                                          caption_text = '© 2021 The World Bank Group'
+                                          
                                           # text for plot
                                           mytext <- paste(
                                             "Indicator: ", indicator, '\n',
@@ -1661,7 +1674,8 @@ mod_trends_quin_server <- function(input, output, session){
                                                                expand = c(0,0)) +
                                             labs(y = y_axis_text,
                                                  x = x_axis_text,
-                                                 title = plot_title)
+                                                 title = plot_title,
+                                                 caption = caption_text)
                                           
                                           p <- p + ggtitle('') +
                                             hefpi::theme_hefpi(grid_major_x = NA,

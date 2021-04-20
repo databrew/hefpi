@@ -103,6 +103,70 @@ usethis::use_data(year_list, overwrite = T)
 # Get nicer indicator names in full database
 df <- left_join(df, indicators, by = c('indic' = 'variable_name')) 
 
+# change height indicator values to centimeters instead of meters (multiply by 100)
+#"Height, adults"      "Height, men"         "Height, women"       "Height, women 15-49"
+
+# population value 
+pop_ha <- df$indicator_short_name == 'Height, adults' & !is.na(df$pop)
+pop_hm <- df$indicator_short_name == 'Height, men' & !is.na(df$pop)
+pop_hw <- df$indicator_short_name == 'Height, women' & !is.na(df$pop)
+pop_hw2 <- df$indicator_short_name == 'Height, women 15-49' & !is.na(df$pop)
+df$pop[pop_ha] <- df$pop[pop_ha]*100
+df$pop[pop_hm] <- df$pop[pop_hm]*100
+df$pop[pop_hw] <- df$pop[pop_hw]*100
+df$pop[pop_hw2] <- df$pop[pop_hw2]*100
+
+#Q1
+Q1_ha <- df$indicator_short_name == 'Height, adults' & !is.na(df$Q1)
+Q1_hm <- df$indicator_short_name == 'Height, men' & !is.na(df$Q1)
+Q1_hw <- df$indicator_short_name == 'Height, women' & !is.na(df$Q1)
+Q1_hw2 <- df$indicator_short_name == 'Height, women 15-49' & !is.na(df$Q1)
+df$Q1[Q1_ha] <- df$Q1[Q1_ha]*100
+df$Q1[Q1_hm] <- df$Q1[Q1_hm]*100
+df$Q1[Q1_hw] <- df$Q1[Q1_hw]*100
+df$Q1[Q1_hw2] <- df$Q1[Q1_hw2]*100
+
+#Q2
+Q2_ha <- df$indicator_short_name == 'Height, adults' & !is.na(df$Q2)
+Q2_hm <- df$indicator_short_name == 'Height, men' & !is.na(df$Q2)
+Q2_hw <- df$indicator_short_name == 'Height, women' & !is.na(df$Q2)
+Q2_hw2 <- df$indicator_short_name == 'Height, women 15-49' & !is.na(df$Q2)
+df$Q2[Q2_ha] <- df$Q2[Q2_ha]*100
+df$Q2[Q2_hm] <- df$Q2[Q2_hm]*100
+df$Q2[Q2_hw] <- df$Q2[Q2_hw]*100
+df$Q2[Q2_hw2] <- df$Q2[Q2_hw2]*100
+
+#Q3
+Q3_ha <- df$indicator_short_name == 'Height, adults' & !is.na(df$Q3)
+Q3_hm <- df$indicator_short_name == 'Height, men' & !is.na(df$Q3)
+Q3_hw <- df$indicator_short_name == 'Height, women' & !is.na(df$Q3)
+Q3_hw2 <- df$indicator_short_name == 'Height, women 15-49' & !is.na(df$Q3)
+df$Q3[Q3_ha] <- df$Q3[Q3_ha]*100
+df$Q3[Q3_hm] <- df$Q3[Q3_hm]*100
+df$Q3[Q3_hw] <- df$Q3[Q3_hw]*100
+df$Q3[Q3_hw2] <- df$Q3[Q3_hw2]*100
+
+#Q4
+Q4_ha <- df$indicator_short_name == 'Height, adults' & !is.na(df$Q4)
+Q4_hm <- df$indicator_short_name == 'Height, men' & !is.na(df$Q4)
+Q4_hw <- df$indicator_short_name == 'Height, women' & !is.na(df$Q4)
+Q4_hw2 <- df$indicator_short_name == 'Height, women 15-49' & !is.na(df$Q4)
+df$Q4[Q4_ha] <- df$Q4[Q4_ha]*100
+df$Q4[Q4_hm] <- df$Q4[Q4_hm]*100
+df$Q4[Q4_hw] <- df$Q4[Q4_hw]*100
+df$Q4[Q4_hw2] <- df$Q4[Q4_hw2]*100
+
+#Q5
+Q5_ha <- df$indicator_short_name == 'Height, adults' & !is.na(df$Q5)
+Q5_hm <- df$indicator_short_name == 'Height, men' & !is.na(df$Q5)
+Q5_hw <- df$indicator_short_name == 'Height, women' & !is.na(df$Q5)
+Q5_hw2 <- df$indicator_short_name == 'Height, women 15-49' & !is.na(df$Q5)
+df$Q5[Q5_ha] <- df$Q5[Q5_ha]*100
+df$Q5[Q5_hm] <- df$Q5[Q5_hm]*100
+df$Q5[Q5_hw] <- df$Q5[Q5_hw]*100
+df$Q5[Q5_hw2] <- df$Q5[Q5_hw2]*100
+
+
 usethis::use_data(df, overwrite = T)
 
 # Get indicators in a form usable for the selectInput function
