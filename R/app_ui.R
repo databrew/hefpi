@@ -55,7 +55,7 @@ app_ui <- function() {
     '))),
     tags$script(HTML('
       $(document).ready(function() {
-        $("header").find("nav").append(\'<span class="myClass"> Health Equity and Financial indicators </span>\');
+        $("header").find("nav").append(\'<span class="myClass"> Health Equity and Financial Protection Indicators (HEFPI)</span>\');
       })
      ')),
     golem_add_external_resources(),
@@ -102,7 +102,7 @@ app_ui <- function() {
         tabName = 'about', 
         fluidPage(
           fluidRow(
-            div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;'),
+            #div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;'),
 
             column(12,
                    br(),
