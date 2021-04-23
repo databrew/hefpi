@@ -155,7 +155,7 @@ mod_dat_country_server <- function(input, output, session){
                                         col_vec <-dat_list[[3]]
                                         # make plot title 
                                         plot_title = paste0('Data availability', ' - By country')
-                                        caption_text = '© 2021 The World Bank Group'
+                                        caption_text = 'HEFPI database, The World Bank, 2021'
                                         
                                         # plot
                                         p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
@@ -485,7 +485,7 @@ mod_dat_ind_server <- function(input, output, session){
                                         
                                         # make plot title 
                                         plot_title = paste0('Data availability',' - By indicator')
-                                        caption_text = '© 2021 The World Bank Group'
+                                        caption_text = 'HEFPI database, The World Bank, 2021'
                                         
                                         mytext <- paste(
                                           "Economy: ", as.character(temp_data$country), "\n",
@@ -506,7 +506,7 @@ mod_dat_ind_server <- function(input, output, session){
                                           scale_fill_manual(name = '',
                                                             values = col_vec) +
                                           labs(x = '',
-                                               y = 'Year',
+                                               y = '',
                                                title = '',
                                                caption = caption_text) +
                                           coord_flip() +
@@ -587,7 +587,7 @@ mod_dat_ind_server <- function(input, output, session){
           scale_fill_manual(name = '',
                             values = col_vec) +
           labs(x = '',
-               y = 'Year',
+               y = '',
                title = plot_title) +
           theme(legend.position = "none") 
         

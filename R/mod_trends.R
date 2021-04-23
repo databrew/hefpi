@@ -264,7 +264,7 @@ mod_trends_mean_server <- function(input, output, session){
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
-          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
           temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
@@ -314,7 +314,7 @@ mod_trends_mean_server <- function(input, output, session){
                                           # get title and subtitle
                                           y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
                                           x_axis_text <- paste0('', '\n', 'Year')
-                                          caption_text = '© 2021 The World Bank Group'
+                                          caption_text = 'HEFPI database, The World Bank, 2021'
                                           
                                           temp <- tableau_color_pal(palette = "Tableau 20")
                                           trend_palette <- rep(temp(n = 20), 10)
@@ -742,7 +742,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                            'Value', 'Unit_of_measurement')
           save(temp, file='temp_subdata.rda')
           temp_stamp <- temp[1,]
-          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
           temp_stamp$national <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
@@ -790,7 +790,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                           plot_title <- paste0('Trends - Subnational mean - ', indicator)
                                           y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
                                           x_axis_text <- paste0('', '\n', 'Year')
-                                          caption_text = '© 2021 The World Bank Group'
+                                          caption_text = 'HEFPI database, The World Bank, 2021'
                                           
                                           # condition on unit of measure
                                           if(unit_of_measure == '%'){
@@ -1213,7 +1213,7 @@ mod_trends_con_server <- function(input, output, session){
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
-          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
           temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
           write.csv(temp, file)
@@ -1262,7 +1262,7 @@ mod_trends_con_server <- function(input, output, session){
                                           plot_title <- paste0('Trends - Concentration index - ', indicator)
                                           y_axis_text <- paste0(indicator, ' (CI) ')
                                           x_axis_text <- paste0('', '\n', 'Year')
-                                          caption_text = '© 2021 The World Bank Group'
+                                          caption_text = 'HEFPI database, The World Bank, 2021'
                                           
                                           temp <- tableau_color_pal(palette = "Tableau 20")
                                           trend_palette <- rep(temp(n = 20), 10)
@@ -1596,7 +1596,7 @@ mod_trends_quin_server <- function(input, output, session){
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
-          temp_stamp$Region <- '© 2021 The World Bank Group'
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
           temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
@@ -1651,7 +1651,7 @@ mod_trends_quin_server <- function(input, output, session){
                                           plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
                                           y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
                                           x_axis_text = paste0('', '\n', 'Year')
-                                          caption_text = '© 2021 The World Bank Group'
+                                          caption_text = 'HEFPI database, The World Bank, 2021'
                                           
                                           # text for plot
                                           mytext <- paste(
