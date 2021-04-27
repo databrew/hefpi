@@ -36,7 +36,16 @@ app_ui <- function() {
       menuItem(
         text = 'About',
         tabName = 'about'
-        )
+        ),
+      menuItem(
+        text = 'Documentation', 
+        tabName = 'docu'      
+        ),
+      menuItem(
+        text = 'Download full data', 
+        href = 'https://datacatalog.worldbank.org/dataset/hefpi'
+      )
+      
     )
   )
   
@@ -152,17 +161,17 @@ app_ui <- function() {
                    ))
           ),
           br(), br(),
-          fluidRow(
-            column(6,
-            shiny::actionButton(inputId='link1', label="Download full data", 
-                                icon = icon("bar-chart-o"), 
-                                onclick ="window.open('https://datacatalog.worldbank.org/dataset/hefpi', '_blank')"), align = 'center'),
-            column(6,
-                   
-            shiny::actionButton(inputId='link2', label="Documentation", 
-                                icon = icon("file-alt"), 
-                                onclick ="window.open('https://openknowledge.worldbank.org/handle/10986/31869', '_blank')"), align = 'center'),
-                   ),
+          # fluidRow(
+          #   column(6,
+          #   shiny::actionButton(inputId='link1', label="Download full data", 
+          #                       icon = icon("bar-chart-o"), 
+          #                       onclick ="window.open('https://datacatalog.worldbank.org/dataset/hefpi', '_blank')"), align = 'center'),
+          #   column(6,
+          #          
+          #   shiny::actionButton(inputId='link2', label="Documentation", 
+          #                       icon = icon("file-alt"), 
+          #                       onclick ="window.open('https://openknowledge.worldbank.org/handle/10986/31869', '_blank')"), align = 'center'),
+          #          ),
         
           br(), br(), br(), br(), br(),
           fluidRow(
@@ -176,6 +185,64 @@ app_ui <- function() {
             align = 'center')
           )
         )
+      ),
+      tabItem(
+        tabName = 'docu', 
+        fluidPage(
+          fluidRow(
+            div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;')
+          ), br(), br(), br(),
+          fluidRow(
+            column(3,
+                   div(img(src= 'www/working_paper_1.png', height = '250px', width = '200px'), style = 'text-align:left;') 
+                   ),
+            column(9,
+                   tags$div(class="header", checked=NA,
+                            tags$h2("Working papers", style = "color:grey"),
+                            tags$h4("The 2019 Update of the Health Equity and Financial Protection Indicators Database : An Overview",  style="color:black"),
+                            tags$p("This paper outlines changes that have been made in the 2019 version of the Health Equity and Financial Protection Indicators database. On the financial protection side, the changes include an increase in the number of indicators from five to 14; revisions to several previous data points, reflecting the analysis of new surveys (or adaptations thereof); and refinements to the estimation of out-of-pocket expenditures. On the health equity side, the 2019 database includes 198 more data points than the 9,733 in the 2018 database, reflecting the addition of 535 new datapoints, and the dropping of 337 previously included data points now considered to be substandard.",  style="color:black"),
+                            br(), br(), 
+                            tags$p("Citation",  style="color:black;font-weight; bold;"),
+                            tags$a("Wagstaff, Adam; Eozenou, Patrick; Neelsen, Sven; Smitz, Marc. 2019. The 2019 Update of the Health Equity and Financial Protection Indicators Database : An Overview. Policy Research Working Paper;No. 8879. World Bank, Washington, DC. © World Bank. https://openknowledge.worldbank.org/handle/10986/31869 License: CC BY 3.0 IGO.",  style="color:black"),br(), br(), 
+                            tags$p('URL'),
+                            tags$a('http://hdl.handle.net/10986/31869', href = 'http://hdl.handle.net/10986/31869'),
+                            br(), br(),
+                            tags$p('Collection(s)'),
+                            tags$a('Polic Research Working Papers', href = 'https://openknowledge.worldbank.org/handle/10986/9'),
+                            br(), br(),
+                            tags$p('Dataset(s)'),
+                            tags$a('https://datacatalog.worldbank.org/node/142861', href = 'https://datacatalog.worldbank.org/node/142861'),
+                   ) )
+          ),
+          hr(style = "border-top: 2px solid black;"),         
+          fluidRow(
+            column(3,
+                   div(img(src= 'www/working_paper_2.png', height = '250px', width = '200px'), style = 'text-align:left;') 
+            ),
+            column(9,
+                   tags$div(class="header", checked=NA,
+                            # tags$h2("Working papers", style = "color:grey"),
+                            tags$h4("The 2018 Health Equity and Financial Protection Indicators Database : Overview and Insights",  style="color:black"),
+                            tags$p("The 2018 database on Health Equity and Financial Protection indicators provides data on equity in the delivery of health service interventions and health outcomes, and on financial protection in health. This paper provides a brief history of the database, gives an overview of the contents of the 2018 version of the database, and then gets into the details of the construction of its two sides -- the health equity side and the financial protection side. The paper also provides illustrative uses of the database, including the extent of and trends in inequity in maternal and child health intervention coverage, the extent of inequities in women's cancer screening and inpatient care utilization, and trends and inequalities in the incidence of catastrophic health expenditures.",  style="color:black"),
+                            br(), br(), 
+                            tags$p("Citation",  style="color:black;font-weight; bold;"),
+                            tags$a("Wagstaff, Adam; Eozenou, Patrick; Neelsen, Sven; Smitz, Marc. 2018. The 2018 Health Equity and Financial Protection Indicators Database : Overview and Insights. Policy Research Working Paper;No. 8577. World Bank, Washington, DC. © World Bank. https://openknowledge.worldbank.org/handle/10986/30598 License: CC BY 3.0 IGO.",  style="color:black"),br(), br(), 
+                            tags$p('URL'),
+                            tags$a('http://hdl.handle.net/10986/30598', href = 'http://hdl.handle.net/10986/30598'),
+                            br(), br(),
+                            tags$p('Collection(s)'),
+                            tags$a('Polic Research Working Papers', href = 'https://openknowledge.worldbank.org/handle/10986/9'),
+                            br(), br(),
+                            tags$p('Dataset(s)'),
+                            tags$a('https://datacatalog.worldbank.org/node/142861', href = 'https://datacatalog.worldbank.org/node/142861'),
+                   ) )
+          ),
+          
+          
+        )
+        # href = 'https://openknowledge.worldbank.org/handle/10986/31869'
+
+        
       )
     )
   )
