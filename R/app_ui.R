@@ -194,11 +194,10 @@ app_ui <- function() {
           ), br(), br(), br(),
           fluidRow(
             column(3,
-                   div(img(src= 'www/working_paper_1.png', height = '250px', width = '200px'), style = 'text-align:left;') 
+                   div(img(src= 'www/working_paper_1.png', height = '400px', width = '375px'), style = 'text-align:left;') 
                    ),
             column(9,
                    tags$div(class="header", checked=NA,
-                            tags$h2("Working papers", style = "color:grey"),
                             tags$h4("The 2019 Update of the Health Equity and Financial Protection Indicators Database : An Overview",  style="color:black"),
                             tags$p("This paper outlines changes that have been made in the 2019 version of the Health Equity and Financial Protection Indicators database. On the financial protection side, the changes include an increase in the number of indicators from five to 14; revisions to several previous data points, reflecting the analysis of new surveys (or adaptations thereof); and refinements to the estimation of out-of-pocket expenditures. On the health equity side, the 2019 database includes 198 more data points than the 9,733 in the 2018 database, reflecting the addition of 535 new datapoints, and the dropping of 337 previously included data points now considered to be substandard.",  style="color:black"),
                             br(), br(), 
@@ -217,7 +216,7 @@ app_ui <- function() {
           hr(style = "border-top: 2px solid black;"),         
           fluidRow(
             column(3,
-                   div(img(src= 'www/working_paper_2.png', height = '250px', width = '200px'), style = 'text-align:left;') 
+                   div(img(src= 'www/working_paper_2.png', height = '450px', width = '375px'), style = 'text-align:left;') 
             ),
             column(9,
                    tags$div(class="header", checked=NA,
