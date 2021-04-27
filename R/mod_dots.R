@@ -29,7 +29,7 @@ mod_dots_country_ui <- function(id){
              selectInput(inputId = ns("indicator"),
                          label = NULL, 
                          choices = indicators_list,
-                         selected = "4+ antenatal care visits"),
+                         selected = "4+ antenatal care visits (%)"),
              p('Region'),
              shinyWidgets::dropdownButton(circle = FALSE,  
                                           label = 'Select the region(s)', 
@@ -251,6 +251,7 @@ mod_dots_country_server <- function(input, output, session){
 
       # just save data, not implement 
       dot_list <- list(df,unit_of_measure, indicator, value_range,date_range)
+      save(dot_list, file ='temp_dot_list.rda')
     }
     chart_data$plot_data <- dot_list
   },
@@ -323,7 +324,7 @@ mod_dots_country_server <- function(input, output, session){
                                         # make plot title 
                                         plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
                                         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
-                                        y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+                                        y_axis_text = paste0(indicator)
                                         caption_text = 'HEFPI database, The World Bank, 2021'
                                         
                                         mytext <- paste(
@@ -407,7 +408,7 @@ mod_dots_country_server <- function(input, output, session){
         # make plot title 
         plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
-        y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+        y_axis_text = paste0(indicator)
         
         mytext <- paste(
           "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",

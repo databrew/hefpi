@@ -76,6 +76,7 @@ indicators <- readxl::read_excel('from_wb/indicator_description.xlsx')
 names(indicators)[1:2] <- c('level 1', 'level 2')
 names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
 indicators <- indicators[!is.na(indicators$indicator_short_name),]
+indicators$indicator_short_name <- paste0(indicators$indicator_short_name, ' (', indicators$unit_of_measure, ')')
 
 usethis::use_data(indicators, overwrite = T)
 
@@ -166,6 +167,8 @@ df$Q5[Q5_hm] <- df$Q5[Q5_hm]*100
 df$Q5[Q5_hw] <- df$Q5[Q5_hw]*100
 df$Q5[Q5_hw2] <- df$Q5[Q5_hw2]*100
 
+# combine indicator_short_name and unit_of_measure
+df$indicator_short_name <- paste0(df$indicator_short_name, ' (',df$unit_of_measure,')')
 
 usethis::use_data(df, overwrite = T)
 
@@ -182,6 +185,8 @@ out_list <- list()
 for(i in 1:length(indicator_groups)){
   this_group <- indicator_groups[i]
   these_elements <- indicators_list %>% filter(bin == this_group)
+  # add unit of measure
+  these_elements$indicator_short_name <- paste0(these_elements$indicator_short_name, ' (', these_elements$unit_of_measure,')')
   these_elements <- as.list(sort(unique(these_elements$indicator_short_name)))
   out_list[[this_group]] <- these_elements
 }  
@@ -265,7 +270,7 @@ sub_national <- left_join(sub_national, temp, by = c('country'='short_name'))
 
 # get list of indicators from sub_national that are not present in indicators, and remove them temporarily from subnation until sven gives us all the descriptions
 sub_national <- inner_join(sub_national, indicators, by = c('indic'='variable_name'))
-
+# sub_national$indicator_short_name <- paste0(sub_national$indicator_short_name, ' (', sub_national$unit_of_measure, ')')
 # create dummy data to join with sub_national, based on years, countries, and regions from sub_national_dhs
 old_countries <- unique(sub_national$country)
 new_countries <- unique(sub_national_dhs$country)
