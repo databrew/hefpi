@@ -32,7 +32,7 @@ mod_recent_mean_ui <- function(id){
              selectInput(ns('indicator'), 
                          label = NULL,
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults'),
+                         selected = 'Inpatient care use, adults (%)'),
              p('Date range'),
              sliderInput(ns('date_range'),
                          label = NULL,
@@ -383,7 +383,7 @@ mod_recent_mean_server <- function(input, output, session){
           "Data source :", as.character(temp$data_source), "<br>",
           sep="") %>%
           lapply(htmltools::HTML)
-        y_axis_text = paste0(indicator, ' (', unit_of_measure,')')
+        y_axis_text = paste0(indicator)
 
         # Create value_color vector, identical to value
         temp$value_col <- temp$value
@@ -439,7 +439,7 @@ mod_recent_con_ui <- function(id){
              selectInput(ns('indicator'),
                          label = NULL,
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults'),
+                         selected = 'Inpatient care use, adults (%)'),
              p('Date range'),
              sliderInput(ns('date_range'),
                          label = NULL,
@@ -763,7 +763,9 @@ mod_recent_con_server <- function(input, output, session){
           lapply(htmltools::HTML)
         ordered_names <- temp$NAME[order(temp$value, decreasing = TRUE)]
         temp$NAME <- factor(temp$NAME, levels = ordered_names)
-        y_axis_text = paste0('CI - ', indicator)
+        
+        # remove unit of measure from indicator since its CI
+        y_axis_text = paste0('CI - ', unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1])))
         plot_title = 'Concentration index - Most recent value'
         plot_limit <- max(abs(temp$value), na.rm = TRUE) * c(-1, 1)
         # create value_color vector, identical to value

@@ -29,7 +29,7 @@ mod_trends_mean_ui <- function(id){
              div(style='border: 1px #FF0000; color:black;',selectInput(ns('indicator'),
                          label = NULL,
                          choices = indicators_list,
-                         selected = '4+ antenatal care visits')),
+                         selected = '4+ antenatal care visits (%)')),
              # here need to create custom css for this to make size right
              p('Region'),
              shinyWidgets::dropdownButton(circle = FALSE,  
@@ -312,7 +312,7 @@ mod_trends_mean_server <- function(input, output, session){
                                           yn <- pop_list[[6]]
                                           
                                           # get title and subtitle
-                                          y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
+                                          y_axis_text <- paste0(indicator)
                                           x_axis_text <- paste0('', '\n', 'Year')
                                           caption_text = 'HEFPI database, The World Bank, 2021'
                                           
@@ -408,7 +408,7 @@ mod_trends_mean_server <- function(input, output, session){
         yn <- pop_list[[6]]
         # get title and subtitle
         plot_title <- paste0('Trends - National mean - ', indicator)
-        y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
+        y_axis_text <- paste0(indicator)
         x_axis_text <- paste0('', '\n', 'Year')
         # condition on unit of measure
         
@@ -494,7 +494,7 @@ mod_trends_mean_sub_ui <- function(id){
              p('Indicator'),
              div(style='border-color: grey; color:grey',selectInput(ns('indicator'), label=NULL,
                          choices = indicators_list,
-                         selected = "4+ antenatal care visits")),
+                         selected = "4+ antenatal care visits (%)")),
              p('Country'),
              div(style='border-color: grey; color:grey',selectInput(inputId = ns("country"),
                          label = NULL, 
@@ -788,7 +788,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                           yn <- pop_list[[6]]
                                           # get title and subtitle
                                           plot_title <- paste0('Trends - Subnational mean - ', indicator)
-                                          y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
+                                          y_axis_text <- paste0(indicator)
                                           x_axis_text <- paste0('', '\n', 'Year')
                                           caption_text = 'HEFPI database, The World Bank, 2021'
                                           
@@ -900,7 +900,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         yn <- pop_list[[6]]
         # get title and subtitle
         plot_title <- paste0('Trends - Subnational mean - ', indicator)
-        y_axis_text <- paste0(indicator, ' (', unit_of_measure, ')')
+        y_axis_text <- paste0(indicator)
         x_axis_text <- paste0('', '\n', 'Year')
         # condition on unit of measure
         if(unit_of_measure == '%'){
@@ -995,7 +995,7 @@ mod_trends_con_ui <- function(id){
              div(style='border-color: grey; color:grey',selectInput(ns('indicator'),
                          label = NULL,
                          choices = indicators_list,
-                         selected = '4+ antenatal care visits')),
+                         selected = '4+ antenatal care visits (%)')),
              p('Region'),
              shinyWidgets::dropdownButton(circle = FALSE,  
                                           label = 'Select the region(s)', 
@@ -1260,7 +1260,7 @@ mod_trends_con_server <- function(input, output, session){
                                           yn <- con_list[[5]]
                                           # get title and subtitle
                                           plot_title <- paste0('Trends - Concentration index - ', indicator)
-                                          y_axis_text <- paste0(indicator, ' (CI) ')
+                                          y_axis_text <- paste0(unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1])), ' (CI) ')
                                           x_axis_text <- paste0('', '\n', 'Year')
                                           caption_text = 'HEFPI database, The World Bank, 2021'
                                           
@@ -1347,8 +1347,8 @@ mod_trends_con_server <- function(input, output, session){
         value_range <- con_list[[4]]
         yn <- con_list[[5]]
         # get title and subtitle
-        plot_title <- paste0('Trends - Concentration index - ', indicator)
-        y_axis_text <- paste0(indicator, ' (CI) ')
+        plot_title <- paste0('Trends - Concentration index - ', unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1])))
+        y_axis_text <- paste0(unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1])), ' (CI) ')
         x_axis_text <- paste0('', '\n', 'Year')
         # text for plot
         mytext <- paste(
@@ -1428,7 +1428,7 @@ mod_trends_quin_ui <- function(id){
              div(style='border-color: grey; color:grey',selectInput(ns('indicator'), 
                          label = NULL,
                          choices = indicators_list,
-                         selected = 'Inpatient care use, adults')),
+                         selected = 'Inpatient care use, adults (%)')),
              p('Country'),
              div(style='border-color: grey; color:grey',selectInput(ns('country'), 
                          label = NULL,
@@ -1649,7 +1649,7 @@ mod_trends_quin_server <- function(input, output, session){
                                           col_vec <- col_vec[-1]
                                           # make plot title
                                           plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
-                                          y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+                                          y_axis_text = paste0(indicator)
                                           x_axis_text = paste0('', '\n', 'Year')
                                           caption_text = 'HEFPI database, The World Bank, 2021'
                                           
@@ -1732,7 +1732,7 @@ mod_trends_quin_server <- function(input, output, session){
         col_vec <- col_vec[-1]
         # make plot title
         plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
-        y_axis_text = paste0(indicator, ' (', unit_of_measure, ')')
+        y_axis_text = paste0(indicator)
         x_axis_text = paste0('', '\n', 'Year')
         # text for plot
         mytext <- paste(

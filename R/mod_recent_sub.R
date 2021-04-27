@@ -56,7 +56,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
   output$ui_outputs <- renderUI({
     # get inputs
     indicator = sort(unique(sub_national$indicator_short_name))[1]
-    region = as.character(region_list$region)[[1]]
+    region = as.character(region_list$region)[[2]]
     indicator <- input$indicator
     region <- input$region
     # get region code
