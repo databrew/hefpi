@@ -268,7 +268,9 @@ a:active,a:focus,a:hover {
 }
 
 .main-header .logo img {
-    height: 50px;
+    height: 90px;
+    width: 200px;
+
 }
 .main-header .logo .logo-lg {
     display: block}
@@ -340,7 +342,6 @@ a:active,a:focus,a:hover {
     position: relative;
     }
 .main-header .logo,.main-header .navbar {
-    width: 100%;
     height: 50px;
     float: none;
     }
@@ -351,8 +352,7 @@ a:active,a:focus,a:hover {
     float: right}
 .main-header .logo img {
     margin: 5px;
-    height: 40px;
-    position: fixed}
+    height: 40px}
 .main-header .sidebar-toggle {
     color: #fff;
     float: left;
@@ -377,7 +377,6 @@ a:active,a:focus,a:hover {
     left: 0;
     padding-top: 102px;
     min-height: 100%;
-    width: 230px;
     z-index: 810;
     -webkit-transition: -webkit-transform .3s ease-in-out,width .3s ease-in-out;
     -moz-transition: -moz-transform .3s ease-in-out,width .3s ease-in-out;
