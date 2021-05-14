@@ -16,27 +16,33 @@
 app_ui <- function() {
 
   # HEADER
-  header <- dashboardHeader(title  =  'HEFPI')
+  header <- dashboardHeader(title  =   tags$a(tags$img(src='www/hefpi_design.png')))
   
   # SIDEBAR
   sidebar <- dashboardSidebar(
+    width = 230,
     sidebarMenu(
       menuItem(
-        text="Population mean",
-        tabName="population_mean"
-      ),
-      menuItem(
-        text="Inequality",
-        tabName="inequality"
-      ),
-      menuItem(
-        text="Data availability",
-        tabName="data"
-      ),
-      menuItem(
-        text = 'About',
+        text = 'About HEFPI',
         tabName = 'about'
+      ),
+      menuItem(
+        text = 'HEFPI Visualizations',
+        tabName = 'hefpi_vis',
+        startExpanded = FALSE,
+        menuSubItem(
+          text="Population mean",
+          tabName="population_mean"
         ),
+        menuSubItem(
+          text="Inequality",
+          tabName="inequality"
+        ),
+        menuSubItem(
+          text="Data availability",
+          tabName="data"
+        )
+      ),
       menuItem(
         text = 'Documentation', 
         tabName = 'docu'      
@@ -122,8 +128,7 @@ app_ui <- function() {
             )
        
           ),
-          fluidRow(
-            column(4,
+          column(4,
                    box(
                      fluidRow(
                        div(img(src= 'www/card_1.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
@@ -132,33 +137,35 @@ app_ui <- function() {
                                          tags$p("This project – a collaboration between the Bank’s research group, data group, and health, nutrition and population global – stretches back to 2000."),
                                          tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/history.html", "Read more", style="color:#009FDA")
                        ),
-                       width =10,
+                       width =12,
                      
-                   )),
-            column(4,
-                   box(
-                     fluidRow(
-                       div(img(src= 'www/card_2.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
-                       footer = tags$div(class="header", checked=NA,
-                                       tags$h4("Did the Poor Get Left Behind by the Health MDGs?"),
-                                       tags$p("One question that is often asked is whether the focus on population averages in the MDGs resulted in the poor being left behind. The HEFPI dataset allows us to answer this with some precision."),
-                                       tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/left_behind.html", "Read more", style="color:#009FDA")
-                     ),
-                       width =10,
-                     
-                   )),
-            column(4,
-                   box(
-                     fluidRow(
-                       div(img(src= 'www/card_3.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
-                       footer = tags$div(class="header", checked=NA,
-                                       tags$h4("Tracking Progress Towards UHC Using the HEFPI Database"),
-                                       tags$p("The idea underlying Universal Health Coverage (UHC) is that everyone, irrespective of their means, receives the health services they need, without suffering financial hardship in the process."),
-                                       tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/tracking_progress.html", "Read more", style="color:#009FDA")
-                     ),
-                       width =10,
-                     
-                   ))
+                   )
+                   ),
+          column(4, 
+            box(
+              fluidRow(
+                div(img(src= 'www/card_2.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
+              footer = tags$div(class="header", checked=NA,
+                                tags$h4("Did the Poor Get Left Behind by the Health MDGs?"),
+                                tags$p("One question that is often asked is whether the focus on population averages in the MDGs resulted in the poor being left behind. The HEFPI dataset allows us to answer this with some precision."),
+                                tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/left_behind.html", "Read more", style="color:#009FDA")
+              ),
+              width =12,
+              
+            )
+          ),
+          column(4,
+            box(
+              fluidRow(
+                div(img(src= 'www/card_3.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
+              footer = tags$div(class="header", checked=NA,
+                                tags$h4("Tracking Progress Towards UHC Using the HEFPI Database"),
+                                tags$p("The idea underlying Universal Health Coverage (UHC) is that everyone, irrespective of their means, receives the health services they need, without suffering financial hardship in the process."),
+                                tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/tracking_progress.html", "Read more", style="color:#009FDA")
+              ),
+              width =12,
+              
+            )
           ),
           br(), br(),
           # fluidRow(
@@ -189,9 +196,10 @@ app_ui <- function() {
       tabItem(
         tabName = 'docu', 
         fluidPage(
-          fluidRow(
-            div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;')
-          ), br(), br(), br(),
+          # fluidRow(
+          #   div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;')
+          # ), 
+          br(), br(),
           fluidRow(
             column(3,
                    div(img(src= 'www/working_paper_1.png', height = '400px', width = '375px'), style = 'text-align:left;') 

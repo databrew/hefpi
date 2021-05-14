@@ -13,11 +13,13 @@
 mod_dat_country_ui <- function(id){
   ns <- NS(id)
   #tagList(
+    
     fluidPage(
       column(9,
-             plotlyOutput(
-               ns('dat_country'), height = '800px', width = '1000px', 
-             )),
+             div(style = 'margin-left:-100px',plotlyOutput(
+               ns('dat_country'), height = '800px', width = '1250px', 
+             ))
+             ),
       column(3,
              useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),

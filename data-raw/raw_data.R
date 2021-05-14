@@ -76,6 +76,9 @@ indicators <- readxl::read_excel('from_wb/indicator_description.xlsx')
 names(indicators)[1:2] <- c('level 1', 'level 2')
 names(indicators) <- tolower(gsub(' ', '_', names(indicators)))
 indicators <- indicators[!is.na(indicators$indicator_short_name),]
+# for unit of measure for height variables, change to centimeters
+#"Height, adults"      "Height, men"         "Height, women"       "Height, women 15-49"
+indicators$unit_of_measure[grepl('Height', indicators$indicator_short_name)] <- 'Centimeter'
 indicators$indicator_short_name <- paste0(indicators$indicator_short_name, ' (', indicators$unit_of_measure, ')')
 
 usethis::use_data(indicators, overwrite = T)
@@ -168,7 +171,7 @@ df$Q5[Q5_hw] <- df$Q5[Q5_hw]*100
 df$Q5[Q5_hw2] <- df$Q5[Q5_hw2]*100
 
 # combine indicator_short_name and unit_of_measure
-df$indicator_short_name <- paste0(df$indicator_short_name, ' (',df$unit_of_measure,')')
+# df$indicator_short_name <- paste0(df$indicator_short_name, ' (',df$unit_of_measure,')')
 
 usethis::use_data(df, overwrite = T)
 
@@ -186,7 +189,7 @@ for(i in 1:length(indicator_groups)){
   this_group <- indicator_groups[i]
   these_elements <- indicators_list %>% filter(bin == this_group)
   # add unit of measure
-  these_elements$indicator_short_name <- paste0(these_elements$indicator_short_name, ' (', these_elements$unit_of_measure,')')
+  # these_elements$indicator_short_name <- paste0(these_elements$indicator_short_name, ' (', these_elements$unit_of_measure,')')
   these_elements <- as.list(sort(unique(these_elements$indicator_short_name)))
   out_list[[this_group]] <- these_elements
 }  
