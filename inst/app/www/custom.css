@@ -2329,13 +2329,21 @@ table.text-center,table.text-center td,table.text-center th {
 
 /* logo */
 .skin-blue .main-header .logo {
-                      background-color: #fff;
+                      background-color: #002244;
+                      padding-top:0px;
+                      padding-right:0px;
+                      padding-left:20px;
+                      padding-bottom:0px
+
                       }
 
 /* logo when hovered */
 .skin-blue .main-header .logo:hover {
-                      background-color: #fff;
-                      }
+                      background-color: #002244;
+                      padding-top:0px;
+                      padding-right:0px;
+                      padding-left:20px;
+                      padding-bottom:0px                      }
 
 /* navbar (rest of the header) */
 .skin-blue .main-header .navbar {
