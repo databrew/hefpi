@@ -16,12 +16,13 @@
 app_ui <- function() {
 
   # HEADER
-  header <- dashboardHeader(title  =   tags$a(tags$img(src='www/hefpi_design.png')))
+  header <- dashboardHeader(title  =   tags$a(tags$img(src='www/hefpi_logo.png')))
   
   # SIDEBAR
   sidebar <- dashboardSidebar(
     width = 230,
     sidebarMenu(
+      width = 230,
       menuItem(
         text = 'About HEFPI',
         tabName = 'about'
@@ -29,7 +30,7 @@ app_ui <- function() {
       menuItem(
         text = 'HEFPI Visualizations',
         tabName = 'hefpi_vis',
-        startExpanded = FALSE,
+        startExpanded = TRUE,
         menuSubItem(
           text="Population mean",
           tabName="population_mean"
