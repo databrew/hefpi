@@ -68,7 +68,7 @@ The primary files:
 - `R/app_config.R`: Used to read insdie golem config file `inst/golem-config.yml`
 - `R/app_ui.R`: all ui modules (top level)
 ![](inst/app/www/app_ui.png)
-
+- note: the "By urban-rural" tab is a placeholder with no charts (to be added later).
 
 - `R/app_server.R`: all server side modules (top level)
 ![](inst/app/www/app_server.png)
