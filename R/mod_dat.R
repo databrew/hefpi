@@ -562,6 +562,7 @@ mod_dat_ind_server <- function(input, output, session){
         } 
         fig <- empty_plot("No data available for the selected inputs")
       } else {
+        save(dat_list, file='dat_list.rda')
         temp_data <- dat_list[[1]]
         date_range <- dat_list[[2]]
         col_vec <- dat_list[[3]]
@@ -581,7 +582,7 @@ mod_dat_ind_server <- function(input, output, session){
           plot_height <- 250
         }
         p <- ggplot(temp_data, aes(as.numeric(year),country, fill =level2, text =mytext)) + 
-          geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
+          geom_tile(size = 0.2, alpha = 0.8, color = 'lightgrey') +
           scale_x_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
                              breaks = seq(from = min(temp_data$year),
                                           to =max(temp_data$year), by = 1),
@@ -590,8 +591,8 @@ mod_dat_ind_server <- function(input, output, session){
                             values = col_vec) +
           labs(x = '',
                y = '',
-               title = plot_title) +
-          theme(legend.position = "none") 
+               title = plot_title) 
+          
         
         p <- p +
           hefpi::theme_hefpi(x_axis_angle = 90,
@@ -606,7 +607,10 @@ mod_dat_ind_server <- function(input, output, session){
                              grid_minor_y = NA,
                              y_axis_line = 'white',
                              x_axis_line = 'white',
-                             legend_position = 'none') 
+                             legend_position = 'none') +
+          theme(legend.position = "none",
+                axis.ticks.x = element_blank(),    # Change x axis ticks only
+                axis.ticks.y = element_blank()) 
         p
       
         fig <- ggplotly(p, 

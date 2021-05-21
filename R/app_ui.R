@@ -16,7 +16,7 @@
 app_ui <- function() {
 
   # HEADER
-  header <- dashboardHeader(title  =   tags$a(tags$img(src='www/hefpi_logo.png')))
+  header <- dashboardHeader(title  = '')
   
   # SIDEBAR
   sidebar <- dashboardSidebar(
@@ -32,12 +32,20 @@ app_ui <- function() {
         tabName = 'hefpi_vis',
         startExpanded = TRUE,
         menuSubItem(
-          text="Population mean",
-          tabName="population_mean"
+          text="National",
+          tabName="national"
         ),
         menuSubItem(
-          text="Inequality",
-          tabName="inequality"
+          text="Subnational region",
+          tabName="subnational_region"
+        ),
+        menuSubItem(
+          text="By urban-rural",
+          tabName="urban_rural"
+        ),
+        menuSubItem(
+          text="Household wealth",
+          tabName="household_wealth"
         ),
         menuSubItem(
           text="Data availability",
@@ -77,20 +85,27 @@ app_ui <- function() {
     golem_add_external_resources(),
     tabItems(
       tabItem(
-        tabName="population_mean",
+        tabName="national",
         navbarPage(title = '',
                    navbarMenu("Most recent value",
                               tabPanel("National mean",
-                                       mod_recent_mean_ui("recent_mean_leaf")),
+                                       mod_recent_mean_ui("recent_mean_leaf"))),
+                   navbarMenu('Trends',
+                              tabPanel('National mean',
+                                       mod_trends_mean_ui("trends_mean")))
+                   )
+        ),
+      tabItem(
+        tabName="subnational_region",
+        navbarPage(title = '',
+                   navbarMenu("Most recent value",
                               tabPanel("Subnational mean",
                                        mod_recent_mean_sub_ui("recent_mean_sub_leaf"))),
                    navbarMenu('Trends',
-                              tabPanel('National mean',
-                                       mod_trends_mean_ui("trends_mean")),
                               tabPanel('Subnational mean',
                                        mod_trends_mean_sub_ui("trends_sub_mean"))))),
       tabItem(
-        tabName="inequality",
+        tabName="household_wealth",
         navbarPage(title = '',
                    navbarMenu('Concentration index',
                               tabPanel('Most recent value',

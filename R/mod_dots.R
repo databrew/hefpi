@@ -802,7 +802,7 @@ mod_dots_ind_server <- function(input, output, session){
         fig <- empty_plot("No data available for the selected inputs")
         fig
       } else {
-        save(dot_list, file = 'temp_dots_for_def.rda')
+        # save(dot_list, file = 'temp_dots_for_def.rda')
         df <- dot_list[[1]]
         unit_of_measure <- dot_list[[2]]
         indicator <- dot_list[[3]]
