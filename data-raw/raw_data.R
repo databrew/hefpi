@@ -38,6 +38,7 @@ usethis::use_data(world, overwrite = T)
 # ---------------------------
 # Gaul shapefile (downloaded from https://worldmap.harvard.edu/data/geonode:g2008_1)
 # save spatial data fro dhs 
+# HERE we combine the from_dhs data (taken out of app in Documents because of how large) and GAUL to make sub_national_shp file. If countries are selected that arent in this file, fake data is created. 
 gaul <- readOGR('from_other/gaul/g2008_1/')
 usethis::use_data(gaul, overwrite = T)
 
@@ -79,6 +80,9 @@ indicators <- indicators[!is.na(indicators$indicator_short_name),]
 # for unit of measure for height variables, change to centimeters
 #"Height, adults"      "Height, men"         "Height, women"       "Height, women 15-49"
 indicators$unit_of_measure[grepl('Height', indicators$indicator_short_name)] <- 'Centimeter'
+# change "Under-5 mortality rates from Number per 1000 to "Deaths per 1,000 births"
+indicators$unit_of_measure[grepl('Number per 1,000', indicators$unit_of_measure)] <- 'Deaths per 1,000 births'
+
 indicators$indicator_short_name <- paste0(indicators$indicator_short_name, ' (', indicators$unit_of_measure, ')')
 
 usethis::use_data(indicators, overwrite = T)
