@@ -28,33 +28,39 @@ app_ui <- function() {
         tabName = 'about'
       ),
       menuItem(
+        id = "vizualizationIDbar",
         text = 'HEFPI Visualizations',
         tabName = 'hefpi_vis',
         startExpanded = TRUE,
         menuSubItem(
           text="National",
-          tabName="national"
+          tabName="national",
+          icon = shiny::icon("angle-right")
         ),
         menuSubItem(
           text="Subnational region",
-          tabName="subnational_region"
+          tabName="subnational_region",
+          icon = shiny::icon("angle-right")
         ),
         menuSubItem(
           text="By urban-rural",
-          tabName="urban_rural"
+          tabName="urban_rural",
+          icon = shiny::icon("angle-right")
         ),
         menuSubItem(
           text="Household wealth",
-          tabName="household_wealth"
+          tabName="household_wealth",
+          icon = shiny::icon("angle-right")
         ),
         menuSubItem(
           text="Data availability",
-          tabName="data"
+          tabName="data",
+          icon = shiny::icon("angle-right")
         )
       ),
       menuItem(
         text = 'Documentation', 
-        tabName = 'docu'      
+        tabName = 'docu'
         ),
       menuItem(
         text = 'Download full data', 
