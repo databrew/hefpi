@@ -62,6 +62,7 @@ theme_hefpi <- function(base_size = 12,
           axis.title = element_text(face = "plain", 
                                     colour = "#5A5A5A",
                                     size = rel(1)),
+          axis.ticks = element_line(colour = "#cccccc"),
           # axis text: Roboto 12pt, plain
           axis.text.x = element_text(colour = x_axis_color,
                                      size =  x_axis_size,

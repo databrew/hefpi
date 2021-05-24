@@ -460,8 +460,29 @@ a:active,a:focus,a:hover {
     border-bottom: 1px solid #fff;
 }
 .sidebar-menu>li:hover {
+    /* margin-left: 5px; */
     margin-left: 5px;
 }
+
+.sidebar-menu>li.active:hover{
+    margin-left: 0px;
+}
+
+.sidebar-menu>li:nth-child(2):hover {
+    /* margin-left: 5px; */
+    margin-left: 0px;
+}
+
+.sidebar-menu>li:nth-child(2)>ul>li:hover {
+    /* margin-left: 5px; */
+    margin-left: 5px;
+}
+
+.sidebar-menu>li:nth-child(2)>ul>li.active:hover {
+    /* margin-left: 5px; */
+    margin-left: 0px;
+}
+
 .sidebar-menu>li>a {
     padding: 12px 5px 12px 15px;
     display: block}
@@ -2376,6 +2397,10 @@ table.text-center,table.text-center td,table.text-center th {
                       background-color: transparent;
                       color: rgb(26,51,95);
                       }
+.skin-blue .main-sidebar .sidebar .sidebar-menu .active a:hover{
+    background-color: #009FDA;
+}                      
+
 /* background */
 
 /* body */
@@ -2435,4 +2460,18 @@ footer {
 footer .btn {
     display: inline-block;
     margin-left: 12px;
+}
+
+.treeview-menu {
+    display: block !important;
+    height: fit-content !important;
+}
+
+.skin-blue .sidebar-menu>li>.treeview-menu {
+    margin: 0px 0px !important;
+    background: #002244 !important;
+}
+
+.treeview>a>i {
+    visibility: hidden !important;
 }
