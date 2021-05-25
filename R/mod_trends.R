@@ -16,6 +16,7 @@ mod_trends_mean_ui <- function(id){
   tagList(
     fluidPage(
       column(9,
+             uiOutput(ns('trends_mean_title_a')),
              plotlyOutput(
                ns('trends_mean'), height = '600px'
              )),
@@ -373,6 +374,37 @@ mod_trends_mean_server <- function(input, output, session){
                                       }
                                     })
   
+  
+  # ---- RENDER PLOT TITLE ---- 
+  output$trends_mean_title_a <- renderUI({
+    
+    pop_list <- chart_data$plot_data
+    if(length(pop_list)==1){
+      pop_list <- hefpi::trends_national_mean_default
+    }
+    if(is.null(pop_list)){
+      NULL
+    } else {
+      pd <- pop_list[[1]]
+
+      indicator <- pop_list[[3]]
+      # get title and subtitle
+      # plot_title <- paste0('Trends', '-', '<br>', 'National mean', '-', indicator)
+      plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Trends </div> 
+                           <div class="chart-label"> National mean </div>
+                           <div class="chart-label"> {indicator} </div>
+                          </div>
+                          '))
+      
+        
+      
+    }
+  })
+  
+  
+  
   # ---- RENDER PLOT ---- 
   output$trends_mean <- renderPlotly({
     
@@ -407,7 +439,7 @@ mod_trends_mean_server <- function(input, output, session){
         value_range <- pop_list[[5]]
         yn <- pop_list[[6]]
         # get title and subtitle
-        plot_title <- paste0('Trends - National mean - ', indicator)
+        # plot_title <- paste0('Trends', '-', '<br>', 'National mean', '-', indicator)
         y_axis_text <- paste0(indicator)
         x_axis_text <- paste0('', '\n', 'Year')
         # condition on unit of measure
@@ -442,8 +474,10 @@ mod_trends_mean_server <- function(input, output, session){
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
             labs(x=x_axis_text,
-                 y = y_axis_text,
-                 title = plot_title)
+                 y = y_axis_text
+                 # ,
+                 # title = plot_title
+                 )
         } else {
           # condition if we connect the dots
           p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
@@ -481,6 +515,7 @@ mod_trends_mean_sub_ui <- function(id){
   tagList(
     fluidPage(
       column(9,
+             uiOutput(ns('trends_mean_title')),
              plotlyOutput(
                ns('trends_mean'), height = '600px'
              )),
@@ -866,6 +901,35 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                         }
                                       }
                                     })
+  
+  
+  # ---- RENDER PLOT Title ---- #
+  output$trends_mean_title <- renderUI({
+    pop_list <- chart_data$plot_data
+    if(length(pop_list)==1){
+      pop_list <- hefpi::trends_subnational_mean_default
+    }
+    if(is.null(pop_list)){
+      NULL
+    } else {
+      pd <- pop_list[[1]]
+
+      indicator <- pop_list[[3]]
+
+      plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Trends </div> 
+                           <div class="chart-label"> Subnational mean </div>
+                           <div class="chart-label"> {indicator} </div>
+                          </div>
+                          '))
+      
+      plot_title
+      
+    }
+  })
+  
+  
   # ---- RENDER PLOT ---- #
   output$trends_mean <- renderPlotly({
     pop_list <- chart_data$plot_data
@@ -899,7 +963,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         value_range <- pop_list[[5]]
         yn <- pop_list[[6]]
         # get title and subtitle
-        plot_title <- paste0('Trends - Subnational mean - ', indicator)
+        # plot_title <- paste0('Trends - Subnational mean - ', indicator)
         y_axis_text <- paste0(indicator)
         x_axis_text <- paste0('', '\n', 'Year')
         # condition on unit of measure
@@ -935,8 +999,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
             labs(x=x_axis_text,
-                 y = y_axis_text,
-                 title = plot_title) 
+                 y = y_axis_text
+                 # ,
+                 # title = plot_title
+                 ) 
         } else {
           # condition if we connect the dots
           p <- ggplot(data = pd, aes(as.numeric(year), value, color= ADM1_NAME, text=mytext)) +
@@ -950,8 +1016,10 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
             labs(x=x_axis_text,
-                 y=y_axis_text,
-                 title = plot_title) 
+                 y=y_axis_text
+                 # ,
+                 # title = plot_title
+                 ) 
           p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                       x_axis_angle = 90,
                                       x_axis_hjust = 1)
@@ -982,6 +1050,7 @@ mod_trends_con_ui <- function(id){
   tagList(
     fluidPage(
       column(9,
+             uiOutput(ns('chartRowLabels')),
              plotlyOutput(
                ns('trends_con'), height = '600px'
              )),
@@ -1313,6 +1382,38 @@ mod_trends_con_server <- function(input, output, session){
                                       }
                                     })
   
+  # Plot title (trend)
+  output$chartRowLabels <- renderUI({
+    con_list <- chart_data$plot_data
+    if(length(con_list)==1){
+      con_list <- hefpi::trends_national_ci_default
+      
+    }
+    if(is.null(con_list)){
+      NULL
+    } else {
+      
+        # unit_of_measure <- con_list[[2]]
+        indicator <- con_list[[2]]
+        # get title and subtitle
+        
+        plot_title_unlist_tmp <- unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1]))
+        
+        # plot_title <- paste0('Trends - Concentration index - ', )
+        plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Trends </div> 
+                           <div class="chart-label"> Concentration index </div>
+                           <div class="chart-label"> {plot_title_unlist_tmp} </div>
+                          </div>
+                          '))
+  
+        plot_title
+      
+    }
+    
+  })
+  
   # ---- GENERATE PLOT ---- #
   output$trends_con <- renderPlotly({
     con_list <- chart_data$plot_data
@@ -1347,7 +1448,16 @@ mod_trends_con_server <- function(input, output, session){
         value_range <- con_list[[4]]
         yn <- con_list[[5]]
         # get title and subtitle
-        plot_title <- paste0('Trends - Concentration index - ', unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1])))
+        # plot_title_unlist_tmp <- unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1]))
+
+        # plot_title <- paste0('Trends - Concentration index - ', )
+        # plot_title <- paste0(HTML(str_glue('
+        #                 <div class="chart-header-labels-row">
+        #                    <div class="chart-label"> Trends </div> 
+        #                    <div class="chart-label"> Concentration index </div>
+        #                    <div class="chart-label"> {plot_title_unlist_tmp} </div>
+        #                   </div>
+        #                   ')))
         y_axis_text <- paste0(unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1])), ' (CI) ')
         x_axis_text <- paste0('', '\n', 'Year')
         # text for plot
@@ -1373,7 +1483,8 @@ mod_trends_con_server <- function(input, output, session){
             scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
-            labs(title = plot_title,
+            labs(
+                 # title = plot_title,
                  x=x_axis_text,
                  y = y_axis_text) 
         } else {
@@ -1415,6 +1526,7 @@ mod_trends_quin_ui <- function(id){
   tagList(
     fluidPage(
       column(9,
+             uiOutput(ns('trends_quin_title')),
              plotlyOutput(
                ns('trends_quin'),  height = '600px'
              )),
@@ -1694,6 +1806,38 @@ mod_trends_quin_server <- function(input, output, session){
                                     })
   
   # ---- GENERATE PLOT ---- #
+  output$trends_quin_title <- renderUI({
+    quin_list <- chart_data$plot_data
+    if(length(quin_list)==1){
+      quin_list <- hefpi::trends_national_quin_default
+    }
+    if(is.null(quin_list)){
+      NULL
+    } else {
+      pd <- quin_list[[1]]
+      
+
+        indicator <- quin_list[[3]]
+
+        country_names <- quin_list[[7]]
+
+        
+        # plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
+        plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Quintile </div> 
+                           <div class="chart-label"> Trends </div>
+                           <div class="chart-label"> {indicator} </div>
+                           <div class="chart-label"> {country_names} </div>
+                          </div>
+                          '))
+        plot_title
+        
+        
+    }
+  })
+  
+  # ---- GENERATE PLOT ---- #
   output$trends_quin <- renderPlotly({
     quin_list <- chart_data$plot_data
     if(length(quin_list)==1){
@@ -1754,8 +1898,10 @@ mod_trends_quin_server <- function(input, output, session){
                              breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                              expand = c(0,0)) +
           labs(y = y_axis_text,
-               x = x_axis_text,
-               title = plot_title) 
+               x = x_axis_text
+               # ,
+               # title = plot_title
+               ) 
         
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_angle = 90,

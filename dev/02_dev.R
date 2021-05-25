@@ -17,7 +17,7 @@ usethis::use_package("hexSticker")
 usethis::use_package("extrafont") 
 usethis::use_package("htmltools")
 usethis::use_package("plotly")
-
+usethis::use_package("stringr")
 
 
 

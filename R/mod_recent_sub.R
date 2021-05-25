@@ -303,7 +303,15 @@ mod_recent_mean_sub_server <- function(input, output, session){
         #            h5(year_title)))
         fluidPage(
           fluidRow(
-            h4(paste0('Most recent value - Subnational mean - ', indicator_name)),
+            # h4(paste0('Most recent value - Subnational mean - ', indicator_name)),
+            # HTML(str_gl)
+            HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Most recent value </div> 
+                           <div class="chart-label"> Subnational mean </div>
+                           <div class="chart-label"> {indicator_name} </div>
+                          </div>
+                          ')),
             h5(paste0(year_title))
             
           )

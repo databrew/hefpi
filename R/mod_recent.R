@@ -193,7 +193,14 @@ mod_recent_mean_server <- function(input, output, session){
         #            h5(year_title)))
         fluidPage(
           fluidRow(
-            h4(paste0('Most recent value - National mean - ', indicator_name)),
+            # h4(paste0('Most recent value - National mean - ', indicator_name)),
+            HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Most recent value </div> 
+                           <div class="chart-label"> Subnational mean </div>
+                           <div class="chart-label"> {indicator_name} </div>
+                          </div>
+                          ')),
             h5(paste0(year_title))
             
           )
@@ -584,7 +591,14 @@ mod_recent_con_server <- function(input, output, session){
         year_title <- con_map[[4]]
         fluidPage(
           fluidRow(
-            h4(paste0('Most recent value - Concentration index - ', indicator_name)),
+            # h4(paste0('Most recent value - Concentration index - ', indicator_name)),
+            HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Most recent value </div> 
+                           <div class="chart-label"> Subnational mean </div>
+                           <div class="chart-label"> {indicator_name} </div>
+                          </div>
+                          ')),
             h5(paste0(year_title))
           )
         )
