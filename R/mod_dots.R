@@ -17,6 +17,7 @@ mod_dots_country_ui <- function(id){
   tagList(
     fluidPage(
        column(9,
+                 uiOutput(ns('dots_country_title')),
                  tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dots_country'), height = '600px', width = '1000px') )
       ),
       column(3,
@@ -342,7 +343,7 @@ mod_dots_country_server <- function(input, output, session){
                                         p <- ggplot(df, aes(x=country,
                                                             y=value)) +
                                           geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
-                                          geom_line(aes(group = country), color = 'darkgrey') +
+                                          geom_line(aes(group = country), color = 'black', size = 0.5) +
                                           scale_color_manual(name = '',
                                                              values = col_vec) +
                                           scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
@@ -368,7 +369,40 @@ mod_dots_country_server <- function(input, output, session){
                                         ggsave(file, width = 8, height = 8)
                                       }
                                     })
+
   
+  # ---- PLOT TITLE dots_country ---- #
+  output$dots_country_title <- renderUI({
+    dot_list <- chart_data$plot_data
+    if(length(dot_list)==1){
+      dot_list <- hefpi::dots_country_default
+    }
+    if(is.null(dot_list)){
+      NULL
+    } else {
+      df <- dot_list[[1]]
+
+      unit_of_measure <- dot_list[[2]]
+      indicator <- dot_list[[3]]
+
+      # make plot title 
+      # plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
+      plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Quintiles </div> 
+                           <div class="chart-label"> Most recent value by country </div>
+                           <div class="chart-label"> {indicator} </div>
+                          </div>
+                          '))
+      
+      plot_title
+      
+      
+    }
+  })
+  
+  
+    
   # ---- GENERATE PLOT ---- #
   output$dots_country <- renderPlotly({
     dot_list <- chart_data$plot_data
@@ -406,7 +440,7 @@ mod_dots_country_server <- function(input, output, session){
         col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
         col_vec <- col_vec[-1]
         # make plot title 
-        plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
+        # plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
         y_axis_text = paste0(indicator)
         
@@ -425,15 +459,18 @@ mod_dots_country_server <- function(input, output, session){
         p <- ggplot(df, aes(x=value,
                             y=country,
                             text =mytext)) +
+          geom_line(aes(group = country), color = 'black', size = 0.5) +
           geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
-          geom_line(aes(group = country), color = 'darkgrey') +
           scale_color_manual(name = '',
                              values = col_vec) +
           scale_x_continuous(position = 'top',limits = c((value_range[1]), (value_range[2] + 5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
-          labs(title=plot_title,
-               subtitle = sub_title, x= '', y = y_axis_text) 
+          labs(
+              # title=plot_title,
+              subtitle = sub_title, 
+              x= '', 
+              y = y_axis_text) 
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
@@ -459,6 +496,7 @@ mod_dots_ind_ui <- function(id){
   tagList(
     fluidPage(
       column(9,
+             uiOutput(ns('dots_ind_title')),
              tags$div(style='overflow-y: scroll; position: relative', 
                       plotlyOutput(ns('dots_ind'), height = '600px', width = '1000px') )),
       column(3,
@@ -751,7 +789,7 @@ mod_dots_ind_server <- function(input, output, session){
                                           geom_point(size=rel(2), alpha = 0.7) +
                                           scale_color_manual(name = '',
                                                              values = col_vec) +
-                                          geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
+                                          geom_line(aes(group = indicator_short_name)) +
                                           scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)), 
                                                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                                                              expand = c(0,0)) +
@@ -774,7 +812,43 @@ mod_dots_ind_server <- function(input, output, session){
                                         ggsave(file, width = 8, height = 8)
                                       }
                                     })
+
   
+  
+  # ---- GENERATE TITLE dot_ind  ---- #
+  output$dots_ind_title <- renderUI({
+    dot_list <- chart_data$plot_data
+    if(length(dot_list)==1){
+      dot_list <- hefpi::dots_indicator_default
+    }
+    if(is.null(dot_list)){
+      NULL
+    } else {
+
+        df <- dot_list[[1]]
+        date_range <- dot_list[[4]]
+        value_range <- dot_list[[5]]
+
+        # make plot title 
+        # plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
+        # sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+        plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Quintiles </div> 
+                           <div class="chart-label"> Most recent value by indicator </div>
+                           <div class="chart-label"> {unique(df$country)} </div>
+                          </div>
+                          '))
+        
+      
+        plot_title 
+      
+    }
+  })
+  
+  
+  
+    
   # ---- GENERATE PLOT ---- #
   output$dots_ind <- renderPlotly({
     dot_list <- chart_data$plot_data
@@ -814,7 +888,7 @@ mod_dots_ind_server <- function(input, output, session){
         # get length of variable 
         col_length <- length(unique(df$variable))
         # make plot title 
-        plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
+        # plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
         y_axis_text = paste0(indicator)
         
@@ -833,18 +907,22 @@ mod_dots_ind_server <- function(input, output, session){
         }
         p <- ggplot(df, aes(x=value,
                             y=indicator_short_name,
-                            color = variable,
+                            color = variable, 
                             text = mytext)) +
-          geom_point(size=rel(2), alpha = 0.7) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          geom_line(aes(group = indicator_short_name),  color = 'darkgrey') +
+          geom_line(aes(group = indicator_short_name), color = 'black', size = 0.5) +
+          geom_point(size=rel(2), alpha = 0.7) +
           scale_x_continuous(position = 'top', 
                              limits = c((value_range[1]), (value_range[2] +5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
-          labs(title=plot_title, x= '', y = '',
-               subtitle = sub_title) 
+          labs(
+               # title=plot_title, 
+               x= '',
+               y = '',
+               subtitle = sub_title
+               ) 
         
         
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,

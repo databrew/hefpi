@@ -16,6 +16,7 @@ mod_dat_country_ui <- function(id){
     
     fluidPage(
       column(9,
+             uiOutput(ns('dat_country_title')),
              div(style = 'margin-left:-100px',plotlyOutput(
                ns('dat_country'), height = '800px', width = '1250px', 
              ))
@@ -191,7 +192,38 @@ mod_dat_country_server <- function(input, output, session){
                                         ggsave(file, width = 10, height = 8)
                                       }
                                     })
+
   
+  # ---- GENERATE PLOT ---- #
+  output$dat_country_title <- renderUI({
+    dat_list <- chart_data$plot_data
+    if(length(dat_list)==1){
+      dat_list <- hefpi::dat_country_default
+    }
+    if(is.null(dat_list)){
+      NULL
+    } else {
+      df= dat_list[[1]]
+
+
+        # make plot title 
+        # plot_title = paste0('Data availability', ' - By country')
+      
+      plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Data availability </div> 
+                           <div class="chart-label"> By country </div>
+                          </div>
+                          ')
+                         )
+      
+      plot_title
+      
+     
+    }
+  })
+  
+    
   # ---- GENERATE PLOT ---- #
   output$dat_country <- renderPlotly({
     dat_list <- chart_data$plot_data
@@ -223,7 +255,7 @@ mod_dat_country_server <- function(input, output, session){
         date_range <- dat_list[[2]]
         col_vec <-dat_list[[3]]
         # make plot title 
-        plot_title = paste0('Data availability', ' - By country')
+        # plot_title = paste0('Data availability', ' - By country')
         # plot
         p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
           geom_tile(alpha = 0.8, color = 'lightgrey') +
@@ -232,8 +264,10 @@ mod_dat_country_server <- function(input, output, session){
           scale_fill_manual(name = '',
                             values = col_vec) +
           labs(x = 'Year',
-               y = '',
-               title = plot_title)
+               y = ''
+               # ,
+               # title = plot_title
+               )
         p  <- p + hefpi::theme_hefpi(x_axis_angle = 90, 
                                      x_axis_vjust = 0.5,
                                      y_axis_hjust = 1,
@@ -256,6 +290,7 @@ mod_dat_ind_ui <- function(id){
   tagList(
     fluidPage(
       column(9,
+             uiOutput(ns('dat_ind_title')),
              tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '1000px') )
              ),
       column(3,
@@ -535,7 +570,40 @@ mod_dat_ind_server <- function(input, output, session){
                                         ggsave(file, width = 8, height = 8)
                                       }
                                     })
+
   
+  
+  # ---- GENERATE PLOT TITLE dat_ind ---- #
+  output$dat_ind_title <- renderUI({
+    dat_list <- chart_data$plot_data
+    if(length(dat_list)==1){
+      dat_list <- hefpi::dat_indicator_default
+    }
+    if(is.null(dat_list)){
+      NULL
+    } else {
+      pd <- dat_list[[1]]
+
+      indicator <- dat_list[[4]]
+
+      # make plot title 
+      # plot_title = paste0('Data availability',' - By ', 'indicator: ', indicator)
+       
+      plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Data availability </div> 
+                           <div class="chart-label"> By indicator: {indicator} </div>
+                          </div>
+                          '))
+      
+      plot_title
+      
+      
+    }
+  })
+  
+  
+    
   # ---- GENERATE PLOT ---- #
   output$dat_ind <- renderPlotly({
     dat_list <- chart_data$plot_data
@@ -570,7 +638,7 @@ mod_dat_ind_server <- function(input, output, session){
         
         
         # make plot title 
-        plot_title = paste0('Data availability',' - By ', 'indicator: ', indicator)
+        # plot_title = paste0('Data availability',' - By ', 'indicator: ', indicator)
         mytext <- paste(
           "Economy: ", as.character(temp_data$country), "\n",
           "Indicator class: ", as.character(temp_data$level2), "\n",
@@ -590,8 +658,10 @@ mod_dat_ind_server <- function(input, output, session){
           scale_fill_manual(name = '',
                             values = col_vec) +
           labs(x = '',
-               y = '',
-               title = plot_title) 
+               y = ''
+               # ,
+               # title = plot_title
+               ) 
           
         
         p <- p +
