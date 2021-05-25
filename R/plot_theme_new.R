@@ -75,15 +75,15 @@ theme_hefpi <- function(base_size = 12,
                                      hjust = y_axis_hjust,
                                      vjust = y_axis_vjust),
           # only axis line on the x-axis. black.
-          axis.line.x = element_line(colour = x_axis_line),
-          axis.line.y = element_line(colour = y_axis_line),
+          axis.line.x = element_line(colour = x_axis_line, size = 1),
+          axis.line.y = element_line(colour = y_axis_line, size = 1),
           # no axis ticks
           # axis.ticks = element_blank(),
           # grid lines on both x and y axes. light gray. no minor gridlines
-          panel.grid.major.x = element_line(colour = grid_major_x),
-          panel.grid.minor.x = element_line(colour = grid_minor_x),
-          panel.grid.major.y = element_line(colour = grid_major_y),
-          panel.grid.minor.y = element_line(colour = grid_minor_y),
+          panel.grid.major.x = element_line(colour = grid_major_x, size = 1),
+          panel.grid.minor.x = element_line(colour = grid_minor_x, size = 1),
+          panel.grid.major.y = element_line(colour = grid_major_y, size = 1),
+          panel.grid.minor.y = element_line(colour = grid_minor_y, size = 1),
           # legend has no border
           legend.background = element_rect(colour = NA),
           # legend labels: Roboto 12, dark gray

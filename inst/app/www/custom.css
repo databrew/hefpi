@@ -2475,3 +2475,18 @@ footer .btn {
 .treeview>a>i {
     visibility: hidden !important;
 }
+
+.chart-header-labels-row {
+    display: inline-flex;
+}
+
+.chart-label {
+    background: #00a0da;
+    padding: 4px 8px;
+    color: white;
+    border-radius: 3px;
+    font-size: 15px;
+    margin-right: 10px;
+}
+
+
