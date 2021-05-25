@@ -11,6 +11,7 @@
 #' @import leaflet
 #' @import plotly
 #' @import mapview
+#' @import stringr
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
 app_ui <- function() {
