@@ -194,7 +194,7 @@ mod_dat_country_server <- function(input, output, session){
                                     })
 
   
-  # ---- GENERATE PLOT ---- #
+  # ---- GENERATE PLOT TITLE ---- #
   output$dat_country_title <- renderUI({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
@@ -257,6 +257,35 @@ mod_dat_country_server <- function(input, output, session){
         # make plot title 
         # plot_title = paste0('Data availability', ' - By country')
         # plot
+        # print(df)
+        # print(df$level2)
+        # print(levels(df$indicator_short_name))
+        # print(levels(df$level2))
+        
+        # saveRDS(df, 'data/df_test.rda')
+        
+        df$level2 <- factor(df$level2,
+                              levels = c(
+                                levels(df$level2)[2],
+                                levels(df$level2)[3],
+                                levels(df$level2)[1],
+                                levels(df$level2)[4],
+                                levels(df$level2)[5],
+                                levels(df$level2)[6]
+                              )
+                             )
+      
+        df <- df %>%
+          # arrange(indicator_short_name, level2) %>%
+          # mutate(indicator_short_name = fct_reorder(indicator_short_name, level2))
+          # select(indicator_short_name) %>% distinct() %>% pull() %>% as.character()
+          mutate(indicator_short_name = factor(indicator_short_name, levels =  c(df %>%
+                                                                                   arrange(level2) %>%
+                                                                                   select(indicator_short_name) %>% distinct() %>% pull() %>% as.character()))) %>%
+          mutate(indicator_short_name = fct_rev(indicator_short_name)) 
+        
+        
+        
         p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
           geom_tile(alpha = 0.8, color = 'lightgrey') +
           scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
@@ -649,6 +678,7 @@ mod_dat_ind_server <- function(input, output, session){
         if(plot_height < 250){
           plot_height <- 250
         }
+        
         p <- ggplot(temp_data, aes(as.numeric(year),country, fill =level2, text =mytext)) + 
           geom_tile(size = 0.2, alpha = 0.8, color = 'lightgrey') +
           scale_x_continuous(limits = c(min(temp_data$year),max(temp_data$year)),

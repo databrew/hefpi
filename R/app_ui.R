@@ -11,6 +11,7 @@
 #' @import leaflet
 #' @import plotly
 #' @import mapview
+#' @import forcats
 #' @import stringr
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
@@ -23,6 +24,7 @@ app_ui <- function() {
   sidebar <- dashboardSidebar(
     width = 230,
     sidebarMenu(
+      id = 'sidebar',
       width = 230,
       menuItem(
         text = 'About HEFPI',
@@ -74,21 +76,25 @@ app_ui <- function() {
   # BODY
   body <- dashboardBody(
     tags$head(tags$style(HTML(
-      '.myClass { 
-        font-size: 30px;
-        line-height: 100px;
-        text-align: center;
-        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-        padding: 0px 0px 0px 0px;
-        overflow: hidden;
-        color: white;
-      }
+      ' .headerTitleCust {
+          font-size: 30px;
+          line-height: 100px;
+          text-align: center;
+          font-family: "Open Sans";
+          padding: 0px 0px 0px 0px;
+          overflow: hidden;
+          color: white;
+          margin-right: 20%;
+                                            
+        }
     '))),
-    tags$script(HTML('
-      $(document).ready(function() {
-        $("header").find("nav").append(\'<span class="myClass"> Health Equity and Financial Protection Indicators (HEFPI)</span>\');
-      })
-     ')),
+    uiOutput('style_tag'),
+    uiOutput('script_tag'),
+    # tags$script(HTML('
+    #   $(document).ready(function() {
+    #     $("header").find("nav").append(\'<span class="myClass"> Health Equity and Financial Protection Indicators (HEFPI)</span>\');
+    #   })
+    #  ')),
     golem_add_external_resources(),
     tabItems(
       tabItem(
@@ -140,7 +146,7 @@ app_ui <- function() {
         tabName = 'about', 
         fluidPage(
           fluidRow(
-            #div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;'),
+            # div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;'),
 
             column(12,
                    br(),
@@ -154,7 +160,7 @@ app_ui <- function() {
           column(4,
                    box(
                      fluidRow(
-                       div(img(src= 'www/card_1.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
+                       div(img(src= 'www/card_1.jpg', width = '100%'), style = 'text-align:center;')),
                        footer = tags$div(class="header", checked=NA,
                                          tags$h4("A History of the World Bank's Health Equity and Financial Protection Indicators"),
                                          tags$p("This project – a collaboration between the Bank’s research group, data group, and health, nutrition and population global – stretches back to 2000."),
@@ -167,7 +173,7 @@ app_ui <- function() {
           column(4, 
             box(
               fluidRow(
-                div(img(src= 'www/card_2.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
+                div(img(src= 'www/card_2.jpg', width = '100%'), style = 'text-align:center;')),
               footer = tags$div(class="header", checked=NA,
                                 tags$h4("Did the Poor Get Left Behind by the Health MDGs?"),
                                 tags$p("One question that is often asked is whether the focus on population averages in the MDGs resulted in the poor being left behind. The HEFPI dataset allows us to answer this with some precision."),
@@ -180,7 +186,7 @@ app_ui <- function() {
           column(4,
             box(
               fluidRow(
-                div(img(src= 'www/card_3.jpg', height = '250px', width = '350px'), style = 'text-align:center;')),
+                div(img(src= 'www/card_3.jpg', width = '100%'), style = 'text-align:center;')),
               footer = tags$div(class="header", checked=NA,
                                 tags$h4("Tracking Progress Towards UHC Using the HEFPI Database"),
                                 tags$p("The idea underlying Universal Health Coverage (UHC) is that everyone, irrespective of their means, receives the health services they need, without suffering financial hardship in the process."),
