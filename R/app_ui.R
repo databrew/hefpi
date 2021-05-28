@@ -13,9 +13,13 @@
 #' @import mapview
 #' @import forcats
 #' @import stringr
+#' @import waiter
 #' @import shinyalert
 #' @importFrom shiny NS tagList 
+
+
 app_ui <- function() {
+  
 
   # HEADER
   header <- dashboardHeader(title  = '')
@@ -75,6 +79,11 @@ app_ui <- function() {
   
   # BODY
   body <- dashboardBody(
+    use_waiter(),
+    waiter_show_on_load(color = "#002244"),
+    # waiter_show_on_load(spinner), # will show on load
+    # waiter_show_on_load(html = spin_1(), color = "#333e48"),
+    
     tags$head(tags$style(HTML(
       ' .headerTitleCust {
           font-size: 30px;

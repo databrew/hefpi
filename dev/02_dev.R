@@ -19,6 +19,7 @@ usethis::use_package("htmltools")
 usethis::use_package("plotly")
 usethis::use_package("stringr")
 usethis::use_package("forcats")
+usethis::use_package("waiter")
 
 
 
