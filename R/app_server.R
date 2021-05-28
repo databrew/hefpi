@@ -9,9 +9,14 @@
 #' @import RColorBrewer
 #' @import sp
 #' @import leaflet
+#' @import waiter
 #' @import plotly
 #' @importFrom shiny NS tagList 
+
+
 app_server <- function(input, output,session) {
+  
+  w <- Waiter$new(color = "#002244")
   
   # Capture URL parameters
   shinyURL.server()
@@ -45,7 +50,10 @@ app_server <- function(input, output,session) {
   # callModule(mod_dat_ind_alt_server, 'dat_ind_alt1')
   
   
+  
   output$style_tag <- renderUI({
+
+    
     if(input$sidebar=='about'){
       
       return( (tags$head(tags$style(HTML('
@@ -112,6 +120,10 @@ app_server <- function(input, output,session) {
       )
     }
     
+    # give time for wait screen to show
+    Sys.sleep(3) 
+    hide_waiter()
+    
   })
   
   output$script_tag <- renderUI({
@@ -140,6 +152,17 @@ app_server <- function(input, output,session) {
       )
     }
     
+    # give time for wait screen to show
+    Sys.sleep(3) 
+    hide_waiter()
+    
+  })
+  
+  observeEvent(input$sidebar, {
+    w$show()
+    Sys.sleep(3) # give time for wait screen to show
+    w$hide()
+    waiter_hide() # will hide *on_load waiter
   })
   
 
