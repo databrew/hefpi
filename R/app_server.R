@@ -45,8 +45,102 @@ app_server <- function(input, output,session) {
   # callModule(mod_dat_ind_alt_server, 'dat_ind_alt1')
   
   
+  output$style_tag <- renderUI({
+    if(input$sidebar=='about'){
+      
+      return( (tags$head(tags$style(HTML('
+                                       .skin-blue .main-header .navbar {
+                                            background-image: url(/www/hefpi_banner.png) !important;
+                                            background-size: cover !important;
+                                            margin: 0px;
+                                            height: 170px !important;
+                                        }
+                                            
+                                        #sidebarCollapsed {
+                                            padding-top: 170px !important;
+                                        }
+                                      
+                                        .content {
+                                          margin-top: 60px !important;
+                                        }
+                                        
+                                       ')))
+     #         tags$script(HTML('
+     #              $(document).ready(function() {
+     #                  $( ".myClass" ).remove();
+     #                  $("header").find("nav").append(\'<span class="myClass"></span>\');
+     #        
+     #              })
+     # '))
+      )
+             )
+      
+    } else {
+      return(
+      (
+        tags$head(tags$style(HTML('
+                                       .skin-blue .main-header .navbar {
+                                            background-image: none !important;
+                                            background-size: cover !important;
+                                            margin: 0px;
+                                            height: 102px !important;
+                                        }
+                                            
+                                        #sidebarCollapsed {
+                                            padding-top: 102px !important;
+                                        }
+                                        
+                                        .content {
+                                          margin-top: 0px !important;
+                                        }
+                                        
+                                        
+                                       ')))
+      
+     #  tags$script(HTML('
+     #  
+     #  $(document).ready(function() {
+     #  
+     #      $( ".myClass" ).remove();
+     #      $("header").find("nav").append(\'<span class="myClass"> Health Equity and Financial Protection Indicators (HEFPI)</span>\');
+     # 
+     # 
+     #  })
+     #  
+     # '))
+      )
+      )
+    }
+    
+  })
   
-  
+  output$script_tag <- renderUI({
+    if(input$sidebar=='about'){
+      
+      return( (
+        tags$script(HTML('
+          $(document).ready(function() {
+            $(".headerTitleCust").remove()
+            $("header").find("nav").append(\'<div class="headerTitleCust"></div>\');
+          })
+         '))
+        )
+      )
+      
+    } else {
+      return(
+        (
+          tags$script(HTML('
+            $(document).ready(function() {
+              $(".headerTitleCust").remove()
+              $("header").find("nav").append(\'<div class="headerTitleCust"> Health Equity and Financial Protection Indicators (HEFPI)</div>\');
+            })
+           '))
+        )
+      )
+    }
+    
+  })
   
 
   output$plot1 <- renderPlot({
