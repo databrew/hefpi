@@ -58,7 +58,7 @@ app_server <- function(input, output,session) {
       
       return( (tags$head(tags$style(HTML('
                                        .skin-blue .main-header .navbar {
-                                            background-image: url(/www/hefpi_banner.png) !important;
+                                            background-image: url(www/hefpi_banner.png) !important;
                                             background-size: cover !important;
                                             margin: 0px;
                                             height: 170px !important;
