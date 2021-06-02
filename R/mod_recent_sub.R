@@ -308,7 +308,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
             HTML(str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Most recent value </div> 
-                           <div class="chart-label"> Subnational mean </div>
                            <div class="chart-label"> {indicator_name} </div>
                           </div>
                           ')),

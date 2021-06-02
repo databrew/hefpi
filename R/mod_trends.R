@@ -919,7 +919,6 @@ mod_trends_mean_sub_server <- function(input, output, session){
       plot_title <- HTML(str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Trends </div> 
-                           <div class="chart-label"> Subnational mean </div>
                            <div class="chart-label"> {indicator} </div>
                           </div>
                           '))
@@ -1402,8 +1401,8 @@ mod_trends_con_server <- function(input, output, session){
         # plot_title <- paste0('Trends - Concentration index - ', )
         plot_title <- HTML(str_glue('
                         <div class="chart-header-labels-row">
-                           <div class="chart-label"> Trends </div> 
                            <div class="chart-label"> Concentration index </div>
+                           <div class="chart-label"> Trends </div> 
                            <div class="chart-label"> {plot_title_unlist_tmp} </div>
                           </div>
                           '))
