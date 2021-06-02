@@ -40,12 +40,12 @@ app_ui <- function() {
         tabName = 'hefpi_vis',
         startExpanded = TRUE,
         menuSubItem(
-          text="National",
+          text=" By National",
           tabName="national",
           icon = shiny::icon("angle-right")
         ),
         menuSubItem(
-          text="Subnational region",
+          text="By Subnational region",
           tabName="subnational_region",
           icon = shiny::icon("angle-right")
         ),
