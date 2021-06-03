@@ -1314,8 +1314,12 @@ a:active,a:focus,a:hover {
     border-top-right-radius: 0;
     border-bottom-right-radius: 3px;
     border-bottom-left-radius: 3px;
+    /* about cards */
     padding: 10px;
-    margin: 15px;
+    margin: 5px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
 }
 .no-header .box-body {
     border-top-right-radius: 3px;
@@ -1343,9 +1347,12 @@ a:active,a:focus,a:hover {
     border-top-right-radius: 0;
     border-bottom-right-radius: 3px;
     border-bottom-left-radius: 3px;
-    border-top: 1px solid #f4f4f4;
+    /* border-top: 1px solid #f4f4f4; */
     padding: 10px;
-    background-color: #fff}
+    background-color: #fff;
+    border-top: none !important;
+    margin-top: 15px;
+}
 .chart-legend {
     margin: 10px 0}
 
@@ -2490,4 +2497,75 @@ footer .btn {
     font-size: 15px;
     margin-right: 10px;
 }
+
+/* Footer about cards width for small screens */
+@media only screen and (max-width: 2633px) {
+  .box-footer {
+    height: 200px !important;
+  }
+}
+
+@media only screen and (max-width: 1631px) {
+  .box-footer {
+    height: 250px !important;
+  }
+}
+
+
+@media only screen and (max-width: 1485px) {
+  .box-footer {
+    height: 300px !important;
+  }
+}
+
+@media only screen and (max-width: 1301px) {
+  .box-footer {
+    height: 350px !important;
+  }
+}
+
+
+
+@media only screen and (max-width: 1273px) {
+  .box-footer {
+    height: 400px !important;
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .box-footer {
+    height: 500px !important;
+  }
+}
+
+.cards-section > .col-sm-4{
+    background-color: #f6f6f6 !important;
+    margin-top: 30px;
+    padding-top: 30px;
+    padding-bottom: 40px;
+}
+.cards-section > .col-sm-4 > .col-sm-12 > .box {
+    border-top: none !important;
+}
+
+.about-fluid-page {
+    padding-right: 0px !important;
+    padding-left: 0px !important;
+}
+
+.about-fluid-page > .row:nth-child(1) {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    text-align: justify;
+}
+
+.box-footer > .header {
+    text-align: justify;
+}
+
+.box-footer > .header > h4 {
+    margin-bottom: 15px;
+}
+
+
 
