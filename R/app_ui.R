@@ -109,23 +109,41 @@ app_ui <- function() {
       tabItem(
         tabName="national",
         navbarPage(title = '',
-                   navbarMenu("Most recent value",
-                              tabPanel("National mean",
-                                       mod_recent_mean_ui("recent_mean_leaf"))),
-                   navbarMenu('Trends',
-                              tabPanel('National mean',
-                                       mod_trends_mean_ui("trends_mean")))
+                   
+                   tabPanel("Most recent value",
+                            mod_recent_mean_ui("recent_mean_leaf")
+                   ),
+                   tabPanel("Trends",
+                            mod_trends_mean_ui("trends_mean")
+                   )
+                   
+                   # navbarMenu("Most recent value",
+                   #            tabPanel("National mean",
+                   #                     mod_recent_mean_ui("recent_mean_leaf"))),
+                   # navbarMenu('Trends',
+                   #            tabPanel('National mean',
+                   #                     mod_trends_mean_ui("trends_mean")))
+                   
                    )
         ),
       tabItem(
         tabName="subnational_region",
         navbarPage(title = '',
-                   navbarMenu("Most recent value",
-                              tabPanel("Subnational mean",
-                                       mod_recent_mean_sub_ui("recent_mean_sub_leaf"))),
-                   navbarMenu('Trends',
-                              tabPanel('Subnational mean',
-                                       mod_trends_mean_sub_ui("trends_sub_mean"))))),
+          tabPanel("Most recent value",
+                   mod_recent_mean_sub_ui("recent_mean_sub_leaf")
+          ),
+          tabPanel("Trends",
+                   mod_trends_mean_sub_ui("trends_sub_mean")
+          )
+        )
+        # navbarPage(title = '',
+        #            navbarMenu("Most recent value",
+        #                       tabPanel("Subnational mean",
+        #                                mod_recent_mean_sub_ui("recent_mean_sub_leaf"))),
+        #            navbarMenu('Trends',
+        #                       tabPanel('Subnational mean',
+        #                                mod_trends_mean_sub_ui("trends_sub_mean"))))
+        ),
       tabItem(
         tabName="household_wealth",
         navbarPage(title = '',
