@@ -40,7 +40,7 @@ app_ui <- function() {
         tabName = 'hefpi_vis',
         startExpanded = TRUE,
         menuSubItem(
-          text=" By National",
+          text=" National",
           tabName="national",
           icon = shiny::icon("angle-right")
         ),
@@ -55,7 +55,7 @@ app_ui <- function() {
           icon = shiny::icon("angle-right")
         ),
         menuSubItem(
-          text="Household wealth",
+          text="By Household wealth",
           tabName="household_wealth",
           icon = shiny::icon("angle-right")
         ),
