@@ -109,23 +109,41 @@ app_ui <- function() {
       tabItem(
         tabName="national",
         navbarPage(title = '',
-                   navbarMenu("Most recent value",
-                              tabPanel("National mean",
-                                       mod_recent_mean_ui("recent_mean_leaf"))),
-                   navbarMenu('Trends',
-                              tabPanel('National mean',
-                                       mod_trends_mean_ui("trends_mean")))
+                   
+                   tabPanel("Most recent value",
+                            mod_recent_mean_ui("recent_mean_leaf")
+                   ),
+                   tabPanel("Trends",
+                            mod_trends_mean_ui("trends_mean")
+                   )
+                   
+                   # navbarMenu("Most recent value",
+                   #            tabPanel("National mean",
+                   #                     mod_recent_mean_ui("recent_mean_leaf"))),
+                   # navbarMenu('Trends',
+                   #            tabPanel('National mean',
+                   #                     mod_trends_mean_ui("trends_mean")))
+                   
                    )
         ),
       tabItem(
         tabName="subnational_region",
         navbarPage(title = '',
-                   navbarMenu("Most recent value",
-                              tabPanel("Subnational mean",
-                                       mod_recent_mean_sub_ui("recent_mean_sub_leaf"))),
-                   navbarMenu('Trends',
-                              tabPanel('Subnational mean',
-                                       mod_trends_mean_sub_ui("trends_sub_mean"))))),
+          tabPanel("Most recent value",
+                   mod_recent_mean_sub_ui("recent_mean_sub_leaf")
+          ),
+          tabPanel("Trends",
+                   mod_trends_mean_sub_ui("trends_sub_mean")
+          )
+        )
+        # navbarPage(title = '',
+        #            navbarMenu("Most recent value",
+        #                       tabPanel("Subnational mean",
+        #                                mod_recent_mean_sub_ui("recent_mean_sub_leaf"))),
+        #            navbarMenu('Trends',
+        #                       tabPanel('Subnational mean',
+        #                                mod_trends_mean_sub_ui("trends_sub_mean"))))
+        ),
       tabItem(
         tabName="household_wealth",
         navbarPage(title = '',
@@ -153,7 +171,7 @@ app_ui <- function() {
                                        mod_dat_ind_ui('dat_ind'))))),
       tabItem(
         tabName = 'about', 
-        fluidPage(
+        fluidPage(class = "about-fluid-page",
           fluidRow(
             # div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;'),
 
@@ -166,43 +184,47 @@ app_ui <- function() {
             )
        
           ),
-          column(4,
-                   box(
-                     fluidRow(
-                       div(img(src= 'www/card_1.jpg', width = '100%'), style = 'text-align:center;')),
-                       footer = tags$div(class="header", checked=NA,
-                                         tags$h4("A History of the World Bank's Health Equity and Financial Protection Indicators"),
-                                         tags$p("This project – a collaboration between the Bank’s research group, data group, and health, nutrition and population global – stretches back to 2000."),
-                                         tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/history.html", "Read more", style="color:#009FDA")
-                       ),
-                       width =12,
-                     
-                   )
-                   ),
-          column(4, 
-            box(
-              fluidRow(
-                div(img(src= 'www/card_2.jpg', width = '100%'), style = 'text-align:center;')),
-              footer = tags$div(class="header", checked=NA,
-                                tags$h4("Did the Poor Get Left Behind by the Health MDGs?"),
-                                tags$p("One question that is often asked is whether the focus on population averages in the MDGs resulted in the poor being left behind. The HEFPI dataset allows us to answer this with some precision."),
-                                tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/left_behind.html", "Read more", style="color:#009FDA")
+          tags$div(class = "row", 
+            tags$div(class = "cards-section",
+              column(4,
+                       box(
+                         fluidRow(
+                           div(img(src= 'www/card_1.jpg', width = '100%'), style = 'text-align:center;')),
+                           footer = tags$div(class="header", checked=NA,
+                                             tags$h4("A History of the World Bank's Health Equity and Financial Protection Indicators"),
+                                             tags$p("This project – a collaboration between the Bank’s research group, data group, and health, nutrition and population global – stretches back to 2000."),
+                                             tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/history.html", "Read more", style="color:#009FDA")
+                           ),
+                           width =12,
+                         
+                       )
+                  ),
+              column(4, 
+                box(
+                  fluidRow(
+                    div(img(src= 'www/card_2.jpg', width = '100%'), style = 'text-align:center;')),
+                  footer = tags$div(class="header", checked=NA,
+                                    tags$h4("Did the Poor Get Left Behind by the Health MDGs?"),
+                                    tags$p("One question that is often asked is whether the focus on population averages in the MDGs resulted in the poor being left behind. The HEFPI dataset allows us to answer this with some precision."),
+                                    tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/left_behind.html", "Read more", style="color:#009FDA")
+                  ),
+                  width =12,
+                  
+                )
               ),
-              width =12,
-              
-            )
-          ),
-          column(4,
-            box(
-              fluidRow(
-                div(img(src= 'www/card_3.jpg', width = '100%'), style = 'text-align:center;')),
-              footer = tags$div(class="header", checked=NA,
-                                tags$h4("Tracking Progress Towards UHC Using the HEFPI Database"),
-                                tags$p("The idea underlying Universal Health Coverage (UHC) is that everyone, irrespective of their means, receives the health services they need, without suffering financial hardship in the process."),
-                                tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/tracking_progress.html", "Read more", style="color:#009FDA")
-              ),
-              width =12,
-              
+              column(4,
+                box(
+                  fluidRow(
+                    div(img(src= 'www/card_3.jpg', width = '100%'), style = 'text-align:center;')),
+                  footer = tags$div(class="header", checked=NA,
+                                    tags$h4("Tracking Progress Towards UHC Using the HEFPI Database"),
+                                    tags$p("The idea underlying Universal Health Coverage (UHC) is that everyone, irrespective of their means, receives the health services they need, without suffering financial hardship in the process."),
+                                    tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/tracking_progress.html", "Read more", style="color:#009FDA")
+                  ),
+                  width =12,
+                  
+                )
+              )
             )
           ),
           br(), br(),
@@ -218,7 +240,7 @@ app_ui <- function() {
           #                       onclick ="window.open('https://openknowledge.worldbank.org/handle/10986/31869', '_blank')"), align = 'center'),
           #          ),
         
-          br(), br(), br(), br(), br(),
+          br(), br(),
           fluidRow(
             column(12,
             shinyWidgets::circleButton(inputId = 'fb', icon = icon('facebook'), status = "default", size ='default', onclick ="window.open('https://www.facebook.com/worldbank', '_blank')"),
