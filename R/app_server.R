@@ -61,15 +61,16 @@ app_server <- function(input, output,session) {
                                             background-image: url(www/hefpi_banner.png) !important;
                                             background-size: cover !important;
                                             margin: 0px;
-                                            height: 170px !important;
+                                            height: 450px !important;
+                                            background-position-x: center;
                                         }
                                             
                                         #sidebarCollapsed {
-                                            padding-top: 170px !important;
+                                            padding-top: 451px !important;
                                         }
                                       
                                         .content {
-                                          margin-top: 60px !important;
+                                          margin-top: 345px !important;
                                         }
                                         
                                        ')))
