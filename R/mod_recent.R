@@ -593,8 +593,8 @@ mod_recent_con_server <- function(input, output, session){
             # h4(paste0('Most recent value - Concentration index - ', indicator_name)),
             HTML(str_glue('
                         <div class="chart-header-labels-row">
-                           <div class="chart-label"> Most recent value </div> 
                            <div class="chart-label"> Concentration index </div>
+                           <div class="chart-label"> Most recent value </div> 
                            <div class="chart-label"> {indicator_name} </div>
                           </div>
                           ')),
