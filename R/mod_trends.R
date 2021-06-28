@@ -393,7 +393,6 @@ mod_trends_mean_server <- function(input, output, session){
       plot_title <- HTML(str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Trends </div> 
-                           <div class="chart-label"> National mean </div>
                            <div class="chart-label"> {indicator} </div>
                           </div>
                           '))
