@@ -2568,4 +2568,6 @@ footer .btn {
 }
 
 
-
+.main-header .sidebar-toggle:before {
+    content:'\2630' !important; 
+}
