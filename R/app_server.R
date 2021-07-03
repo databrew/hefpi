@@ -54,7 +54,7 @@ app_server <- function(input, output,session) {
   output$style_tag <- renderUI({
 
     
-    if(input$sidebar=='about'){
+    if(input$sidebar=='about' || input$sidebar=='docu'){
       
       return( (tags$head(tags$style(HTML('
                                        .skin-blue .main-header .navbar {
@@ -128,13 +128,13 @@ app_server <- function(input, output,session) {
   })
   
   output$script_tag <- renderUI({
-    if(input$sidebar=='about'){
-      
+    if(input$sidebar=='about' || input$sidebar =='docu'){
+      # $("header").find("nav").append(\'<div class="headerTitleCust"></div>\');
       return( (
         tags$script(HTML('
           $(document).ready(function() {
             $(".headerTitleCust").remove()
-            $("header").find("nav").append(\'<div class="headerTitleCust"></div>\');
+            $("header").find("nav").append(\'<div class="headerTitleCust headerTitleAboutDocPosition"> Health Equity and Financial Protection Indicators (HEFPI)</div>\');
           })
          '))
         )
