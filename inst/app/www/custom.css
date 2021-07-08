@@ -2571,3 +2571,9 @@ footer .btn {
 .main-header .sidebar-toggle:before {
     content:'\2630' !important; 
 }
+
+
+.headerTitleAboutDocPosition {
+    margin-top: 260px !important;
+    margin-left: 290px !important;
+}
