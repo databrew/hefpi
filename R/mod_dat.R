@@ -306,6 +306,11 @@ mod_dat_country_server <- function(input, output, session){
                                      grid_major_y = NA,
                                      legend_text_size = 2/3)
         ggplotly(p, tooltip = 'none') %>%
+          layout(legend = list(
+            orientation = "h",
+            y = 1.15
+          )
+          ) %>%
           config(displayModeBar = F)
       }
     }

@@ -343,7 +343,7 @@ mod_dots_country_server <- function(input, output, session){
                                         p <- ggplot(df, aes(x=country,
                                                             y=value)) +
                                           geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
-                                          geom_line(aes(group = country), color = 'black', size = 0.5) +
+                                          geom_line(aes(group = country), color = 'black', size = 0.25) +
                                           scale_color_manual(name = '',
                                                              values = col_vec) +
                                           scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
@@ -363,8 +363,16 @@ mod_dots_country_server <- function(input, output, session){
                                                                     x_axis_hjust = 0.5,
                                                                     y_axis_hjust = 1,
                                                                     y_axis_vjust = 0.5) +
-                                          labs(title = '',
-                                               subtitle = '') 
+                                                          theme(
+                                                            panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                                            panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                                            panel.grid.major.x = element_blank(),
+                                                            panel.grid.minor.x = element_blank(),
+                                                            axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                                            axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
+                                                          ) +
+                                                          labs(title = '',
+                                                               subtitle = '') 
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -459,7 +467,7 @@ mod_dots_country_server <- function(input, output, session){
         p <- ggplot(df, aes(x=value,
                             y=country,
                             text =mytext)) +
-          geom_line(aes(group = country), color = 'black', size = 0.5) +
+          geom_line(aes(group = country), color = 'black', size = 0.25) +
           geom_point(size=rel(2), alpha = 0.7, aes(color = variable)) +
           scale_color_manual(name = '',
                              values = col_vec) +
@@ -475,7 +483,15 @@ mod_dots_country_server <- function(input, output, session){
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
                                     y_axis_vjust = 0.5)+
-          theme(plot.title = element_text(margin = margin(0,0,30,0)))
+          theme(plot.title = element_text(margin = margin(0,0,30,0))) +
+          theme(
+            panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+            panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+            axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
+          )
         
         fig <- ggplotly(p, 
                         tooltip = 'text', 
@@ -806,6 +822,14 @@ mod_dots_ind_server <- function(input, output, session){
                                                              x_axis_hjust = 0.5,
                                                              y_axis_hjust = 1,
                                                              y_axis_vjust = 0.5) +
+                                          theme(
+                                            panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                            panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                            panel.grid.major.x = element_blank(),
+                                            panel.grid.minor.x = element_blank(),
+                                            axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                            axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
+                                          ) +
                                           labs(title = '',
                                                subtitle ='')
                                         p
@@ -911,7 +935,7 @@ mod_dots_ind_server <- function(input, output, session){
                             text = mytext)) +
           scale_color_manual(name = '',
                              values = col_vec) +
-          geom_line(aes(group = indicator_short_name), color = 'black', size = 0.5) +
+          geom_line(aes(group = indicator_short_name), color = 'black', size = 0.25) +
           geom_point(size=rel(2), alpha = 0.7) +
           scale_x_continuous(position = 'top', 
                              limits = c((value_range[1]), (value_range[2] +5)), 
@@ -928,7 +952,15 @@ mod_dots_ind_server <- function(input, output, session){
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
-                                    y_axis_vjust = 0.5) 
+                                    y_axis_vjust = 0.5) +
+                        theme(
+                          panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                          panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                          panel.grid.major.x = element_blank(),
+                          panel.grid.minor.x = element_blank(),
+                          axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                          axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
+                          )
         
         fig <- ggplotly(p, 
                         tooltip = 'text', 
