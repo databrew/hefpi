@@ -367,7 +367,15 @@ mod_trends_mean_server <- function(input, output, session){
                                                                x_axis_size = 12,
                                                                legend_position = 'top',
                                                                legend_direction = 'horizontal',
-                                                               legend_text_size = 2/3)
+                                                               legend_text_size = 2/3) +
+                                            theme(
+                                              panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                              panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                              panel.grid.major.x = element_blank(),
+                                              panel.grid.minor.x = element_blank(),
+                                              axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                                              axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
+                                            )
                                           p
                                           ggsave(file, width = 8, height = 8, type = "cairo")
                                         }
@@ -1906,7 +1914,19 @@ mod_trends_quin_server <- function(input, output, session){
                                     x_axis_vjust =0.5,
                                     y_axis_vjust = 0.5,
                                     y_axis_hjust = 1,
-                                    x_axis_size = 12)
+                                    x_axis_size = 12) +
+                      theme(
+                        panel.grid.major.y = element_line(size = 0.5, linetype = 'solid',
+                                                          colour = "#cccccc"),
+                        panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid',
+                                                          colour = "#cccccc"),
+                        panel.grid.major.x = element_blank(),
+                        panel.grid.minor.x = element_blank(),
+                        axis.ticks = element_line(size = 0.5, linetype = 'solid',
+                                                  colour = "#cccccc"),
+                        axis.line = element_line(colour = "#cccccc", 
+                                                 size = 0.5, linetype = "solid")
+                      )
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
           config(displayModeBar = F)
