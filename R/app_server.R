@@ -23,6 +23,7 @@ app_server <- function(input, output,session) {
 
   # MOST RECENT VALUE MAPS
   callModule(mod_recent_mean_server, 'recent_mean_leaf')
+  callModule(mod_recent_radar_server, 'recent_radar')
   callModule(mod_recent_con_server, 'recent_con_leaf')
   callModule(mod_recent_mean_sub_server, 'recent_mean_sub_leaf')
   # callModule(mod_recent_con_sub_server, 'recent_con_sub_leaf1')
