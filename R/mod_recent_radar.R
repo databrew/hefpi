@@ -173,6 +173,7 @@ mod_recent_radar_server <- function(input, output, session){
         # lcols <- c("#EEA236", "#5CB85C", "#46B8DA")
         # use this as guide https://github.com/ricardo-bion/ggradar/blob/master/R/ggradar.R
         pd <- as.data.frame(pd)
+        save(pd, file = 'temp_pd.rda')
         pop_radar <- ggradar::ggradar(pd,
                                       axis.label.size = 3,
                                       grid.label.size = 5,
@@ -244,68 +245,68 @@ mod_recent_radar_server <- function(input, output, session){
   })
   
   
-  # # ---- DOWNLOAD DATA FROM MAP ---- #
-  # output$dl_data <- downloadHandler(
-  #   filename = function() {
-  #     paste0("most_recent_value_mean_", Sys.Date(), ".csv")
-  #   },
-  #   content = function(file) {
-  #     # get map
-  #     pop_radar <- get_radar_list()
-  #     if(is.null(pop_radar)){
-  #       NULL
-  #     } else {
-  #       if(is.na(pop_radar)){
-  #         temp <- data_frame()
-  #         write.csv(temp, file)
-  #       } else {
-  #         # get the map data from the second element of the list
-  #         temp <- pop_radar[[2]]
-  #         
-  #         names(temp)[1] <- 'Country'
-  #         # save(temp, file = 'temp_data.rda')
-  #         # add stampe 
-  #         temp_stamp <- temp[1,]
-  #         temp_stamp$Country<- 'HEFPI database, The World Bank, 2021'
-  #         temp_stamp[, -1] <- ''
-  #         temp <- rbind(temp, temp_stamp)
-  #         write.csv(temp, file)
-  #       }
-  #       
-  #     }
-  #   }
-  # )
-  # 
-  # 
-  # # ---- DOWNLOAD MAP IMAGE ---- #
-  # output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".jpg"),
-  #                                   content = function(file) {
-  #                                     pop_radar <- get_radar_list()
-  #                                     if(is.null(pop_radar)){
-  #                                       NULL
-  #                                     } else {
-  #                                       if(is.na(pop_radar)){
-  #                                         empty_plot <- function(title = NULL){
-  #                                           p <- plotly_empty(type = "scatter", mode = "markers") %>%
-  #                                             config(
-  #                                               displayModeBar = FALSE
-  #                                             ) %>%
-  #                                             layout(
-  #                                               title = list(
-  #                                                 text = title,
-  #                                                 yref = "paper",
-  #                                                 y = 0.5
-  #                                               )
-  #                                             )
-  #                                         } 
-  #                                         p <- empty_plot("No data available for the selected inputs")
-  #                                         ggsave(file, width = 8, height = 8)
-  #                                         
-  #                                       } else {
-  #                                        pop_radar 
-  #                                       ggsave(file, width = 8, height = 8)
-  #                                       }
-  #                                     }
-  #                                   })
+  # ---- DOWNLOAD DATA FROM MAP ---- #
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste0("most_recent_value_mean_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      # get map
+      pop_radar <- get_radar_list()
+      if(is.null(pop_radar)){
+        NULL
+      } else {
+        if(is.na(pop_radar)){
+          temp <- data_frame()
+          write.csv(temp, file)
+        } else {
+          # get the map data from the second element of the list
+          temp <- pop_radar[[2]]
+
+          names(temp)[1] <- 'Country'
+          # save(temp, file = 'temp_data.rda')
+          # add stampe
+          temp_stamp <- temp[1,]
+          temp_stamp$Country<- 'HEFPI database, The World Bank, 2021'
+          temp_stamp[, -1] <- ''
+          temp <- rbind(temp, temp_stamp)
+          write.csv(temp, file)
+        }
+
+      }
+    }
+  )
+
+
+  # ---- DOWNLOAD MAP IMAGE ---- #
+  output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".jpg"),
+                                    content = function(file) {
+                                      pop_radar <- get_radar_list()
+                                      if(is.null(pop_radar)){
+                                        NULL
+                                      } else {
+                                        if(is.na(pop_radar)){
+                                          empty_plot <- function(title = NULL){
+                                            p <- plotly_empty(type = "scatter", mode = "markers") %>%
+                                              config(
+                                                displayModeBar = FALSE
+                                              ) %>%
+                                              layout(
+                                                title = list(
+                                                  text = title,
+                                                  yref = "paper",
+                                                  y = 0.5
+                                                )
+                                              )
+                                          }
+                                          p <- empty_plot("No data available for the selected inputs")
+                                          ggsave(file, width = 8, height = 8)
+
+                                        } else {
+                                         pop_radar
+                                        ggsave(file, width = 8, height = 8)
+                                        }
+                                      }
+                                    })
   
 }
