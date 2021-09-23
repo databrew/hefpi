@@ -109,13 +109,19 @@ app_ui <- function() {
       tabItem(
         tabName="national",
         navbarPage(title = '',
+                   navbarMenu('Most recent value',
+                     tabPanel("Map",
+                              mod_recent_mean_ui("recent_mean_leaf")
+                     ),
+                     tabPanel("Radar plot",
+                              mod_recent_radar_ui("recent_radar")
+                     )),
+                     tabPanel("Trends",
+                              mod_trends_mean_ui("trends_mean")
+                     ) 
                    
-                   tabPanel("Most recent value",
-                            mod_recent_mean_ui("recent_mean_leaf")
-                   ),
-                   tabPanel("Trends",
-                            mod_trends_mean_ui("trends_mean")
-                   )
+                   
+                   
                    
                    # navbarMenu("Most recent value",
                    #            tabPanel("National mean",

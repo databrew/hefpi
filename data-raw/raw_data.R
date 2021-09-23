@@ -87,6 +87,10 @@ indicators$indicator_short_name <- paste0(indicators$indicator_short_name, ' (',
 
 usethis::use_data(indicators, overwrite = T)
 
+# HERE create indicator list for radar plot (those in percent and one minues the financial protection)
+percentage_inds <- indicators %>% filter(unit_of_measure == '%') %>% select(level_1, indicator_short_name)
+usethis::use_data(percentage_inds, overwrite = TRUE)
+
 
 ################################################################
 
@@ -312,25 +316,6 @@ usethis::use_data(yn_list, overwrite = T)
 t11 <- c(1,2,3,4,5)
 usethis::use_data(t11, overwrite = TRUE)
 
-
-
-#### ---------------------------------------------### create defualt data objects
-
-# trends national mean
-
-# trends subnational mean
-
-# trends ci 
-
-# trends quin
-
-# dots country
-
-# dots indicator
-
-# dat country
-
-# dat indicator
 
 
 
