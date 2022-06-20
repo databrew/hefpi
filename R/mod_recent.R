@@ -24,7 +24,7 @@ mod_recent_mean_ui <- function(id){
                ns('recent_mean_leaf'), height = 700 ),
       ),
       column(4,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('share_chart'), 'Share chart'),
              br(), br(),
@@ -84,6 +84,7 @@ mod_recent_mean_server <- function(input, output, session){
     plot_years <- input$date_range
     indicator <- input$indicator
     
+    # save(plot_years, indicator, file = 'temp_inputs.rda')
     # Get the variable from indicator input
     ind_info <- indicators %>%
       filter(indicator_short_name == indicator) %>%
@@ -93,7 +94,7 @@ mod_recent_mean_server <- function(input, output, session){
     unit_of_measure = ind_info$unit_of_measure
     
     # Get the data, subsetted by inputs
-    pd <- hefpi::df %>%
+    pd <- hefpi::hefpi_df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       filter(indic == variable_name) %>%
@@ -104,7 +105,7 @@ mod_recent_mean_server <- function(input, output, session){
                 indic = indic,
                 year = year,
                 region_name = region_name,
-                survey_list = survey_list,
+                #survey_list = survey_list,
                 data_source = referenceid_list,
                 indicator_short_name = indicator_short_name,
                 indicator_description = indicator_description,
@@ -267,9 +268,9 @@ mod_recent_mean_server <- function(input, output, session){
           names(temp) <- tolower(names(temp))
           temp$parameter <- 'Mean'
           temp$level <- 'National'
-          temp <- temp %>% select(region_name, name, iso3, year, data_source, survey_list, indic, indicator_short_name,
+          temp <- temp %>% select(region_name, name, iso3, year, data_source, indic, indicator_short_name,
                                   indicator_description, parameter, level, value, unit_of_measure)
-          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           # save(temp, file = 'temp_data.rda')
@@ -438,7 +439,7 @@ mod_recent_con_ui <- function(id){
                ns('recent_con_leaf'), height = 700),
       ),
       column(4,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'),
              actionButton(ns('share_chart'), 'Share chart'),
              p('Indicator'),
@@ -507,7 +508,7 @@ mod_recent_con_server <- function(input, output, session){
     unit_of_measure <- 'CI'
     
     # get subset of data based on inputs
-    pd<- hefpi::df %>%
+    pd<- hefpi::hefpi_df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       filter(indic == variable_name) %>%
@@ -518,7 +519,7 @@ mod_recent_con_server <- function(input, output, session){
                 indic = indic,
                 year = year,
                 region_name = region_name,
-                survey_list = survey_list,
+                #survey_list = survey_list,
                 data_source = referenceid_list) %>%
       inner_join(indicators, by = c('indic'='variable_name'))
     
@@ -647,9 +648,9 @@ mod_recent_con_server <- function(input, output, session){
           # subset by  
           temp$parameter <- 'CI'
           temp$level <- 'National'
-          temp <- temp %>% select(region_name, name, iso3, year, data_source, survey_list, indic, indicator_short_name,
+          temp <- temp %>% select(region_name, name, iso3, year, data_source, indic, indicator_short_name,
                                   indicator_description, parameter, level, value, unit_of_measure)
-          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           # add stampe 

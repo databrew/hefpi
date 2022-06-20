@@ -528,7 +528,7 @@ mod_trends_mean_sub_ui <- function(id){
              )),
       
       column(3,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), label = 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
@@ -540,7 +540,7 @@ mod_trends_mean_sub_ui <- function(id){
              p('Country'),
              div(style='border-color: grey; color:grey',selectInput(inputId = ns("country"),
                          label = NULL, 
-                         choices = as.character(sort(unique(sub_national$country))),
+                         choices = as.character(sort(unique(hefpi_df$country))),
                          selected ='Belize')),
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -565,13 +565,15 @@ mod_trends_mean_sub_server <- function(input, output, session){
   
   # ---- GENERATE UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
+    country_name = 'India'
+    indicator = 'Catastrophic health spending, 10% (%)'
     # get inputs
     indicator <- input$indicator
     country_name <- input$country
     date_range <- c(1982, 2018)
     
     # Get the data to be plotted
-    pd <- hefpi::sub_national %>%
+    pd <- hefpi::hefpi_df %>%
       filter(country == country_name)%>%
       filter(indicator_short_name == indicator) %>%
       group_by(ISO3 = iso3c, country,gaul_code) %>%
@@ -1061,7 +1063,7 @@ mod_trends_con_ui <- function(id){
                ns('trends_con'), height = '600px'
              )),
       column(3,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
@@ -1125,7 +1127,7 @@ mod_trends_con_server <- function(input, output, session){
       filter(indicator_short_name == indicator) %>%
       .$variable_name
     # subset data by variable and region code
-    df <- hefpi::df
+    df <- hefpi::hefpi_df
     df <- df[df$indic == variable,]
     df <- df[df$regioncode %in% region_code,]
     countries <- unique(df$country)
@@ -1199,7 +1201,7 @@ mod_trends_con_server <- function(input, output, session){
           filter(indicator_short_name == indicator) %>%
           .$variable_name
         # subset data by variable and region code
-        df <- hefpi::df
+        df <- hefpi::hefpi_df
         df <- df[df$indic == variable,]
         df <- df[df$regioncode %in% region_code,]
         countries <- unique(df$country)
@@ -1244,7 +1246,7 @@ mod_trends_con_server <- function(input, output, session){
         select(variable_name, unit_of_measure)
       variable_name = ind_info$variable_name
       # subet by variable, region code and a list of countries
-      df <- hefpi::df
+      df <- hefpi::hefpi_df
       df <- df[df$indic == variable_name,]
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
@@ -1537,7 +1539,7 @@ mod_trends_quin_ui <- function(id){
                ns('trends_quin'),  height = '600px'
              )),
       column(3,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
@@ -1585,7 +1587,7 @@ mod_trends_quin_server <- function(input, output, session){
     variable_name = ind_info$variable_name
     unit_of_measure = ind_info$unit_of_measure
     # subset by country and variable
-    df <- hefpi::df %>%
+    df <- hefpi::hefpi_df %>%
       filter(country == country_names) %>%
       filter(indic == variable_name) %>%
       select(year, Q1:Q5) 
@@ -1644,12 +1646,12 @@ mod_trends_quin_server <- function(input, output, session){
       variable_name = ind_info$variable_name
       unit_of_measure = ind_info$unit_of_measure
       # subset by country and variable
-      df <- hefpi::df %>%
+      df <- hefpi::hefpi_df %>%
         filter(country == country_names) %>%
         filter(indic == variable_name) %>%
         filter(year >= min(date_range),
                year <= max(date_range))  
-      df <- df[complete.cases(df),]
+      #df <- df[complete.cases(df),]
       if(view_as == 'Slope chart'){
         year_begin = min(df$year)
         year_end = max(df$year)

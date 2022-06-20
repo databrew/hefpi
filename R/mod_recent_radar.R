@@ -24,7 +24,7 @@ mod_recent_radar_ui <- function(id){
                ns('recent_radar_plot'), height = 700 ),
       ),
       column(4,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('share_chart'), 'Share chart'),
              br(), br(),
@@ -45,7 +45,7 @@ mod_recent_radar_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2017,
+                         max = 2018,
                          value = c(1982, 2018),
                          step = 1,
                          sep = ''),
@@ -71,20 +71,20 @@ mod_recent_radar_server <- function(input, output, session){
   # ui output for indicator
   output$indicator_ui <- renderUI({
     
-    plot_years <- c(1982, 2017)
-    country_names <- hefpi::country_list[1:4]
+    #plot_years <- c(1982, 2017)
+    #country_names <- hefpi::country_list[1:4]
     country_names <- input$country
     plot_years <- input$date_range
     
     # HERE need to figure out a way to make the selection more smooth - that the plot data doesnt have NAs.
-    pd <- hefpi::df %>%
+    pd <- hefpi::hefpi_df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       filter(country %in% country_names) %>%
       filter(indicator_short_name %in% percentage_inds$indicator_short_name)%>%
       group_by(country, indicator_short_name) %>%
       filter(year == max(year)) %>% 
-      drop_na() 
+      select(1:17, 354:362) %>% drop_na()
     
     indicator_names <-pd  %>% group_by(indicator_short_name) %>% summarise(counts = n()) %>% filter(counts == length(unique(pd$country))) %>% .$indicator_short_name
     
@@ -106,9 +106,9 @@ mod_recent_radar_server <- function(input, output, session){
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_radar_list <- reactive({
 
-    # indicator <- indicator_names[c(1:4)]
-    # plot_years <- c(1982, 2017)
-    # country_names <- hefpi::country_list[1:4]
+    #indicator <- indicator_names[c(1:4)]
+    #plot_years <- c(1982, 2017)
+    #country_names <- hefpi::country_list[1:4]
       
     # create list to store results from reactive object
     pop_radar_list <- list()
@@ -132,7 +132,7 @@ mod_recent_radar_server <- function(input, output, session){
       unit_of_measure = ind_info$unit_of_measure
       
       # Get the data, subsetted by inputs
-      pd <- hefpi::df %>%
+      pd <- hefpi::hefpi_df %>%
         filter(year >= min(plot_years),
                year <= max(plot_years)) %>%
         filter(indic %in% variable_name) %>%
@@ -144,7 +144,7 @@ mod_recent_radar_server <- function(input, output, session){
                   indic = indic,
                   year = year,
                   region_name = region_name,
-                  survey_list = survey_list,
+                  #survey_list = survey_list,
                   data_source = referenceid_list,
                   indicator_short_name = indicator_short_name,
                   indicator_description = indicator_description,

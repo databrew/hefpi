@@ -21,7 +21,7 @@ mod_dots_country_ui <- function(id){
                  tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dots_country'), height = '600px', width = '1000px') )
       ),
       column(3,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
@@ -74,7 +74,7 @@ mod_dots_country_server <- function(input, output, session){
       dplyr::filter(indicator_short_name == indicator) %>%
       .$variable_name
     # subset data by variable and region code
-    df <- hefpi::df
+    df <- hefpi::hefpi_df
     df <- df[df$indic == variable,]
     df <- df[df$regioncode %in% region_code,]
     df <- df %>% 
@@ -172,7 +172,7 @@ mod_dots_country_server <- function(input, output, session){
           dplyr::filter(indicator_short_name == indicator) %>%
           .$variable_name
         # subset data by variable and region code
-        df <- hefpi::df
+        df <- hefpi::hefpi_df
         df <- df[df$indic == variable,]
         df <- df[df$regioncode %in% region_code,]
         df <- df %>% 
@@ -220,7 +220,7 @@ mod_dots_country_server <- function(input, output, session){
       variable_name <- ind_info$variable_name
       unit_of_measure <- ind_info$unit_of_measure
       # subset by country and variable
-      temp <- hefpi::df %>%
+      temp <- hefpi::hefpi_df %>%
         filter(country %in% country_names) %>%
         filter(indic == variable_name) %>%
         filter(year >= date_range[1],
@@ -239,7 +239,8 @@ mod_dots_country_server <- function(input, output, session){
                                    ifelse(df$variable == 'Q3', 'Q3: Middle',
                                           ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
       # only keep data with no NAs
-      df <- df[complete.cases(df),]
+      df <- df[!is.na(df$value),]
+      #df <- df[complete.cases(df),]
       # order country
       df$country <- factor(df$country,levels= sort(unique(df$country), decreasing = TRUE ))
       df <- df %>% filter(value >= value_range[1],
@@ -285,9 +286,9 @@ mod_dots_country_server <- function(input, output, session){
           # subset by  
           temp$parameter <- 'Mean'
           # temp$level <- 'National'
-          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
+          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, indic, indicator_short_name,
                                   indicator_description, parameter, level, ci, unit_of_measure)
-          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
@@ -516,7 +517,7 @@ mod_dots_ind_ui <- function(id){
              tags$div(style='overflow-y: scroll; position: relative', 
                       plotlyOutput(ns('dots_ind'), height = '600px', width = '1000px') )),
       column(3,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
@@ -598,6 +599,7 @@ mod_dots_ind_server <- function(input, output, session){
                                  ifelse(df$variable == 'Q3', 'Q3: Middle',
                                         ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
     # only keep data with no NAs
+    df <- df[!is.na(df$value),]
     df <- df[complete.cases(df),]
     max_value <- round(max(df$value), 2)
     min_value <- round(min(df$value), 2)
@@ -677,7 +679,7 @@ mod_dots_ind_server <- function(input, output, session){
       variable_name <- ind_info$variable_name
       unit_of_measure <- ind_info$unit_of_measure
       # subset by country and variable
-      temp <- hefpi::df %>%
+      temp <- hefpi::hefpi_df %>%
         filter(country == country_names) %>%
         filter(indic %in% variable_name) %>%
         filter(year >= date_range[1],
@@ -696,7 +698,8 @@ mod_dots_ind_server <- function(input, output, session){
                                    ifelse(df$variable == 'Q3', 'Q3: Middle',
                                           ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
       # only keep data with no NAs
-      df <- df[complete.cases(df),]
+      df <- df[!is.na(df$value),]
+      #df <- df[complete.cases(df),]
       
       if(nrow(df) !=0){
         if(length(unique(df$unit_of_measure)) == 1 & unique(df$unit_of_measure) == '%'){
@@ -751,9 +754,9 @@ mod_dots_ind_server <- function(input, output, session){
           # subset by  
           temp$parameter <- 'Mean'
           # temp$level <- 'National'
-          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
+          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, indic, indicator_short_name,
                                   indicator_description, parameter, level, ci, unit_of_measure)
-          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid',
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]

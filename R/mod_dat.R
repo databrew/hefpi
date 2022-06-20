@@ -22,7 +22,7 @@ mod_dat_country_ui <- function(id){
              ))
              ),
       column(3,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
@@ -103,12 +103,12 @@ mod_dat_country_server <- function(input, output, session){
     date_range = input$date_range
     dat_list <- list()
     # get all unique years and indicators
-    temp <- hefpi::df
+    temp <- hefpi::hefpi_df
     all_years <- sort(unique(temp$year))
     all_ind <- unname(unlist(indicators_list))
     all_ind <- all_ind[all_ind %in% indicator]
     # subset data by country and join to get indicator short name 
-    country_data<- hefpi::df %>%
+    country_data<- hefpi::hefpi_df %>%
       filter(country == country_name) %>%
       filter(indicator_short_name %in% indicator) %>%
       filter(year >= date_range[1],
@@ -328,7 +328,7 @@ mod_dat_ind_ui <- function(id){
              tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '1000px') )
              ),
       column(3,
-             useShinyalert(),
+             #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
@@ -375,7 +375,7 @@ mod_dat_ind_server <- function(input, output, session){
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
     # subset data by variable and region code - HERE need to get level2 for plot
-    df<- hefpi::df %>%
+    df<- hefpi::hefpi_df %>%
       # filter(indic == variable) %>%
       filter(regioncode %in% region_code) %>%
       # filter(country %in% country_name) %>%
@@ -448,7 +448,7 @@ mod_dat_ind_server <- function(input, output, session){
         region_list <- hefpi::region_list
         region_code <- as.character(region_list$region_code[region_list$region %in% region])
         # subset data by variable and region code - HERE need to get level2 for plot
-        df<- hefpi::df %>%
+        df<- hefpi::hefpi_df %>%
           # filter(indic == variable) %>%
           filter(regioncode %in% region_code) %>%
           # filter(country %in% country_name) %>%
@@ -494,18 +494,18 @@ mod_dat_ind_server <- function(input, output, session){
         filter(indicator_short_name %in% indicator) %>%
         .$variable_name
       # subset data by variable and region code - HERE need to get level2 for plot
-      df<- hefpi::df %>%
+      df<- hefpi::hefpi_df %>%
         filter(indic %in% variable) %>%
         filter(regioncode %in% region_code) %>%
         filter(country %in% country_names) %>%
         select(year,country, indic, regioncode, referenceid_list, level2, indicator_short_name) 
       names(df)[names(df) == 'regioncode'] <- 'region'
       # create a region year country data
-      country_data <- hefpi::df %>% 
+      country_data <- hefpi::hefpi_df %>% 
         # filter(indic == variable) %>%
         filter(regioncode %in% region_code) %>% # consider removing this, to show all years, not just the years where a region has any data
         select(year, country,regioncode, indic) 
-      all_years <- sort(unique(hefpi::df$year))
+      all_years <- sort(unique(hefpi::hefpi_df$year))
       all_countries <- sort(unique(country_data$country))
       temp_data <- expand_grid(year = all_years, country = all_countries) %>%
         left_join(df)

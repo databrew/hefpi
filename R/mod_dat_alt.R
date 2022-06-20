@@ -40,7 +40,7 @@ mod_dat_ind_alt_ui <- function(id){
                          value = c(2012, 2017),
                          step = 1,
                          sep = ''),
-             useShinyalert(),  # Set up shinyalert
+             #useShinyalert(),  # Set up shinyalert
              actionButton(ns("plot_info"), "Plot Info"))
     )
   )
