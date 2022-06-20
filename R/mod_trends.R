@@ -228,6 +228,7 @@ mod_trends_mean_server <- function(input, output, session){
       pd <- pd %>% filter(pop >= min(value_range),
                           pop <= max(value_range)) 
       pop_list <- list(pd, unit_of_measure, indicator, date_range, value_range,yn)
+      save(pop_list, file = 'sub_trends.rda')
       chart_data$plot_data <- pop_list
     }
   },
@@ -566,28 +567,23 @@ mod_trends_mean_sub_server <- function(input, output, session){
   # ---- GENERATE UI OUTPUTS ---- #
   output$ui_outputs <- renderUI({
     country_name = 'India'
-    indicator = 'Catastrophic health spending, 10% (%)'
+    indicator = '4+ antenatal care visits (%)'
     # get inputs
     indicator <- input$indicator
     country_name <- input$country
     date_range <- c(1982, 2018)
     
+    # Rp is regional avg
+    # Rl is label
+    # Rc is code
     # Get the data to be plotted
-    pd <- hefpi::hefpi_df %>%
+    df <- hefpi::hefpi_sub_df %>%
       filter(country == country_name)%>%
       filter(indicator_short_name == indicator) %>%
-      group_by(ISO3 = iso3c, country,gaul_code) %>%
       filter(year >= min(date_range),
              year <= max(date_range)) 
-    # get shape files
-    shp <- hefpi::gaul
-    # joine with data
-    shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
-    # remove polygons associated with NA - keeps only that region
-    na_rows <- which(!is.na(shp@data$value))
-    shp <- shp[na_rows,]
-    shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
-    df <- shp@data
+   
+
     max_value <- round(max(df$value), 2)
     min_value <- round(min(df$value), 2)
     if(max_value<1){
@@ -597,12 +593,12 @@ mod_trends_mean_sub_server <- function(input, output, session){
       min_value = 0
       max_value = ceiling(max_value)
     }
-    sub_regions_top <- df %>% group_by(country,ADM1_NAME) %>% 
+    sub_regions_top <- df %>% group_by(key) %>% 
       summarise(counts = n()) %>%
       top_n(10) %>%
-      arrange(ADM1_NAME) %>%
-      .$ADM1_NAME
-    sub_regions <- sort(unique(df$ADM1_NAME))
+      arrange(key) %>%
+      .$key
+    sub_regions <- sort(unique(df$key))
     
     fluidPage(
       fluidRow(
@@ -640,6 +636,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
   # REGIONS
   observe({
+    
+    # remove above
     all_regions <- input$all_regions
     message(all_regions)
     if(is.null(all_regions)){
@@ -651,34 +649,24 @@ mod_trends_mean_sub_server <- function(input, output, session){
         country_name <- input$country
         date_range <- c(1982, 2018)
         # Get the data to be plotted
-        pd <- hefpi::sub_national %>%
+        df <- hefpi::hefpi_sub_df %>%
           filter(country == country_name)%>%
           filter(indicator_short_name == indicator) %>%
-          group_by(ISO3 = iso3c, country,gaul_code) %>%
           filter(year >= min(date_range),
                  year <= max(date_range)) 
-        # get shape files
-        shp <- hefpi::gaul
-        # joine with data
-        shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
-        # remove polygons associated with NA - keeps only that region
-        na_rows <- which(!is.na(shp@data$value))
-        shp <- shp[na_rows,]
-        shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
-        df <- shp@data
         
-        sub_regions_top <- df %>% group_by(country,ADM1_NAME) %>% 
+        sub_regions_top <- df %>% group_by(key) %>% 
           summarise(counts = n()) %>%
           top_n(10) %>%
-          arrange(ADM1_NAME) %>%
-          .$ADM1_NAME
-        sub_regions <- sort(unique(df$ADM1_NAME))
+          arrange(key) %>%
+          .$key
+        sub_regions <- sort(unique(df$key))
         
         if (all_regions %% 2 == 0){
           updateCheckboxGroupInput(session=session,
                                    inputId ="sub_country",
                                    choices = sub_regions,
-                                   selected = sub_regions)
+                                   selected = sub_regions_top)
           
         } else {
           updateCheckboxGroupInput(session=session,  
@@ -694,6 +682,11 @@ mod_trends_mean_sub_server <- function(input, output, session){
   chart_data <- reactiveValues(plot_data = 'new') 
   observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
+    # all_regions <- sub_regions
+    # indicator <- '4+ antenatal care visits (%)'
+    # country_name <- 'India'
+    # value_range <- c(0.05, .99)
+    # yn = TRUE
     # get inputs
     indicator <- input$indicator
     region <- input$region
@@ -716,36 +709,17 @@ mod_trends_mean_sub_server <- function(input, output, session){
       variable_name = ind_info$variable_name
       unit_of_measure = ind_info$unit_of_measure
       # get data
-      pd <- hefpi::sub_national %>%
+      pd <- hefpi::hefpi_sub_df %>%
         filter(country == country_name) %>%
         filter(indicator_short_name == indicator) %>%
-        group_by(ISO3 = iso3c, country,gaul_code) %>%
         filter(year >= min(date_range),
                year <= max(date_range))
-      names(pd)[names(pd)=='region'] <- 'region_name'
-      # get shape files
-      shp <- hefpi::gaul
-      # joine with data
-      shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
-      # remove polygons associated with NA - keeps only that region
-      na_rows <- which(!is.na(shp@data$value))
-      shp <- shp[na_rows,]
-      shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
-      pd <- shp@data
-      pd <- pd %>% filter(ADM1_NAME %in% sub_regions)
-      pd <- pd %>% mutate_all(as.character)
-      pd$value <- as.numeric(pd$value)
-      drop_cols <- c("G2008_1_", "G2008_1_ID", "ADM0_NAME", "ADM0_CODE", "AREA", "PERIMETER")
-      pd <- pd %>% select(-one_of(drop_cols)) %>% group_by_if(is.character) %>% summarise_if(is.numeric, funs(mean))
-      # change name of subregion to national if it is the countries name 
-      this_name = unique(pd$ADM1_NAME)[unique(pd$ADM1_NAME) %in% country_name]
-      if(length(this_name) != 0){
-        pd$ADM1_NAME <- ifelse(pd$ADM1_NAME == this_name, 'National', pd$ADM1_NAME)
-      }
+      #names(pd)[names(pd)=='region'] <- 'region_name'
       pd <- pd %>% filter(value >= value_range[1],
                           value <= value_range[2])
       
       pop_list <- list(pd, unit_of_measure, indicator, date_range, value_range,yn)
+      save(pop_list, file='temp_subdata.rda')
       
       chart_data$plot_data <- pop_list
       
@@ -776,18 +750,14 @@ mod_trends_mean_sub_server <- function(input, output, session){
           temp <- pd
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
-          names(temp)[which(names(temp)=='adm1_name')] <- 'level'
-          temp$parameter <- 'Mean'
-          temp <- temp %>% ungroup %>% select(region_name, country, iso3, year,  
-                                              survey, indic, indicator_short_name,
-                                              indicator_description, parameter, level, value, unit_of_measure)
-          names(temp) <- c('Region', 'national','Country_iso3', 'Year', 'Survey_name', 
-                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
-                           'Value', 'Unit_of_measurement')
-          save(temp, file='temp_subdata.rda')
+          #names(temp)[which(names(temp)=='adm1_name')] <- 'level'
+          #temp$parameter <- 'Mean'
+          temp <- temp %>% ungroup %>% select(region_name, country, year,  
+                                              indic, indicator_short_name, key, value, unit_of_measure)
+          names(temp) <- c('Region', 'Country', 'Year', 'Indic', 'Indicator', 'Sub national region', 'value', 'Unit of measure')
           temp_stamp <- temp[1,]
           temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
-          temp_stamp$national <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp_stamp$Country <- temp_stamp$Year <- temp_stamp$Indic <- temp_stamp$Indicator <- temp_stamp$`Sub national region` <- temp_stamp$`Unit of measure`<- ''
           temp <- rbind(temp, temp_stamp)
         }
         write.csv(x = temp, file)
@@ -849,7 +819,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                           mytext <- paste(
                                             "Indicator: ", indicator,"<br>", 
                                             "Economy: ", as.character(pd$country), '<br>',
-                                            "Subregion: ", as.character(pd$ADM1_NAME),"<br>", 
+                                            "Subregion: ", as.character(pd$key),"<br>", 
                                             "Value: ", paste0(round(pd$value, digits = 2), ' (', unit_of_measure, ')'), "<br>",
                                             "Year: ", as.character(pd$year),"<br>",
                                             sep="") %>%
@@ -860,7 +830,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                                           
                                           if(yn){
                                             # condition if we connect the dots
-                                            p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME)) +
+                                            p <-  ggplot(data = pd, aes(as.numeric(year), value,color= key, group =key)) +
                                               geom_point() + 
                                               geom_line() +
                                               scale_color_manual(name = '',
@@ -986,7 +956,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         mytext <- paste(
           "Indicator: ", indicator,"<br>", 
           "Economy: ", as.character(pd$country), '<br>',
-          "Subregion: ", as.character(pd$ADM1_NAME),"<br>", 
+          "Subregion: ", as.character(pd$key),"<br>", 
           "Value: ", paste0(round(pd$value, digits = 2), ' (', unit_of_measure, ')'), "<br>",
           "Year: ", as.character(pd$year),"<br>",
           sep="") %>%
@@ -996,7 +966,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         
         if(yn){
           # condition if we connect the dots
-          p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME, text=mytext)) +
+          p <-  ggplot(data = pd, aes(as.numeric(year), value,color= key, group =key, text=mytext)) +
             geom_point() + 
             geom_line() +
             scale_color_manual(name = '',
@@ -1013,7 +983,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
                  ) 
         } else {
           # condition if we connect the dots
-          p <- ggplot(data = pd, aes(as.numeric(year), value, color= ADM1_NAME, text=mytext)) +
+          p <- ggplot(data = pd, aes(as.numeric(year), value, color= key, text=mytext)) +
             geom_point() + 
             # geom_line(aes(group = ADM1_NAME)) +
             scale_color_manual(name = '',
