@@ -1,0 +1,14 @@
+name: hefpi
+title: hefpi
+username:
+account: benmbrew
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5918931
+bundleId: 6025454
+url: https://benmbrew.shinyapps.io/hefpi/
+when: 1655758052.72588
+lastSyncTime: 1655758052.72591
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: temp_sub_inputs.rda|temp_subdata.rda

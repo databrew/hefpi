@@ -710,7 +710,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
       unit_of_measure = ind_info$unit_of_measure
       # get data
       pd <- hefpi::hefpi_sub_df %>%
-        filter(country == country_name) %>%
+        filter(key %in% sub_regions) %>%
         filter(indicator_short_name == indicator) %>%
         filter(year >= min(date_range),
                year <= max(date_range))

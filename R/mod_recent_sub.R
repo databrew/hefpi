@@ -139,7 +139,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
           bar_palette = 'Reds'
         }
         # relevel factor for chart
-        #temp$NAME <- factor(temp$NAME, levels = unique(temp$NAME)[order(temp$value, decreasing = TRUE)])
+        temp$key <- factor(temp$key, levels = unique(temp$key)[order(temp$value, decreasing = TRUE)])
         
         # get plot objects
         plot_text <- paste(

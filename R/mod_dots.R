@@ -532,11 +532,6 @@ mod_dots_ind_ui <- function(id){
                          label = NULL, 
                          choices = indicators$indicator_short_name,
                          selected = indicators$indicator_short_name))),
-             p('Country'),
-             selectInput(ns('country'), 
-                         label = NULL,
-                         choices = as.character(country_list),
-                         selected = 'United States'),
              uiOutput(ns('ui_outputs')),
              p('Date range'),
              sliderInput(ns('date_range'),
@@ -569,27 +564,28 @@ mod_dots_ind_server <- function(input, output, session){
   # ---- GENERATE UI OUTPUTS---- #
   output$ui_outputs <- renderUI({
     date_range <- c(1982, 2018)
-    indicator <- indicators$indicator_short_name
-    country_names = 'United States'
+    indicator <- indicators$indicator_short_name[1:2]
+    #country_names = 'United States'
     date_range <- input$date_range
     indicator <- input$indicator
-    country_names <- input$country
+    #country_names <- input$country
     
     # Get the variable
     variable <- indicators %>%
       filter(indicator_short_name %in% indicator) %>%
       .$variable_name
     # subset by country and variable
-    temp <- hefpi::df %>%
-      filter(country == country_names) %>%
+    temp <- hefpi::hefpi_df %>%
+      #filter(country == country_names) %>%
       filter(indic %in% variable) %>%
       filter(year >= date_range[1],
              year <= date_range[2])
     # get year and keep only necessary columns
     df <- temp %>%
-      group_by(indicator_short_name) %>%
+      group_by(country, indicator_short_name) %>%
       arrange(desc(year)) %>%
       dplyr::filter(year == dplyr::first(year)) 
+    
     # made data long form
     id_vars <- names(df)[!grepl('Q', names(df))]
     df <- melt(df, id.vars = id_vars)
@@ -600,7 +596,8 @@ mod_dots_ind_server <- function(input, output, session){
                                         ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
     # only keep data with no NAs
     df <- df[!is.na(df$value),]
-    df <- df[complete.cases(df),]
+    country_names <- sort(unique(df$country))
+    #df <- df[complete.cases(df),]
     max_value <- round(max(df$value), 2)
     min_value <- round(min(df$value), 2)
     
@@ -622,6 +619,10 @@ mod_dots_ind_server <- function(input, output, session){
     }
     fluidPage(
       fluidRow(
+    p('Country'),
+    selectInput(session$ns('country'), 
+                label = NULL,
+                choices = country_names),
     p('X axis range'),
     sliderInput(session$ns('value_range'),
                 label = NULL,
@@ -686,9 +687,11 @@ mod_dots_ind_server <- function(input, output, session){
                year <= date_range[2]) 
       # get year and keep only necessary columns
       df <- temp %>%
-        group_by(indicator_short_name) %>%
+        group_by(country, indicator_short_name) %>%
         arrange(desc(year)) %>%
         dplyr::filter(year == dplyr::first(year)) 
+      
+      
       # made data long form
       id_vars <- names(df)[!grepl('Q', names(df))]
       df <- melt(df, id.vars = id_vars)
