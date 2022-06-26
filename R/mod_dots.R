@@ -253,7 +253,7 @@ mod_dots_country_server <- function(input, output, session){
 
       # just save data, not implement 
       dot_list <- list(df,unit_of_measure, indicator, value_range,date_range)
-      save(dot_list, file ='temp_dot_list.rda')
+      # save(dot_list, file ='temp_dot_list.rda')
     }
     chart_data$plot_data <- dot_list
   },
@@ -293,7 +293,7 @@ mod_dots_country_server <- function(input, output, session){
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
           temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
-          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid<- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
         write.csv(temp, file)
@@ -764,7 +764,7 @@ mod_dots_ind_server <- function(input, output, session){
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
           temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
-          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
         

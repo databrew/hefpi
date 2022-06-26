@@ -173,7 +173,7 @@ mod_recent_radar_server <- function(input, output, session){
         # lcols <- c("#EEA236", "#5CB85C", "#46B8DA")
         # use this as guide https://github.com/ricardo-bion/ggradar/blob/master/R/ggradar.R
         pd <- as.data.frame(pd)
-        save(pd, file = 'temp_pd.rda')
+        # save(pd, file = 'temp_pd.rda')
         pop_radar <- ggradar::ggradar(pd,
                                       axis.label.size = 3,
                                       grid.label.size = 5,

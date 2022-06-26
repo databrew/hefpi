@@ -90,7 +90,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
     indicator <- input$indicator
     cn <- input$country
     rn <- input$region_name
-    save(plot_years, indicator, cn, rn , file ='temp_sub_inputs.rda')
     # while map (generate from reactive object) is null, plot is null
     if(is.null(indicator)){
       NULL

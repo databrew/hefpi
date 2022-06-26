@@ -664,7 +664,7 @@ mod_dat_ind_server <- function(input, output, session){
         } 
         fig <- empty_plot("No data available for the selected inputs")
       } else {
-        save(dat_list, file='dat_list.rda')
+        # save(dat_list, file='dat_list.rda')
         temp_data <- dat_list[[1]]
         date_range <- dat_list[[2]]
         col_vec <- dat_list[[3]]

@@ -30,7 +30,7 @@ app_server <- function(input, output,session) {
   
   # TRENDS TAB
   callModule(mod_trends_mean_server, 'trends_mean')
-  callModule(mod_trends_mean_sub_server, 'trends_sub_mean')
+  #callModule(mod_trends_mean_sub_server, 'trends_sub_mean')
   
   callModule(mod_trends_quin_server, 'trends_quin')
   callModule(mod_trends_con_server, 'trends_con')
