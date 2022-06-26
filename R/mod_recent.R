@@ -263,8 +263,7 @@ mod_recent_mean_server <- function(input, output, session){
         } else {
           # get the map data from the second element of the list
           temp <- pop_map[[2]]
-          save(temp, file = 'recent_test.rda')
-          
+
           temp <- temp@data
           temp <- temp %>% filter(!is.na(value))
           names(temp) <- tolower(names(temp))
