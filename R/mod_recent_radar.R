@@ -72,7 +72,7 @@ mod_recent_radar_server <- function(input, output, session){
   output$indicator_ui <- renderUI({
     
     #plot_years <- c(1982, 2017)
-    #country_names <- hefpi::country_list[1:4]
+    country_names <- hefpi::country_list[1:4]
     country_names <- input$country
     plot_years <- input$date_range
     

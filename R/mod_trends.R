@@ -497,8 +497,7 @@ mod_trends_mean_server <- function(input, output, session){
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1),
                                expand = c(0,0)) +
             labs(x='Year',
-                 y = y_axis_text,
-                 title = plot_title) 
+                 y = y_axis_text) 
         }
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_angle = 90,
