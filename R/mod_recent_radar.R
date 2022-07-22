@@ -36,7 +36,7 @@ mod_recent_radar_ui <- function(id){
                                               checkboxGroupInput(inputId = ns("country"),
                                                                  label = '', 
                                                                  choices = as.character(country_list),
-                                                                 selected = as.character(country_list)[1:4]))),
+                                                                 selected = as.character(country_list)[1:3]))),
              
              p('Indicator'),
              uiOutput(ns('indicator_ui')),
