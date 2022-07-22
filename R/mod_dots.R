@@ -563,9 +563,9 @@ mod_dots_ind_server <- function(input, output, session){
   
   # ---- GENERATE UI OUTPUTS---- #
   output$ui_outputs <- renderUI({
-    date_range <- c(1982, 2018)
-    indicator <- indicators$indicator_short_name[1:2]
-    #country_names = 'United States'
+    #date_range <- c(1982, 2018)
+    #indicator <- indicators$indicator_short_name[1:2]
+    #country_names = 'Afghanistan'
     date_range <- input$date_range
     indicator <- input$indicator
     #country_names <- input$country

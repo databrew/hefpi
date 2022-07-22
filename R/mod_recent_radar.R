@@ -72,7 +72,7 @@ mod_recent_radar_server <- function(input, output, session){
   output$indicator_ui <- renderUI({
     
     #plot_years <- c(1982, 2017)
-    country_names <- hefpi::country_list[1:4]
+    #country_names <- hefpi::country_list[2:4]
     country_names <- input$country
     plot_years <- input$date_range
     
@@ -84,7 +84,7 @@ mod_recent_radar_server <- function(input, output, session){
       filter(indicator_short_name %in% percentage_inds$indicator_short_name)%>%
       group_by(country, indicator_short_name) %>%
       filter(year == max(year)) %>% 
-      select(1:17, 354:362) %>% drop_na()
+      select(1:10, 356:362) %>% drop_na()
     
     indicator_names <-pd  %>% group_by(indicator_short_name) %>% summarise(counts = n()) %>% filter(counts == length(unique(pd$country))) %>% .$indicator_short_name
     
