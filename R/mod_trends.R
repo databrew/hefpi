@@ -1242,12 +1242,15 @@ mod_trends_con_server <- function(input, output, session){
       ind_info <- indicators %>%
         filter(indicator_short_name == indicator) %>%
         select(variable_name, unit_of_measure)
+      unit_of_measure = ind_info$unit_of_measure
       variable_name = ind_info$variable_name
       # subet by variable, region code and a list of countries
       df <- hefpi::df
       df <- df[df$indic == variable_name,]
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
+      
+      
       pd <- pd %>% filter(year >= min(date_range),
                           year <= max(date_range)) 
       pd$unit_of_measure <- 'CI'
@@ -1341,36 +1344,73 @@ mod_trends_con_server <- function(input, output, session){
                                           
                                           temp <- tableau_color_pal(palette = "Tableau 20")
                                           trend_palette <- rep(temp(n = 20), 10)
-                                          if(yn){
-                                            # condition if we connect the dots
-                                            p <- ggplot(data = pd, aes(year, CI, color= country)) +
-                                              geom_point() + 
-                                              geom_line(aes(group = country)) +
-                                              scale_color_manual(name = '',
-                                                                 values = trend_palette) +
-                                              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                                                                 expand = c(0,0))+
-                                              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-                                                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                                                                 expand = c(0,0)) +
-                                              labs(title = plot_title,
-                                                   x=x_axis_text,
-                                                   y = y_axis_text,
-                                                   caption=caption_text) 
-                                          } else {
-                                            # condition if we connect the dots
-                                            p <- ggplot(data = pd, aes(year, CI, color= country)) +
-                                              geom_point() +
-                                              scale_color_manual(name = '',
-                                                                 values = trend_palette) +
-                                              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                                                                 expand = c(0,0))+
-                                              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-                                                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                                                                 expand = c(0,0)) +
-                                              labs(x=x_axis_text,
-                                                   y = y_axis_text,
-                                                   caption = caption_text) 
+                                          if(yn){ # condition if we connect the dots
+
+                                            # if indicator % value
+                                            if(str_detect(indicator, '%')) {
+                                              p <- ggplot(data = pd, aes(year, CI, color= country)) +
+                                                geom_point() + 
+                                                geom_line(aes(group = country)) +
+                                                scale_color_manual(name = '',
+                                                                   values = trend_palette) +
+                                                scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                   expand = c(0,0), labels = scales::percent)+
+                                                scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                   breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                   expand = c(0,0)) +
+                                                labs(title = plot_title,
+                                                     x=x_axis_text,
+                                                     y = y_axis_text,
+                                                     caption=caption_text) 
+                                            } else {
+                                              p <- ggplot(data = pd, aes(year, CI, color= country)) +
+                                                geom_point() + 
+                                                geom_line(aes(group = country)) +
+                                                scale_color_manual(name = '',
+                                                                   values = trend_palette) +
+                                                scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                   expand = c(0,0))+
+                                                scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                   breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                   expand = c(0,0)) +
+                                                labs(title = plot_title,
+                                                     x=x_axis_text,
+                                                     y = y_axis_text,
+                                                     caption=caption_text) 
+                                            }
+                                            
+                                          } else {# condition if we connect the dots
+                                            
+                                            # if indicator % value
+                                            if(str_detect(indicator, '%')) {
+                                              p <- ggplot(data = pd, aes(year, CI, color= country)) +
+                                                geom_point() +
+                                                scale_color_manual(name = '',
+                                                                   values = trend_palette) +
+                                                scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                   expand = c(0,0), labels = scales::percent)+
+                                                scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                   breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                   expand = c(0,0)) +
+                                                labs(x=x_axis_text,
+                                                     y = y_axis_text,
+                                                     caption = caption_text) 
+                                            } else {
+                                              p <- ggplot(data = pd, aes(year, CI, color= country)) +
+                                                geom_point() +
+                                                scale_color_manual(name = '',
+                                                                   values = trend_palette) +
+                                                scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                   expand = c(0,0))+
+                                                scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                   breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                   expand = c(0,0)) +
+                                                labs(x=x_axis_text,
+                                                     y = y_axis_text,
+                                                     caption = caption_text) 
+                                            }
+                                            
+                                            
                                           }                                         
                                           p <- p + ggtitle('') +
                                             hefpi::theme_hefpi(grid_major_x = NA,
@@ -1470,42 +1510,77 @@ mod_trends_con_server <- function(input, output, session){
         mytext <- paste(
           "Indicator: ", indicator,"<br>", 
           "Economy: ", as.character(pd$country),"<br>", 
-          "Value: ", round(pd$CI, digits = 2), "<br>",
+          "Value: ", paste0(ifelse(str_detect(indicator, '%'), round(pd$CI, digits = 2) * 100, round(pd$CI, digits = 2)), ' (', pd$unit_of_measure, ')'), "<br>",
           "Year: ", as.character(pd$year),"<br>",
           "Data source: ", as.character(pd$referenceid_list), "<br>",
           sep="") %>%
           lapply(htmltools::HTML)
         temp <- tableau_color_pal(palette = "Tableau 20")
         trend_palette <- rep(temp(n = 20), 10)
-        if(yn){
-          # condition if we connect the dots
-          p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
-            geom_point() + 
-            geom_line(aes(group = country)) +
-            scale_color_manual(name = '',
-                               values = trend_palette) +
-            scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                               expand = c(0,0))+
-            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                               expand = c(0,0)) +
-            labs(
-                 # title = plot_title,
-                 x=x_axis_text,
-                 y = y_axis_text) 
-        } else {
-          # condition if we connect the dots
-          p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
-            geom_point() +
-            scale_color_manual(name = '',
-                               values = trend_palette) +
-            scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                               expand = c(0,0))+
-            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                               expand = c(0,0)) +
-            labs(x=x_axis_text,
-                 y = y_axis_text) 
+        if(yn) { # condition if we connect the dots
+
+          # condition if indicator is % value
+          if(str_detect(indicator, '%')) {
+            p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+              geom_point() + 
+              geom_line(aes(group = country)) +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0),labels = scales::percent)+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(
+                # title = plot_title,
+                x=x_axis_text,
+                y = y_axis_text)
+          } else {
+            p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+              geom_point() + 
+              geom_line(aes(group = country)) +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0))+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(
+                # title = plot_title,
+                x=x_axis_text,
+                y = y_axis_text)
+          }
+          
+        } else { # condition if we connect the dots
+          
+          # condition if indicator is % value
+          if(str_detect(indicator, '%')) {
+            p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+              geom_point() +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0), labels = scales::percent)+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(x=x_axis_text,
+                   y = y_axis_text) 
+          } else {
+            p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+              geom_point() +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0))+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(x=x_axis_text,
+                   y = y_axis_text) 
+          }
+          
         }
         
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
