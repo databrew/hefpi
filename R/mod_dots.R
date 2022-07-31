@@ -351,8 +351,8 @@ mod_dots_country_server <- function(input, output, session){
                                                              expand = c(0,0)) +
                                           labs(title='',
                                                subtitle = '', 
-                                               x= '', 
-                                               y = y_axis_text, 
+                                               x = y_axis_text, 
+                                               y = 'Country', 
                                                caption=caption_text) +
                                           coord_flip() 
                                         
@@ -372,7 +372,9 @@ mod_dots_country_server <- function(input, output, session){
                                                             axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
                                                           ) +
                                                           labs(title = '',
-                                                               subtitle = '') 
+                                                               subtitle = '',
+                                                               x = y_axis_text, 
+                                                               y = 'Country') 
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -477,8 +479,8 @@ mod_dots_country_server <- function(input, output, session){
           labs(
               # title=plot_title,
               subtitle = sub_title, 
-              x= '', 
-              y = y_axis_text) 
+              x = y_axis_text, 
+              y = 'Country') 
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,

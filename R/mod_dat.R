@@ -18,7 +18,7 @@ mod_dat_country_ui <- function(id){
       column(9,
              uiOutput(ns('dat_country_title')),
              div(style = 'margin-left:-100px',plotlyOutput(
-               ns('dat_country'), height = '800px', width = '1250px', 
+               ns('dat_country'), height = '800px', width = '100%', 
              ))
              ),
       column(3,
@@ -325,7 +325,7 @@ mod_dat_ind_ui <- function(id){
     fluidPage(
       column(9,
              uiOutput(ns('dat_ind_title')),
-             tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '1000px') )
+             tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '100%') )
              ),
       column(3,
              useShinyalert(),
