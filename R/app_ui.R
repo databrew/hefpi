@@ -135,14 +135,19 @@ app_ui <- function() {
         ),
       tabItem(
         tabName="subnational_region",
-        navbarPage(title = '',
-          tabPanel("Most recent value",
-                   mod_recent_mean_sub_ui("recent_mean_sub_leaf")
-          ),
-          tabPanel("Trends",
-                   mod_trends_mean_sub_ui("trends_sub_mean")
-          )
-        )
+        # navbarPage(title = '',
+        #            navbarMenu('Most recent value',
+        #              tabPanel("Map",
+        #                         mod_recent_mean_sub_ui("recent_mean_sub_leaf")
+        #                       ),
+        #              tabPanel("Bar chart",
+        #                         mod_recent_mean_sub_barchart_ui("recent_mean_sub_barchart")           
+        #              )
+        #            ),
+        #            tabPanel("Trends",
+        #                      mod_trends_mean_sub_ui("trends_sub_mean")
+        #            )
+        # )
         # navbarPage(title = '',
         #            navbarMenu("Most recent value",
         #                       tabPanel("Subnational mean",
@@ -150,6 +155,21 @@ app_ui <- function() {
         #            navbarMenu('Trends',
         #                       tabPanel('Subnational mean',
         #                                mod_trends_mean_sub_ui("trends_sub_mean"))))
+        
+        navbarPage(title = "",
+                   navbarMenu("Most recent value",
+                              tabPanel("Map", 
+                                       mod_recent_mean_sub_ui("recent_mean_sub_leaf")
+                                       ),
+                              tabPanel("Bar chart", 
+                                       mod_recent_mean_sub_barchart_ui("recent_mean_sub_barchart")
+                                       )
+                   ),
+                   tabPanel("Plot",
+                            mod_trends_mean_sub_ui("trends_sub_mean")
+                            )
+        )
+        
         ),
       tabItem(
         tabName="household_wealth",

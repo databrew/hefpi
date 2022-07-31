@@ -31,7 +31,17 @@ mod_recent_mean_sub_ui <- function(id){
              selectInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region)[[2]]),
-             uiOutput(ns('ui_outputs')),
+             selectInput(ns("country"),
+                         label = 'Country', 
+                         choices = NULL),
+             sliderInput(inputId = ns('date_range'),
+                         label = 'Date range',
+                         min = 1982,
+                         max = 2018,
+                         value = c(1982, 2018),
+                         step = 1,
+                         sep = ''),
+             # uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
     ),
@@ -52,8 +62,11 @@ mod_recent_mean_sub_server <- function(input, output, session){
                showConfirmButton = FALSE) 
   })
   
-  # ---- REDNER UI OUTPUT ---- #
-  output$ui_outputs <- renderUI({
+  observe({
+    # requirements
+    req(input$indicator)
+    req(input$region)
+    
     # get inputs
     indicator = sort(unique(sub_national$indicator_short_name))[1]
     region = as.character(region_list$region)[[2]]
@@ -92,30 +105,87 @@ mod_recent_mean_sub_server <- function(input, output, session){
     country_names <- as.character(sort(unique(shp@data$country_name)))
     country_names <- intersect(pd_country_names, country_names)
     # country_names <- sort(unique(pd$country))
-
-    # get ui inputs
-    fluidPage(
-      fluidRow(
-        selectInput(inputId = session$ns("country"),
-                    label = 'Country', 
-                    choices = country_names,
-                    selected = country_names[1]),
-        sliderInput(inputId = session$ns('date_range'),
-                    label = 'Date range',
-                    min = 1982,
-                    max = 2018,
-                    value = c(1982, 2018),
-                    step = 1,
-                    sep = '')
-      )
-    )
+    
+    updateSelectInput(session, 
+                      inputId = "country",
+                      label = 'Country', 
+                      choices = country_names,
+                      selected = country_names[1]
+                      )
+    
   })
+  
+  
+  # ---- REDNER UI OUTPUT ---- #
+  # output$ui_outputs <- renderUI({
+  #   # get inputs
+  #   indicator = sort(unique(sub_national$indicator_short_name))[1]
+  #   region = as.character(region_list$region)[[2]]
+  #   indicator <- input$indicator
+  #   region <- input$region
+  #   # get region code
+  #   region_list <- hefpi::region_list
+  #   region_code <- as.character(region_list$region_code[region_list$region %in% region])
+  #   # get data
+  #   # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
+  #   pd <- hefpi::df[df$regioncode == region_code,]
+  #   pd <- pd %>%
+  #     filter(indicator_short_name == indicator) %>%
+  #     group_by(ISO3 = iso3c, country) %>%
+  #     filter(year == max(year, na.rm = TRUE)) %>%
+  #     # filter(referenceid_list == first(referenceid_list)) %>%
+  #     summarise(value = first(pop),
+  #               indic = indic,
+  #               year = year,
+  #               region_name = region)
+  #   pd_country_names <- sort(unique(pd$country))
+  #   # pd <- hefpi::sub_national_data[sub_national_data$region_code == region_code,]
+  #   # pd <- pd %>% 
+  #   #   filter(indicator_short_name == indicator) %>%
+  #   #   group_by(ISO3 = iso3c, country,gaul_code) %>%
+  #   #   filter(year == max(year, na.rm = TRUE)) %>%
+  #   #   # filter(referenceid_list == first(referenceid_list)) %>%
+  #   #   summarise(value = first(value),
+  #   #             indic = indic,
+  #   #             year = year,
+  #   #             region_name = region,
+  #   #             survey_list = survey) 
+  #   # get country_names 
+  #   # TEMPORARILY COMMENTED OUT FOR FAKE DATA BELOW
+  #   shp <- hefpi::sub_national_shp
+  #   country_names <- as.character(sort(unique(shp@data$country_name)))
+  #   country_names <- intersect(pd_country_names, country_names)
+  #   # country_names <- sort(unique(pd$country))
+  # 
+  #   # get ui inputs
+  #   fluidPage(
+  #     fluidRow(
+  #       selectInput(inputId = session$ns("country"),
+  #                   label = 'Country', 
+  #                   choices = country_names,
+  #                   selected = country_names[1]),
+  #       sliderInput(inputId = session$ns('date_range'),
+  #                   label = 'Date range',
+  #                   min = 1982,
+  #                   max = 2018,
+  #                   value = c(1982, 2018),
+  #                   step = 1,
+  #                   sep = '')
+  #     )
+  #   )
+  # })
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   get_pop_map <- reactive({
     # get list to store map data
     # indicator = sort(unique(sub_national$indicator_short_name))[1]
     # region = as.character(region_list$region)[[7]]
     # plot_years = c(1982, 2018)
+    
+    req(input$date_range)
+    req(input$indicator)
+    req(input$region)
+    req(input$country)
+    
     pop_map_list <- list()
     # get input 
     plot_years <- input$date_range
@@ -254,6 +324,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
             highlightOptions = highlightOptions(
               weight = 1,
               fillColor = 'white',
+              # fillColor = 'black',
               fillOpacity = 1,
               color = "white",
               opacity = 1.0,
@@ -505,6 +576,423 @@ mod_recent_mean_sub_server <- function(input, output, session){
                                         }
                                       }
                                     })
+  
+}
+
+# UI mod_recent_mean_sub_barchart_ui barchart ----
+mod_recent_mean_sub_barchart_ui <- function(id){
+  
+  ns <- NS(id)
+  fluidPage(
+    fluidRow(
+      column(8,
+             uiOutput(ns('map_title_ui')),
+             plotlyOutput(ns('recent_mean_barchart')),
+             # tableOutput(ns('recent_mean_barchart')),
+             # leafletOutput(
+             #   ns('recent_mean_sub_leaf'), height  = 700),
+      ),
+      column(4,
+             useShinyalert(),
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('share_chart'), 'Share chart'),
+             
+             br(), br(),
+             # selectInput(ns('indicator'), 'Indicator',
+             #             choices = sort(unique(sub_national$indicator_short_name)),
+             #             selected = sort(unique(sub_national$indicator_short_name))[1]),
+             selectInput(ns('indicator'), 
+                         label='Indicator',
+                         choices = indicators_list,
+                         selected = "4+ antenatal care visits (%)"),
+             # selectInput(ns('region'), 'Region',
+             #             choices = as.character(region_list$region),
+             #             selected = as.character(region_list$region)[[2]]),
+             selectInput(ns("country"),
+                         label = 'Country', 
+                         choices = NULL),
+             selectizeInput(ns("date_range"),
+                            label = "Year",
+                            choices = NULL,),
+             uiOutput(ns('yaxis_output')),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
+    ),
+  )
+}
+
+
+
+# SERVER mod_recent_mean_sub_barchart_server barchart ----
+mod_recent_mean_sub_barchart_server <- function(input, output, session){
+  
+  # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Most recent value - Subnational mean", 
+               text = "This chart displays maps in which countries’ subnational regions are color-coded according to the most recent value of a subnational region’s indicator mean. By default, the map uses the latest available HEFPI data point, but users can choose the time period from which this latest data point is chosen.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE) 
+  })
+  
+  observe({
+    # requirements
+    req(input$indicator)
+    
+    # get inputs
+    indicator <- input$indicator
+
+    # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
+    pd <- hefpi::sub_national
+    countries <- pd %>%
+      filter(indicator_short_name == indicator) %>%
+      select(country) %>%
+      distinct() %>%
+      pull()
+      
+    pd_country_names <- sort(unique(pd$country))
+
+    updateSelectizeInput(session, 
+                         inputId = "country",
+                         label = 'Country', 
+                         choices = countries,
+                         selected = countries[1]
+    )
+    
+  })
+  
+  observeEvent(input$country, {
+    req(input$country)
+
+    if(!is.null(input$country)) {
+
+      indicator <- input$indicator
+      # indicator <- 'Condom use, women (%)'
+      # region <- input$region
+      # region <- 'Europe & Central Asia'
+      country_name <- input$country
+      # country_name <- 'Ukraine'
+      # get data
+      # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
+      pd <- hefpi::sub_national
+      
+      years <- pd %>%
+        filter(indicator_short_name == indicator) %>%
+        filter(country == country_name) %>%
+        select(year) %>%
+        distinct() %>%
+        pull()
+        
+
+      updateSelectInput(session,
+                        inputId = "date_range",
+                        label = 'Year',
+                        choices = years,
+                        selected = years[1]
+      )
+    }
+
+  })
+  
+  # ---- GENERATE REACTIVE TIBBLE OF CHART ---- #
+  get_chart_data <- reactive({
+    # get df to store chart data
+    req(input$indicator)
+    req(input$country)
+    req(input$date_range)
+    
+    
+    # get inputs
+    # indicator <- input$indicator
+    # country_name <- input$country
+    # country_name <- 
+    # date_range <- c(1982, 2018)
+    
+    plot_years <- input$date_range
+    # plot_years <- c(2012, 2007)
+    # plot_years <- 2012
+    indicator <- input$indicator
+    # indicator <- "4+ antenatal care visits (%)"
+    country_name <- input$country
+    # country_name <- "Belarus"
+    
+    
+    if(is.null(plot_years) | is.null(country_name)){
+      return(NULL)
+    } else {
+      # filter dataset
+      # Get the data to be plotted
+      indicators <- hefpi::indicators
+      ind_info <- indicators %>%
+        filter(indicator_short_name == indicator) %>%
+        select(variable_name, unit_of_measure)
+      variable_name = ind_info$variable_name
+      unit_of_measure = ind_info$unit_of_measure
+      
+      # get data
+      pd <- hefpi::sub_national %>%
+        filter(country == country_name) %>%
+        filter(indicator_short_name == indicator) %>%
+        group_by(ISO3 = iso3c, country,gaul_code) %>%
+        filter(year %in% plot_years)
+      names(pd)[names(pd)=='region'] <- 'region_name'
+      # get shape files
+      shp <- hefpi::gaul
+      # joine with data
+      shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
+      # remove polygons associated with NA - keeps only that region
+      na_rows <- which(!is.na(shp@data$value))
+      shp <- shp[na_rows,]
+      shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
+      pd <- shp@data
+      # pd <- pd %>% filter(ADM1_NAME %in% sub_regions)
+      pd <- pd %>% mutate_all(as.character)
+      pd$value <- as.numeric(pd$value)
+      drop_cols <- c("G2008_1_", "G2008_1_ID", "ADM0_NAME", "ADM0_CODE", "AREA", "PERIMETER")
+      pd <- pd %>% select(-one_of(drop_cols)) %>% group_by_if(is.character) %>% summarise_if(is.numeric, funs(mean))
+      # change name of subregion to national if it is the countries name 
+      this_name = unique(pd$ADM1_NAME)[unique(pd$ADM1_NAME) %in% country_name]
+      if(length(this_name) != 0){
+        pd$ADM1_NAME <- ifelse(pd$ADM1_NAME == this_name, 'National', pd$ADM1_NAME)
+      }
+      
+      res_ <- pd %>%
+        ungroup() %>%
+        select(ADM1_NAME, year, country, region_name, indicator_short_name, value, unit_of_measure)
+      
+      return(res_)
+    }
+  })
+  
+  # Handle NAs of `get_chart_data`
+  get_chart_data_cleaned <- reactive({
+    req(get_chart_data())
+    
+    if(!is.null(get_chart_data())) {
+      
+      if(nrow(get_chart_data()) == 1) {
+        new_df <- get_chart_data()
+        new_df <- new_df %>%
+          mutate(ADM1_NAME = ifelse(is.na(ADM1_NAME), country, ADM1_NAME))
+        
+        return(new_df)
+        
+      } else {
+        new_df <- get_chart_data()
+        new_df <- new_df %>%
+          drop_na(ADM1_NAME)
+        
+        return(new_df)
+      }
+      
+    } else {
+      return(NULL)
+    }
+
+    
+    
+  })
+  
+  # Measure type ----
+  measure_ds_type <- reactive({
+    req(get_chart_data_cleaned())
+    
+    if(!is.null(get_chart_data_cleaned())) {
+      
+      res_ <- unique(get_chart_data_cleaned()$unit_of_measure)
+      return(res_)
+      
+    } else {
+      res_ <- 'None'
+      return(res_)
+    }
+    
+  })
+  
+  output$yaxis_output <- renderUI({
+    req(measure_ds_type())
+    
+    if(str_detect(measure_ds_type(), '%')) {
+      return(
+          tagList(
+            sliderInput(
+              session$ns('yaxis_value_range'),
+              label = 'Y axis',
+              min = 0,
+              max = 1,
+              value = 1,
+              sep = 0.01
+            )
+          )
+      )
+    } else {
+      return(NULL)
+    }
+    
+  })
+  
+  # ---- Reactive BAR CHART data ---- # ----
+  plotInput <- reactive({
+    req(input$indicator)
+    req(get_chart_data_cleaned())
+    req(measure_ds_type())
+    req(input$yaxis_value_range)
+    
+    
+    
+    if(is.null(get_chart_data_cleaned())) {
+      NULL
+    } else {
+      chart_data <- get_chart_data_cleaned()
+      
+      temp <- tableau_color_pal(palette = "Tableau 20")
+      trend_palette <- rep(temp(n = 20), 50)
+      
+      x_axis_text <- paste0('Subnational Name')
+      y_axis_text <- paste0(input$indicator)
+      
+      mytext <- paste(
+        "Indicator: ", input$indicator,"<br>", 
+        "Economy: ", as.character(chart_data$country), '<br>',
+        "Subregion: ", as.character(chart_data$ADM1_NAME),"<br>", 
+        "Value: ", paste0(ifelse(chart_data$unit_of_measure == '%', round(chart_data$value, digits = 2) * 100, round(chart_data$value, digits = 2)), ' (', chart_data$unit_of_measure, ')'), "<br>",
+        "Year: ", as.character(chart_data$year),"<br>",
+        sep="") %>%
+        lapply(htmltools::HTML)
+      
+      # If empty data.frame:
+      if(nrow(chart_data) == 0) {
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+        } 
+        p <- empty_plot("No data available for the selected inputs")
+        p
+        ggsave(file, width = 8, height = 8)
+      } else { # Main logic here:
+        
+        # If unit_of_measure is '%'
+        if(str_detect(measure_ds_type(), '%')) {
+          
+          if(length(chart_data$ADM1_NAME) > 6) {
+            plot <- ggplot(chart_data, aes(forcats::fct_rev(factor(ADM1_NAME)), value, fill = ADM1_NAME, text = mytext)) +
+              geom_col() +
+              scale_fill_manual(values = trend_palette) +
+              scale_y_continuous(limits = c(0, input$yaxis_value_range), labels = scales::percent) +
+              hefpi::theme_hefpi(legend_position = "none") + 
+              coord_flip() +
+              labs(
+                x = x_axis_text,
+                y = y_axis_text
+              )
+            
+            
+          } else {
+            plot <- ggplot(chart_data, aes(ADM1_NAME, value, fill = ADM1_NAME, text = mytext )) +
+              geom_col() +
+              scale_fill_manual(values = trend_palette) +
+              scale_y_continuous(limits = c(0, input$yaxis_value_range), labels = scales::percent) +
+              hefpi::theme_hefpi(legend_position = "none") +
+              labs(
+                x = x_axis_text,
+                y = y_axis_text
+              )
+          }
+          
+          
+        } else { # Not '%' measure type
+          plot <- ggplot(chart_data, aes(ADM1_NAME, value, text = mytext)) +
+            geom_col() +
+            hefpi::theme_hefpi(legend_position = "none") +
+            labs(
+              x = x_axis_text,
+              y = y_axis_text
+            )
+        }
+        
+        plot
+        
+      }
+      
+    }
+    
+  })
+  
+  
+  # ---- Render BAR CHART ---- # ----
+  output$recent_mean_barchart <- renderPlotly({
+    req(plotInput())
+    ggplotly(
+      plotInput(), 
+      tooltip = 'text'
+    )
+  })
+  
+  
+  
+  output$map_title_ui <- renderUI({
+    req(input$indicator)
+
+    
+        indicator_name <- input$indicator
+
+        fluidPage(
+          fluidRow(
+            HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Most recent value </div>
+                           <div class="chart-label"> {indicator_name} </div>
+                          </div>
+                          '))
+
+          )
+        )
+  })
+  
+  
+  # ---- DOWNLOAD PLOT IMAGE ---- #
+  output$dl_plot <- downloadHandler(
+    filename = function() { 
+      paste0("barchart_", Sys.Date(), ".png")
+    },
+    content = function(file) {
+      device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = "in")
+      ggsave(file, plot = plotInput(), device = device)
+    }
+  )
+  
+  # ---- DOWNLOAD DATA FROM MAP ---- #
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste0("most_recent_value_mean_regional_barchart_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      # get map
+      get_chart_data_cleaned <- get_chart_data_cleaned()
+      if(is.null(get_chart_data_cleaned)){
+        NULL
+      } else {
+        if(is.na(get_chart_data_cleaned)){
+          temp <- data_frame()
+          write.csv(temp, file)
+        } else {
+            write.csv(get_chart_data_cleaned(), file)
+        }
+      }
+    }
+  )
+  
   
 }
 

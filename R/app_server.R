@@ -26,7 +26,8 @@ app_server <- function(input, output,session) {
   callModule(mod_recent_radar_server, 'recent_radar')
   callModule(mod_recent_con_server, 'recent_con_leaf')
   callModule(mod_recent_mean_sub_server, 'recent_mean_sub_leaf')
-  # callModule(mod_recent_con_sub_server, 'recent_con_sub_leaf1')
+  callModule(mod_recent_mean_sub_barchart_server, 'recent_mean_sub_barchart')
+
   
   # TRENDS TAB
   callModule(mod_trends_mean_server, 'trends_mean')

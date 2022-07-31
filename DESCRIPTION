@@ -24,12 +24,13 @@ Imports:
     tidyr,
     ggplot2,
     leaflet,
+    forcats,
     RColorBrewer,
     sp,
     shinyjs,
     shinydashboard,
     shinyalert
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 URL: https://github.com/databrew/hefpi
 BugReports: https://github.com/databrew/hefpi/issues
 Suggests: 
