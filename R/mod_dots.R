@@ -538,6 +538,7 @@ mod_dots_ind_ui <- function(id){
                          label = NULL, 
                          choices = indicators$indicator_short_name,
                          selected = indicators$indicator_short_name))),
+             checkboxInput(ns('only_percent_measure'), 'Keep only % values', value = TRUE, width = NULL),
              uiOutput(ns('ui_outputs')),
              p('Date range'),
              sliderInput(ns('date_range'),
@@ -728,7 +729,14 @@ mod_dots_ind_server <- function(input, output, session){
       }
       
       # order indicator alphabetically
-      df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
+      # df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
+      df$indicator_short_name <- factor(df$indicator_short_name,levels = sort(unique(df$indicator_short_name), decreasing = TRUE ))
+      
+      if(input$only_percent_measure) {
+        df <- df %>%
+          filter(str_detect(unit_of_measure, '%'))
+      } 
+      
       
       dot_list <- list(df, unit_of_measure, indicator, date_range, value_range)
     }
@@ -748,6 +756,8 @@ mod_dots_ind_server <- function(input, output, session){
       dot_list <- chart_data$plot_data
       if(length(dot_list)==1){
         dot_list <- hefpi::dots_indicator_default
+        dot_list[[1]] <- dot_list[[1]] %>%
+          filter(str_detect(unit_of_measure, '%'))
       }
       if(is.null(dot_list)){
         NULL
@@ -785,6 +795,8 @@ mod_dots_ind_server <- function(input, output, session){
                                       dot_list <- chart_data$plot_data
                                       if(length(dot_list)==1){
                                         dot_list <- hefpi::dots_indicator_default
+                                        dot_list[[1]] <- dot_list[[1]] %>%
+                                          filter(str_detect(unit_of_measure, '%'))
                                       }
                                       if(is.null(dot_list)){
                                         NULL
@@ -858,6 +870,8 @@ mod_dots_ind_server <- function(input, output, session){
     dot_list <- chart_data$plot_data
     if(length(dot_list)==1){
       dot_list <- hefpi::dots_indicator_default
+      dot_list[[1]] <- dot_list[[1]] %>%
+        filter(str_detect(unit_of_measure, '%'))
     }
     if(is.null(dot_list)){
       NULL
@@ -892,6 +906,9 @@ mod_dots_ind_server <- function(input, output, session){
     dot_list <- chart_data$plot_data
     if(length(dot_list)==1){
       dot_list <- hefpi::dots_indicator_default
+      dot_list[[1]] <- dot_list[[1]] %>%
+        filter(str_detect(unit_of_measure, '%'))
+      
     }
     if(is.null(dot_list)){
       NULL
