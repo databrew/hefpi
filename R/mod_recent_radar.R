@@ -112,7 +112,7 @@ mod_recent_radar_server <- function(input, output, session){
     plot_years <- input$date_range
     # plot_years <- c(1972, 2017)
     indicator <- input$indicator
-    # indicator <- 'Full immunization (%)'
+    # indicator <- c('4+ antenatal care visits (%)', 'Modern contraceptive use, women (%)', 'Skilled birth attendance (%)')
     country_names <- input$country
     # country_names <- c("Afghanistan", "Angola", "Armenia")
     message('indicator is ', indicator)
@@ -188,6 +188,7 @@ mod_recent_radar_server <- function(input, output, session){
       # store palette, text, map object, and data in list
       pop_radar_list <- list(pop_radar, pd, year_title)
       # save(pop_radar_list, file = '../data/pop_radar_list.rda')
+      # save(pop_radar_list, file = 'data/pop_radar_list.rda')
     }
     
     chart_data$plot_data <- pop_radar_list
