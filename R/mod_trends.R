@@ -93,9 +93,9 @@ mod_trends_mean_server <- function(input, output, session){
     df <- df[df$indic == variable,]
     max_value <- round(max(df$pop), 2)
     min_value <- round(min(df$pop), 2)
-    if(max_value<1){
-      min_value=0
-      max_value = 1
+    if(max_value < 1){
+      min_value = 0
+      max_value = 100
     } else {
       min_value = 0
       max_value = ceiling(max_value)
@@ -244,6 +244,7 @@ mod_trends_mean_server <- function(input, output, session){
       pop_list <- chart_data$plot_data
       if(length(pop_list)==1){
         pop_list <- hefpi::trends_national_mean_default
+        pop_list[[5]] <- c(0, 100)
       }
       if(is.null(pop_list)){
         NULL
@@ -282,6 +283,7 @@ mod_trends_mean_server <- function(input, output, session){
                                       pop_list <- chart_data$plot_data
                                       if(length(pop_list)==1){
                                         pop_list <- hefpi::trends_national_mean_default
+                                        pop_list[[5]] <- c(0, 100)
                                       }
                                       if(is.null(pop_list)){
                                         NULL
@@ -323,8 +325,8 @@ mod_trends_mean_server <- function(input, output, session){
                                           
                                           if(unit_of_measure == '%'){
                                             pd$pop <- pd$pop*100
-                                            value_range[2] <- value_range[2]*100
-                                            value_range[1] <- value_range[1]*100
+                                            # value_range[2] <- value_range[2]*100
+                                            # value_range[1] <- value_range[1]*100
                                           }
                                           
                                           if(yn){
@@ -389,6 +391,7 @@ mod_trends_mean_server <- function(input, output, session){
     pop_list <- chart_data$plot_data
     if(length(pop_list)==1){
       pop_list <- hefpi::trends_national_mean_default
+      pop_list[[5]] <- c(0, 100)
     }
     if(is.null(pop_list)){
       NULL
@@ -418,6 +421,7 @@ mod_trends_mean_server <- function(input, output, session){
     pop_list <- chart_data$plot_data
     if(length(pop_list)==1){
       pop_list <- hefpi::trends_national_mean_default
+      pop_list[[5]] <- c(0, 100)
     }
     if(is.null(pop_list)){
       NULL
@@ -465,8 +469,8 @@ mod_trends_mean_server <- function(input, output, session){
         
         if(unit_of_measure == '%'){
           pd$pop <- pd$pop*100
-          value_range[2] <- value_range[2]*100
-          value_range[1] <- value_range[1]*100
+          # value_range[2] <- value_range[2]*100
+          # value_range[1] <- value_range[1]*100
         }
         
         if(yn){
