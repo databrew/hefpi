@@ -1615,8 +1615,8 @@ label {
 .btn-info.hover,.btn-info:active,.btn-info:hover {
     background-color: rgb(26,51,95)}
 .btn-danger {
-    background-color: #ffffff00!important;
-    border-color: #aaa!important;
+    background-color: #ffffff00 !important;
+    border-color: #cecece!important;
     color: #444!important;
     width: 100% !important;
     height: 50%;
@@ -1625,6 +1625,7 @@ label {
     margin: 0 0 10px 0px;
     max-height: 80vh;
     overflow-y: auto;
+    border-width: 1px;
 }
 .btn-danger.hover,.btn-danger:active,.btn-danger:hover {
     background-color: #ffffff00!important;
