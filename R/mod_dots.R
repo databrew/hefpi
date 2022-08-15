@@ -520,7 +520,7 @@ mod_dots_ind_ui <- function(id){
       column(9,
              uiOutput(ns('dots_ind_title')),
              tags$div(style='overflow-y: scroll; position: relative', 
-                      plotlyOutput(ns('dots_ind'), height = '600px', width = '1000px') )),
+                      plotlyOutput(ns('dots_ind'), height = '600px', width = '2500px') )),
       column(3,
              class="selectizeWidth",
              #useShinyalert(),
@@ -972,6 +972,7 @@ mod_dots_ind_server <- function(input, output, session){
                              limits = c((value_range[1]), (value_range[2] +5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
+          # coord_flip() +
           labs(
                # title=plot_title, 
                x = y_axis_text, 
@@ -989,6 +990,7 @@ mod_dots_ind_server <- function(input, output, session){
                           panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
                           panel.grid.major.x = element_blank(),
                           panel.grid.minor.x = element_blank(),
+                          axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1),
                           axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
                           axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
                           )
