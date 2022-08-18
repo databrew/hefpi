@@ -24,9 +24,10 @@ mod_recent_radar_ui <- function(id){
                ns('recent_radar_plot'), height = 700 ),
       ),
       column(4,
-             #useShinyalert(),
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('share_chart'), 'Share chart'),
+             actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
              p('Country'),
              shinyWidgets::dropdownButton(circle = FALSE,  
@@ -36,7 +37,7 @@ mod_recent_radar_ui <- function(id){
                                               checkboxGroupInput(inputId = ns("country"),
                                                                  label = '', 
                                                                  choices = as.character(country_list),
-                                                                 selected = as.character(country_list)[1:3]))),
+                                                                 selected = as.character(country_list)[1:4]))),
              
              p('Indicator'),
              uiOutput(ns('indicator_ui')),
@@ -45,7 +46,7 @@ mod_recent_radar_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2018,
+                         max = 2017,
                          value = c(1982, 2018),
                          step = 1,
                          sep = ''),
@@ -71,20 +72,20 @@ mod_recent_radar_server <- function(input, output, session){
   # ui output for indicator
   output$indicator_ui <- renderUI({
     
-    #plot_years <- c(1982, 2017)
-    #country_names <- hefpi::country_list[2:4]
+    plot_years <- c(1982, 2017)
+    country_names <- hefpi::country_list[1:4]
     country_names <- input$country
     plot_years <- input$date_range
     
     # HERE need to figure out a way to make the selection more smooth - that the plot data doesnt have NAs.
-    pd <- hefpi::hefpi_df %>%
+    pd <- hefpi::df %>%
       filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       filter(country %in% country_names) %>%
       filter(indicator_short_name %in% percentage_inds$indicator_short_name)%>%
       group_by(country, indicator_short_name) %>%
       filter(year == max(year)) %>% 
-      select(1:10, 356:362) %>% drop_na()
+      drop_na() 
     
     indicator_names <-pd  %>% group_by(indicator_short_name) %>% summarise(counts = n()) %>% filter(counts == length(unique(pd$country))) %>% .$indicator_short_name
     
@@ -99,106 +100,201 @@ mod_recent_radar_server <- function(input, output, session){
                                                         choices = as.character(indicator_names),
                                                         selected = as.character(indicator_names)[1:3]))) 
     
- 
+    
     
   })
   
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
-  get_radar_list <- reactive({
-
-    #indicator <- indicator_names[c(1:4)]
-    #plot_years <- c(1982, 2017)
-    #country_names <- hefpi::country_list[1:4]
-      
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
+    # get inputs 
+    plot_years <- input$date_range
+    # plot_years <- c(1972, 2017)
+    indicator <- input$indicator
+    # indicator <- c('4+ antenatal care visits (%)', 'Modern contraceptive use, women (%)', 'Skilled birth attendance (%)')
+    country_names <- input$country
+    # country_names <- c("Afghanistan", "Angola", "Armenia")
+    message('indicator is ', indicator)
+    
+    
     # create list to store results from reactive object
     pop_radar_list <- list()
     
-    # get inputs
-    plot_years <- input$date_range
-    indicator <- input$indicator
-    country_names <- input$country
-    message('indicator is ', indicator)
-    if(is.null(indicator)){
-      NULL
-    } else {
-      # save(plot_years, indicator, country_names, file = 'inputs.rda')
-      
-      # Get the variable from indicator input
-      ind_info <- hefpi::indicators %>%
-        filter(indicator_short_name %in% indicator) %>%
-        select(variable_name, good_or_bad, unit_of_measure)
-      variable_name = ind_info$variable_name
-      good_or_bad = ind_info$good_or_bad
-      unit_of_measure = ind_info$unit_of_measure
-      
-      # Get the data, subsetted by inputs
-      pd <- hefpi::hefpi_df %>%
-        filter(year >= min(plot_years),
-               year <= max(plot_years)) %>%
-        filter(indic %in% variable_name) %>%
-        filter(country %in% country_names) %>%
-        group_by(country, indicator_short_name) %>%
-        filter(year == max(year, na.rm = TRUE)) %>%
-        filter(referenceid_list == first(referenceid_list)) %>%
-        summarise(value = first(pop),
-                  indic = indic,
-                  year = year,
-                  region_name = region_name,
-                  #survey_list = survey_list,
-                  data_source = referenceid_list,
-                  indicator_short_name = indicator_short_name,
-                  indicator_description = indicator_description,
-                  unit_of_measure = unit_of_measure) %>%
-        select(country, indicator_short_name, value) %>% 
-        spread(key = 'indicator_short_name', value= 'value') 
-      
-      # if the indicator (column name) is part of the financial protection group, then subtract the value from 1. 
-      for(i in 2:ncol(pd)){
-        this_col <- names(pd)[i]
-        this_group <- percentage_inds$level_1[percentage_inds$indicator_short_name == this_col]
-        if(this_group == 'Financial Protection' ){
-          pd[,i] <- 1-pd[,i]
-        }
+    # Get the variable from indicator input
+    ind_info <- hefpi::indicators %>%
+      filter(indicator_short_name %in% indicator) %>%
+      select(variable_name, good_or_bad, unit_of_measure)
+    variable_name = ind_info$variable_name
+    good_or_bad = ind_info$good_or_bad
+    unit_of_measure = ind_info$unit_of_measure
+    
+    # Get the data, subsetted by inputs
+    pd <- hefpi::df %>%
+      filter(year >= min(plot_years),
+             year <= max(plot_years)) %>%
+      filter(indic %in% variable_name) %>%
+      filter(country %in% country_names) %>%
+      group_by(country, indicator_short_name) %>%
+      filter(year == max(year, na.rm = TRUE)) %>%
+      filter(referenceid_list == first(referenceid_list)) %>%
+      summarise(value = first(pop),
+                indic = indic,
+                year = year,
+                region_name = region_name,
+                survey_list = survey_list,
+                data_source = referenceid_list,
+                indicator_short_name = indicator_short_name,
+                indicator_description = indicator_description,
+                unit_of_measure = unit_of_measure) %>%
+      select(country, indicator_short_name, value) %>% 
+      spread(key = 'indicator_short_name', value= 'value') 
+    
+    # if the indicator (column name) is part of the financial protection group, then subtract the value from 1. 
+    for(i in 2:ncol(pd)){
+      this_col <- names(pd)[i]
+      this_group <- percentage_inds$level_1[percentage_inds$indicator_short_name == this_col]
+      if(this_group == 'Financial Protection' ){
+        pd[,i] <- 1-pd[,i]
       }
-      # get indicator short name joined to data
-      if(nrow(pd)==0 | any(is.na(pd))){
-        pop_radar_list <- NA
-      } else {
-        # 
-        # if(unit_of_measure == '%'){
-        #   pd$value <- pd$value*100
-        # } 
-        # get into format for radar plot
-        
-        # lcols <- c("#EEA236", "#5CB85C", "#46B8DA")
-        # use this as guide https://github.com/ricardo-bion/ggradar/blob/master/R/ggradar.R
-        pd <- as.data.frame(pd)
-        # save(pd, file = 'temp_pd.rda')
-        pop_radar <- ggradar::ggradar(pd,
-                                      axis.label.size = 3,
-                                      grid.label.size = 5,
-                                      # group.colours = lcols,
-                                      background.circle.colour = "white",
-                                      gridline.min.linetype = 1,
-                                      gridline.mid.linetype = 1,
-                                      gridline.max.linetype = 1, 
-                                      legend.position = 'bottom') 
-        
-        
-        year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
-        
-        # store palette, text, map object, and data in list
-        pop_radar_list<- list(pop_radar, pd,year_title)
-        
-      }
-      return(pop_radar_list)
     }
-
-  })
+    # get indicator short name joined to data
+    if(nrow(pd)==0 | any(is.na(pd))){
+      pop_radar_list <- NA
+    } else {
+      # 
+      # if(unit_of_measure == '%'){
+      #   pd$value <- pd$value*100
+      # } 
+      # get into format for radar plot
+      
+      # lcols <- c("#EEA236", "#5CB85C", "#46B8DA")
+      # use this as guide https://github.com/ricardo-bion/ggradar/blob/master/R/ggradar.R
+      pd <- as.data.frame(pd)
+      save(pd, file = 'temp_pd.rda')
+      pop_radar <- ggradar::ggradar(pd,
+                                    # axis.label.size = 3,
+                                    # grid.label.size = 5,
+                                    # group.colours = lcols,
+                                    background.circle.colour = "white",
+                                    gridline.min.linetype = 1,
+                                    gridline.mid.linetype = 1,
+                                    gridline.max.linetype = 1, 
+                                    legend.position = 'bottom') 
+      
+      
+      year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
+      
+      # store palette, text, map object, and data in list
+      pop_radar_list <- list(pop_radar, pd, year_title)
+      # save(pop_radar_list, file = '../data/pop_radar_list.rda')
+      # save(pop_radar_list, file = 'data/pop_radar_list.rda')
+    }
+    
+    chart_data$plot_data <- pop_radar_list
+  },
+  
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+  # get_radar_list <- reactive({
+  # 
+  #   # indicator <- indicator_names[c(1:4)]
+  #   # plot_years <- c(1982, 2017)
+  #   # country_names <- hefpi::country_list[1:4]
+  #     
+  #   # create list to store results from reactive object
+  #   pop_radar_list <- list()
+  #   
+  #   # get inputs
+  #   plot_years <- input$date_range
+  #   indicator <- input$indicator
+  #   country_names <- input$country
+  #   message('indicator is ', indicator)
+  #   if(is.null(indicator)){
+  #     NULL
+  #   } else {
+  #     # save(plot_years, indicator, country_names, file = 'inputs.rda')
+  #     
+  #     # Get the variable from indicator input
+  #     ind_info <- hefpi::indicators %>%
+  #       filter(indicator_short_name %in% indicator) %>%
+  #       select(variable_name, good_or_bad, unit_of_measure)
+  #     variable_name = ind_info$variable_name
+  #     good_or_bad = ind_info$good_or_bad
+  #     unit_of_measure = ind_info$unit_of_measure
+  #     
+  #     # Get the data, subsetted by inputs
+  #     pd <- hefpi::df %>%
+  #       filter(year >= min(plot_years),
+  #              year <= max(plot_years)) %>%
+  #       filter(indic %in% variable_name) %>%
+  #       filter(country %in% country_names) %>%
+  #       group_by(country, indicator_short_name) %>%
+  #       filter(year == max(year, na.rm = TRUE)) %>%
+  #       filter(referenceid_list == first(referenceid_list)) %>%
+  #       summarise(value = first(pop),
+  #                 indic = indic,
+  #                 year = year,
+  #                 region_name = region_name,
+  #                 survey_list = survey_list,
+  #                 data_source = referenceid_list,
+  #                 indicator_short_name = indicator_short_name,
+  #                 indicator_description = indicator_description,
+  #                 unit_of_measure = unit_of_measure) %>%
+  #       select(country, indicator_short_name, value) %>% 
+  #       spread(key = 'indicator_short_name', value= 'value') 
+  #     
+  #     # if the indicator (column name) is part of the financial protection group, then subtract the value from 1. 
+  #     for(i in 2:ncol(pd)){
+  #       this_col <- names(pd)[i]
+  #       this_group <- percentage_inds$level_1[percentage_inds$indicator_short_name == this_col]
+  #       if(this_group == 'Financial Protection' ){
+  #         pd[,i] <- 1-pd[,i]
+  #       }
+  #     }
+  #     # get indicator short name joined to data
+  #     if(nrow(pd)==0 | any(is.na(pd))){
+  #       pop_radar_list <- NA
+  #     } else {
+  #       # 
+  #       # if(unit_of_measure == '%'){
+  #       #   pd$value <- pd$value*100
+  #       # } 
+  #       # get into format for radar plot
+  #       
+  #       # lcols <- c("#EEA236", "#5CB85C", "#46B8DA")
+  #       # use this as guide https://github.com/ricardo-bion/ggradar/blob/master/R/ggradar.R
+  #       pd <- as.data.frame(pd)
+  #       save(pd, file = 'temp_pd.rda')
+  #       pop_radar <- ggradar::ggradar(pd,
+  #                                     # axis.label.size = 3,
+  #                                     # grid.label.size = 5,
+  #                                     # group.colours = lcols,
+  #                                     background.circle.colour = "white",
+  #                                     gridline.min.linetype = 1,
+  #                                     gridline.mid.linetype = 1,
+  #                                     gridline.max.linetype = 1, 
+  #                                     legend.position = 'bottom') 
+  #       
+  #       
+  #       year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
+  #       
+  #       # store palette, text, map object, and data in list
+  #       pop_radar_list<- list(pop_radar, pd,year_title)
+  #       
+  #     }
+  #     return(pop_radar_list)
+  #   }
+  # 
+  # })
   
   # ---- RENDER MAP TITLE ---- #
   output$radar_title_ui <- renderUI({
-    pop_radar <- get_radar_list()
+    pop_radar <- chart_data$plot_data
+    if(length(pop_radar)==1){
+      pop_radar <- hefpi::pop_radar_list
+    }
     if(is.null(pop_radar)){
       NULL
     } else {
@@ -229,7 +325,10 @@ mod_recent_radar_server <- function(input, output, session){
   
   # ---- RENDER RADAR PLOT ---- #
   output$recent_radar_plot <- renderPlot({
-    pop_radar <- get_radar_list()
+    pop_radar <- chart_data$plot_data
+    if(length(pop_radar) == 1){
+      pop_radar <- hefpi::pop_radar_list
+    }
     if(is.null(pop_radar)){
       NULL
     } else {
@@ -252,7 +351,10 @@ mod_recent_radar_server <- function(input, output, session){
     },
     content = function(file) {
       # get map
-      pop_radar <- get_radar_list()
+      pop_radar <- chart_data$plot_data
+      if(length(pop_radar)==1){
+        pop_radar <- hefpi::pop_radar_list
+      }
       if(is.null(pop_radar)){
         NULL
       } else {
@@ -262,7 +364,7 @@ mod_recent_radar_server <- function(input, output, session){
         } else {
           # get the map data from the second element of the list
           temp <- pop_radar[[2]]
-
+          
           names(temp)[1] <- 'Country'
           # save(temp, file = 'temp_data.rda')
           # add stampe
@@ -272,16 +374,19 @@ mod_recent_radar_server <- function(input, output, session){
           temp <- rbind(temp, temp_stamp)
           write.csv(temp, file)
         }
-
+        
       }
     }
   )
-
-
+  
+  
   # ---- DOWNLOAD MAP IMAGE ---- #
   output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".jpg"),
                                     content = function(file) {
-                                      pop_radar <- get_radar_list()
+                                      pop_radar <- chart_data$plot_data
+                                      if(length(pop_radar) == 1){
+                                        pop_radar <- hefpi::pop_radar_list
+                                      }
                                       if(is.null(pop_radar)){
                                         NULL
                                       } else {
@@ -301,10 +406,10 @@ mod_recent_radar_server <- function(input, output, session){
                                           }
                                           p <- empty_plot("No data available for the selected inputs")
                                           ggsave(file, width = 8, height = 8)
-
+                                          
                                         } else {
-                                         pop_radar
-                                        ggsave(file, width = 8, height = 8)
+                                          pop_radar
+                                          ggsave(file, width = 8, height = 8)
                                         }
                                       }
                                     })

@@ -21,6 +21,7 @@ mod_dots_country_ui <- function(id){
                  tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dots_country'), height = '600px', width = '1000px') )
       ),
       column(3,
+             class="selectizeWidth",
              #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
@@ -352,8 +353,8 @@ mod_dots_country_server <- function(input, output, session){
                                                              expand = c(0,0)) +
                                           labs(title='',
                                                subtitle = '', 
-                                               x= '', 
-                                               y = y_axis_text, 
+                                               x = y_axis_text, 
+                                               y = 'Country', 
                                                caption=caption_text) +
                                           coord_flip() 
                                         
@@ -373,7 +374,10 @@ mod_dots_country_server <- function(input, output, session){
                                                             axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
                                                           ) +
                                                           labs(title = '',
-                                                               subtitle = '') 
+                                                               subtitle = '',
+                                                               x = y_axis_text, 
+                                                               y = 'Country'
+                                                               ) 
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -478,8 +482,9 @@ mod_dots_country_server <- function(input, output, session){
           labs(
               # title=plot_title,
               subtitle = sub_title, 
-              x= '', 
-              y = y_axis_text) 
+              x = y_axis_text, 
+              y = 'Country'
+              ) 
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
@@ -515,8 +520,9 @@ mod_dots_ind_ui <- function(id){
       column(9,
              uiOutput(ns('dots_ind_title')),
              tags$div(style='overflow-y: scroll; position: relative', 
-                      plotlyOutput(ns('dots_ind'), height = '600px', width = '1000px') )),
+                      plotlyOutput(ns('dots_ind'), height = '600px', width = '2500px') )),
       column(3,
+             class="selectizeWidth",
              #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
@@ -532,6 +538,7 @@ mod_dots_ind_ui <- function(id){
                          label = NULL, 
                          choices = indicators$indicator_short_name,
                          selected = indicators$indicator_short_name))),
+             checkboxInput(ns('only_percent_measure'), 'Show only % indicators', value = TRUE, width = NULL),
              uiOutput(ns('ui_outputs')),
              p('Date range'),
              sliderInput(ns('date_range'),
@@ -722,7 +729,14 @@ mod_dots_ind_server <- function(input, output, session){
       }
       
       # order indicator alphabetically
-      df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
+      # df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
+      df$indicator_short_name <- factor(df$indicator_short_name,levels = sort(unique(df$indicator_short_name), decreasing = TRUE ))
+      
+      if(input$only_percent_measure) {
+        df <- df %>%
+          filter(str_detect(unit_of_measure, '%'))
+      } 
+      
       
       dot_list <- list(df, unit_of_measure, indicator, date_range, value_range)
     }
@@ -742,6 +756,8 @@ mod_dots_ind_server <- function(input, output, session){
       dot_list <- chart_data$plot_data
       if(length(dot_list)==1){
         dot_list <- hefpi::dots_indicator_default
+        dot_list[[1]] <- dot_list[[1]] %>%
+          filter(str_detect(unit_of_measure, '%'))
       }
       if(is.null(dot_list)){
         NULL
@@ -779,6 +795,8 @@ mod_dots_ind_server <- function(input, output, session){
                                       dot_list <- chart_data$plot_data
                                       if(length(dot_list)==1){
                                         dot_list <- hefpi::dots_indicator_default
+                                        dot_list[[1]] <- dot_list[[1]] %>%
+                                          filter(str_detect(unit_of_measure, '%'))
                                       }
                                       if(is.null(dot_list)){
                                         NULL
@@ -816,7 +834,7 @@ mod_dots_ind_server <- function(input, output, session){
                                                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                                                              expand = c(0,0)) +
                                           labs(title='',
-                                               x= '', 
+                                               x = y_axis_text, 
                                                y = '',
                                                subtitle = '',
                                                caption = caption_text) +
@@ -837,7 +855,9 @@ mod_dots_ind_server <- function(input, output, session){
                                             axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
                                           ) +
                                           labs(title = '',
-                                               subtitle ='')
+                                               subtitle ='',
+                                               x = y_axis_text, 
+                                               y = '')
                                         p
                                         ggsave(file, width = 8, height = 8)
                                       }
@@ -850,6 +870,8 @@ mod_dots_ind_server <- function(input, output, session){
     dot_list <- chart_data$plot_data
     if(length(dot_list)==1){
       dot_list <- hefpi::dots_indicator_default
+      dot_list[[1]] <- dot_list[[1]] %>%
+        filter(str_detect(unit_of_measure, '%'))
     }
     if(is.null(dot_list)){
       NULL
@@ -884,6 +906,9 @@ mod_dots_ind_server <- function(input, output, session){
     dot_list <- chart_data$plot_data
     if(length(dot_list)==1){
       dot_list <- hefpi::dots_indicator_default
+      dot_list[[1]] <- dot_list[[1]] %>%
+        filter(str_detect(unit_of_measure, '%'))
+      
     }
     if(is.null(dot_list)){
       NULL
@@ -947,9 +972,10 @@ mod_dots_ind_server <- function(input, output, session){
                              limits = c((value_range[1]), (value_range[2] +5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
+          # coord_flip() +
           labs(
                # title=plot_title, 
-               x= '',
+               x = y_axis_text, 
                y = '',
                subtitle = sub_title
                ) 
@@ -964,6 +990,7 @@ mod_dots_ind_server <- function(input, output, session){
                           panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
                           panel.grid.major.x = element_blank(),
                           panel.grid.minor.x = element_blank(),
+                          axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1),
                           axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
                           axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
                           )

@@ -28,20 +28,20 @@ mod_trends_mean_ui <- function(id){
              p('Indicator'),
              # HERE (try 3px or without 1px just solid #aaa)
              div(style='border: 1px #FF0000; color:black;',selectInput(ns('indicator'),
-                         label = NULL,
-                         choices = indicators_list,
-                         selected = '4+ antenatal care visits (%)')),
+                                                                       label = NULL,
+                                                                       choices = indicators_list,
+                                                                       selected = '4+ antenatal care visits (%)')),
              # here need to create custom css for this to make size right
              p('Region'),
              shinyWidgets::dropdownButton(circle = FALSE,  
-                            label = 'Select the region(s)', 
-                            status = "danger",
-                            actionButton(ns("all_regions"), label="Select/Deselect all"),
-                            div(style='max-height: 80vh; overflow-y: auto;',
-                            checkboxGroupInput(ns('region'),
-                                               label = "", 
-                                               choices = as.character(region_list$region),selected = as.character(region_list$region)[1])
-             )),
+                                          label = 'Select the region(s)', 
+                                          status = "danger",
+                                          actionButton(ns("all_regions"), label="Select/Deselect all"),
+                                          div(style='max-height: 80vh; overflow-y: auto;',
+                                              checkboxGroupInput(ns('region'),
+                                                                 label = "", 
+                                                                 choices = as.character(region_list$region),selected = as.character(region_list$region)[1])
+                                          )),
              uiOutput(ns('ui_outputs')),
              p('Date range'),
              chooseSliderSkin("Modern", color = "#002244"),
@@ -93,9 +93,9 @@ mod_trends_mean_server <- function(input, output, session){
     df <- df[df$indic == variable,]
     max_value <- round(max(df$pop), 2)
     min_value <- round(min(df$pop), 2)
-    if(max_value<1){
-      min_value=0
-      max_value = 1
+    if(max_value < 1){
+      min_value = 0
+      max_value = 100
     } else {
       min_value = 0
       max_value = ceiling(max_value)
@@ -105,14 +105,14 @@ mod_trends_mean_server <- function(input, output, session){
       fluidRow(
         p('Country'),
         shinyWidgets::dropdownButton(circle = FALSE,  
-                            label = 'Select the countries', 
-                            status = "danger",
-                            actionButton(session$ns("all_countries"), label="Select/Deselect all"),
-        div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(session$ns('country'),
-          label = NULL, 
-          choices = countries,
-          selected = countries))),
-       
+                                     label = 'Select the countries', 
+                                     status = "danger",
+                                     actionButton(session$ns("all_countries"), label="Select/Deselect all"),
+                                     div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(session$ns('country'),
+                                                                                                        label = NULL, 
+                                                                                                        choices = countries,
+                                                                                                        selected = countries))),
+        
         p('Y axis range'),
         sliderInput(session$ns('value_range'),
                     label = NULL,
@@ -244,6 +244,7 @@ mod_trends_mean_server <- function(input, output, session){
       pop_list <- chart_data$plot_data
       if(length(pop_list)==1){
         pop_list <- hefpi::trends_national_mean_default
+        pop_list[[5]] <- c(0, 100)
       }
       if(is.null(pop_list)){
         NULL
@@ -282,6 +283,7 @@ mod_trends_mean_server <- function(input, output, session){
                                       pop_list <- chart_data$plot_data
                                       if(length(pop_list)==1){
                                         pop_list <- hefpi::trends_national_mean_default
+                                        pop_list[[5]] <- c(0, 100)
                                       }
                                       if(is.null(pop_list)){
                                         NULL
@@ -319,12 +321,12 @@ mod_trends_mean_server <- function(input, output, session){
                                           
                                           temp <- tableau_color_pal(palette = "Tableau 20")
                                           trend_palette <- rep(temp(n = 20), 10)
-                                         
+                                          
                                           
                                           if(unit_of_measure == '%'){
                                             pd$pop <- pd$pop*100
-                                            value_range[2] <- value_range[2]*100
-                                            value_range[1] <- value_range[1]*100
+                                            # value_range[2] <- value_range[2]*100
+                                            # value_range[1] <- value_range[1]*100
                                           }
                                           
                                           if(yn){
@@ -389,12 +391,13 @@ mod_trends_mean_server <- function(input, output, session){
     pop_list <- chart_data$plot_data
     if(length(pop_list)==1){
       pop_list <- hefpi::trends_national_mean_default
+      pop_list[[5]] <- c(0, 100)
     }
     if(is.null(pop_list)){
       NULL
     } else {
       pd <- pop_list[[1]]
-
+      
       indicator <- pop_list[[3]]
       # get title and subtitle
       # plot_title <- paste0('Trends', '-', '<br>', 'National mean', '-', indicator)
@@ -405,7 +408,7 @@ mod_trends_mean_server <- function(input, output, session){
                           </div>
                           '))
       
-        
+      
       
     }
   })
@@ -418,6 +421,7 @@ mod_trends_mean_server <- function(input, output, session){
     pop_list <- chart_data$plot_data
     if(length(pop_list)==1){
       pop_list <- hefpi::trends_national_mean_default
+      pop_list[[5]] <- c(0, 100)
     }
     if(is.null(pop_list)){
       NULL
@@ -465,8 +469,8 @@ mod_trends_mean_server <- function(input, output, session){
         
         if(unit_of_measure == '%'){
           pd$pop <- pd$pop*100
-          value_range[2] <- value_range[2]*100
-          value_range[1] <- value_range[1]*100
+          # value_range[2] <- value_range[2]*100
+          # value_range[1] <- value_range[1]*100
         }
         
         if(yn){
@@ -484,7 +488,7 @@ mod_trends_mean_server <- function(input, output, session){
                  y = y_axis_text
                  # ,
                  # title = plot_title
-                 )
+            )
         } else {
           # condition if we connect the dots
           p <- ggplot(data = pd, aes(year, pop, color= country, text=mytext)) +
@@ -497,7 +501,8 @@ mod_trends_mean_server <- function(input, output, session){
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1),
                                expand = c(0,0)) +
             labs(x='Year',
-                 y = y_axis_text) 
+                 y = y_axis_text,
+                 title = plot_title) 
         }
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_angle = 90,
@@ -516,501 +521,534 @@ mod_trends_mean_server <- function(input, output, session){
 
 # ---------------------------------------------------------------------------------
 # UI FOR TRENDS (SUBNATIONAL MEAN)
-# mod_trends_mean_sub_ui <- function(id){
-#   ns <- NS(id)
-#   tagList(
-#     fluidPage(
-#       column(9,
-#              uiOutput(ns('trends_mean_title')),
-#              plotlyOutput(
-#                ns('trends_mean'), height = '600px'
-#              )),
-#       
-#       column(3,
-#              #useShinyalert(),
-#              actionButton(ns("plot_info"), label = "Plot Info"),
-#              actionButton(ns('generate_chart'), label = 'Generate chart'),
-#              actionButton(ns('share_chart'), 'Share chart'),
-#              br(), br(),
-#              p('Indicator'),
-#              div(style='border-color: grey; color:grey',selectInput(ns('indicator'), label=NULL,
-#                          choices = indicators_list,
-#                          selected = "4+ antenatal care visits (%)")),
-#              p('Country'),
-#              div(style='border-color: grey; color:grey',selectInput(inputId = ns("country"),
-#                          label = NULL, 
-#                          choices = as.character(sort(unique(hefpi_df$country))),
-#                          selected ='Belize')),
-#              uiOutput(ns('ui_outputs')),
-#              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-#              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
-#     )
-#   )
-# }
-# 
-# # SERVER FOR TRENDS (SUBNATIONAL MEAN)
-# mod_trends_mean_sub_server <- function(input, output, session){
-#   
-#   # Observe changes to inputs in order to generate changes to the map
-#   observeEvent(input$plot_info, {
-#     # Show a modal when the button is pressed
-#     shinyalert(title = "Trends - Subnational mean", 
-#                text = "This chart allows tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
-#                type = "info", 
-#                closeOnClickOutside = TRUE, 
-#                showCancelButton = FALSE, 
-#                showConfirmButton = FALSE)
-#   })
-#   
-#   # ---- GENERATE UI OUTPUTS ---- #
-#   output$ui_outputs <- renderUI({
-#     #country_name = 'India'
-#     indicator = '4+ antenatal care visits (%)'
-#     # get inputs
-#     indicator <- input$indicator
-#     country_name <- input$country
-# 
-#     # Rp is regional avg
-#     # Rl is label
-#     # Rc is code
-#     # Get the data to be plotted
-#     df <- hefpi::hefpi_sub_df %>%
-#       filter(country == country_name)%>%
-#       filter(indicator_short_name == indicator) 
-# 
-#     max_value <- round(max(df$value), 2)
-#     min_value <- round(min(df$value), 2)
-#     if(max_value<1){
-#       min_value=0
-#       max_value = 1
-#     } else {
-#       min_value = 0
-#       max_value = ceiling(max_value)
-#     }
-#     sub_regions_top <- df %>% group_by(key) %>% 
-#       summarise(counts = n()) %>%
-#       top_n(10) %>%
-#       arrange(key) %>%
-#       .$key
-#     sub_regions <- sort(unique(df$key))
-#     
-#     fluidPage(
-#       fluidRow(
-#         p('Subnational region'),
-#         shinyWidgets::dropdownButton(circle = FALSE,  
-#                                     label = 'Select the region(s)', 
-#                                     status = "danger",
-#                                     actionButton(session$ns("all_regions"), label="Select/Deselect all"),
-#         div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = session$ns("sub_country"),
-#                     label = '', 
-#                     choices = sub_regions,
-#                     selected = sub_regions_top))),
-#         p('Y axis range'),
-#         sliderInput(session$ns('value_range'),
-#                     label = NULL,
-#                     min = min_value,
-#                     max = max_value,
-#                     value = c(min_value, max_value),
-#                     sep = ''),
-#         p('Date range'),
-#         sliderInput(session$ns('date_range'),
-#                     label = NULL,
-#                     min = 1982,
-#                     max = 2018,
-#                     value = c(1982, 2018),
-#                     step = 1,
-#                     sep = ''),
-#         checkboxInput(session$ns('interpolate'), 
-#                       label = 'Interpolate missing values',
-#                       value = TRUE)
-#       )
-#     )
-#   })
-# 
-#   # ---- SELECT/DESLECT ALL BUTTONS ---- #
-#   # REGIONS
-#   observe({
-#     
-#     # remove above
-#     all_regions <- input$all_regions
-#     message(all_regions)
-#     if(is.null(all_regions)){
-#       NULL
-#     } else {
-#       if (all_regions > 0) {
-#         # get inputs
-#         indicator <- input$indicator
-#         country_name <- input$country
-#         date_range <- c(1982, 2018)
-#         # Get the data to be plotted
-#         df <- hefpi::hefpi_sub_df %>%
-#           filter(country == country_name)%>%
-#           filter(indicator_short_name == indicator) %>%
-#           filter(year >= min(date_range),
-#                  year <= max(date_range)) 
-#         
-#         sub_regions_top <- df %>% group_by(key) %>% 
-#           summarise(counts = n()) %>%
-#           top_n(10) %>%
-#           arrange(key) %>%
-#           .$key
-#         sub_regions <- sort(unique(df$key))
-#         
-#         if (all_regions %% 2 == 0){
-#           updateCheckboxGroupInput(session=session,
-#                                    inputId ="sub_country",
-#                                    choices = sub_regions,
-#                                    selected = sub_regions_top)
-#           
-#         } else {
-#           updateCheckboxGroupInput(session=session,  
-#                                    inputId ="sub_country",
-#                                    choices =  sub_regions,
-#                                    selected = c())
-#           
-#         }}
-#     }
-#     
-#   })
-#   
-#   chart_data <- reactiveValues(plot_data = 'new') 
-#   observeEvent(input$generate_chart, {
-#     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
-#     # all_regions <- sub_regions
-#     # indicator <- '4+ antenatal care visits (%)'
-#     # country_name <- 'India'
-#     # value_range <- c(0.05, .99)
-#     # yn = TRUE
-#     # get inputs
-#     indicator <- input$indicator
-#     region <- input$region
-#     sub_regions <- input$sub_country
-#     date_range <- input$date_range
-#     value_range <- input$value_range
-#     country_name <- input$country
-#     yn <- input$interpolate
-#     
-#     # condition for data that is temporariliy null
-#     if(is.null(value_range) | is.null(date_range)){
-#       NULL
-#     } else {
-#       # get list to store plot objects
-#       pop_list <- list()
-#       indicators <- hefpi::indicators
-#       ind_info <- indicators %>%
-#         filter(indicator_short_name == indicator) %>%
-#         select(variable_name, unit_of_measure)
-#       variable_name = ind_info$variable_name
-#       unit_of_measure = ind_info$unit_of_measure
-#       # get data
-#       pd <- hefpi::hefpi_sub_df %>%
-#         filter(key %in% sub_regions) %>%
-#         filter(indicator_short_name == indicator) %>%
-#         filter(year >= min(date_range),
-#                year <= max(date_range))
-#       #names(pd)[names(pd)=='region'] <- 'region_name'
-#       pd <- pd %>% filter(value >= value_range[1],
-#                           value <= value_range[2])
-#       
-#       pop_list <- list(pd, unit_of_measure, indicator, date_range, value_range,yn)
-#       save(pop_list, file='temp_subdata.rda')
-#       
-#       chart_data$plot_data <- pop_list
-#       
-#     }
-#   },
-#   ignoreNULL = FALSE,
-#   ignoreInit = TRUE)
-#   
-#   # ---- DOWNLOAD DATA FROM MAP ---- #
-#   output$dl_data <- downloadHandler(
-#     filename = function() {
-#       paste0("trends_mean_sub_", Sys.Date(), ".csv")
-#     },
-#     content = function(file) {
-#       # get map
-#       pop_list <- chart_data$plot_data
-#       if(length(pop_list)==1){
-#         pop_list <- hefpi::trends_subnational_mean_default
-#       }
-#       
-#       if(is.null(pop_list)){
-#         NULL
-#       } else {
-#         pd <- pop_list[[1]]
-#         if(nrow(pd)==0){
-#           temp <- data_frame()
-#         } else {
-#           temp <- pd
-#           temp <- temp %>% filter(!is.na(value))
-#           names(temp) <- tolower(names(temp))
-#           #names(temp)[which(names(temp)=='adm1_name')] <- 'level'
-#           #temp$parameter <- 'Mean'
-#           temp <- temp %>% ungroup %>% select(region_name, country, year,  
-#                                               indic, indicator_short_name, key, value, unit_of_measure)
-#           names(temp) <- c('Region', 'Country', 'Year', 'Indic', 'Indicator', 'Sub national region', 'value', 'Unit of measure')
-#           temp_stamp <- temp[1,]
-#           temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
-#           temp_stamp$Country <- temp_stamp$Year <- temp_stamp$Indic <- temp_stamp$Indicator <- temp_stamp$`Sub national region` <- temp_stamp$`Unit of measure`<- ''
-#           temp <- rbind(temp, temp_stamp)
-#         }
-#         write.csv(x = temp, file)
-#       }
-#     }
-#   )
-#   
-#   # ---- DOWNLOAD MAP IMAGE ---- #
-#   output$dl_plot <- downloadHandler(filename = paste0("trends_mean_sub", Sys.Date(),".png"),
-#                                     content = function(file) {
-#                                       pop_list <- chart_data$plot_data
-#                                       if(length(pop_list)==1){
-#                                         pop_list <- hefpi::trends_subnational_mean_default
-#                                       }
-#                                       if(is.null(pop_list)){
-#                                         NULL
-#                                       } else {
-#                                         pd <- pop_list[[1]]
-#                                         if(nrow(pd)==0){
-#                                           empty_plot <- function(title = NULL){
-#                                             p <- plotly_empty(type = "scatter", mode = "markers") %>%
-#                                               config(
-#                                                 displayModeBar = FALSE
-#                                               ) %>%
-#                                               layout(
-#                                                 title = list(
-#                                                   text = title,
-#                                                   yref = "paper",
-#                                                   y = 0.5
-#                                                 )
-#                                               )
-#                                           } 
-#                                           p <- empty_plot("No data available for the selected inputs")
-#                                           p
-#                                           ggsave(file, width = 8, height = 8)
-#                                         } else {
-#                                           pd <- pop_list[[1]]
-#                                           unit_of_measure <- pop_list[[2]]
-#                                           indicator <- pop_list[[3]]
-#                                           date_range <- pop_list[[4]]
-#                                           value_range <- pop_list[[5]]
-#                                           yn <- pop_list[[6]]
-#                                           # get title and subtitle
-#                                           plot_title <- paste0('Trends - Subnational mean - ', indicator)
-#                                           y_axis_text <- paste0(indicator)
-#                                           x_axis_text <- paste0('', '\n', 'Year')
-#                                           caption_text = 'HEFPI database, The World Bank, 2021'
-#                                           
-#                                           # condition on unit of measure
-#                                           if(unit_of_measure == '%'){
-#                                             pd$value<- pd$value*100
-#                                             value_range[2] <- value_range[2]*100
-#                                             value_range[1] <- value_range[1]*100
-#                                             
-#                                           }
-#                                           pd <- pd %>% filter(value >= value_range[1],
-#                                                               value <= value_range[2])
-#                                           # text for plot
-#                                           mytext <- paste(
-#                                             "Indicator: ", indicator,"<br>", 
-#                                             "Economy: ", as.character(pd$country), '<br>',
-#                                             "Subregion: ", as.character(pd$key),"<br>", 
-#                                             "Value: ", paste0(round(pd$value, digits = 2), ' (', unit_of_measure, ')'), "<br>",
-#                                             "Year: ", as.character(pd$year),"<br>",
-#                                             sep="") %>%
-#                                             lapply(htmltools::HTML)
-#                                           temp <- tableau_color_pal(palette = "Tableau 20")
-#                                           trend_palette <- rep(temp(n = 20), 50)
-#                                           
-#                                           
-#                                           if(yn){
-#                                             # condition if we connect the dots
-#                                             p <-  ggplot(data = pd, aes(as.numeric(year), value,color= key, group =key)) +
-#                                               geom_point() + 
-#                                               geom_line() +
-#                                               scale_color_manual(name = '',
-#                                                                  values = trend_palette) +
-#                                               scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-#                                                                  expand = c(0,0))+
-#                                               scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-#                                                                  breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-#                                                                  expand = c(0,0)) +
-#                                               labs(x=x_axis_text,
-#                                                    y = y_axis_text,
-#                                                    title = '',
-#                                                    caption = caption_text) 
-#                                           } else {
-#                                             # condition if we connect the dots
-#                                             p <- ggplot(data = pd, aes(as.numeric(year), value, color= ADM1_NAME)) +
-#                                               geom_point() + 
-#                                               # geom_line(aes(group = ADM1_NAME)) +
-#                                               scale_color_manual(name = '',
-#                                                                  values = trend_palette) +
-#                                               scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-#                                                                  expand = c(0,0))+
-#                                               scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-#                                                                  breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-#                                                                  expand = c(0,0)) +
-#                                               labs(x=x_axis_text,
-#                                                    y=y_axis_text,
-#                                                    title = '',
-#                                                    caption = caption_text) 
-#                                             p <- p + hefpi::theme_hefpi(grid_major_x = NA,
-#                                                                         x_axis_angle = 90,
-#                                                                         x_axis_hjust = 1)
-#                                           }
-#                                           
-#                                           p <- p + ggtitle('') +
-#                                             hefpi::theme_hefpi(grid_major_x = NA,
-#                                                                x_axis_angle = 90,
-#                                                                x_axis_vjust =0.5,
-#                                                                y_axis_vjust = 0.5,
-#                                                                y_axis_hjust = 1,
-#                                                                x_axis_size = 12,
-#                                                                legend_position = 'top',
-#                                                                legend_direction = 'horizontal',
-#                                                                legend_text_size = 2/3)
-#                                           p
-#                                           ggsave(file, width = 8, height = 8)
-#                                         }
-#                                       }
-#                                     })
-#   
-#   
-#   # ---- RENDER PLOT Title ---- #
-#   output$trends_mean_title <- renderUI({
-#     pop_list <- chart_data$plot_data
-#     if(length(pop_list)==1){
-#       pop_list <- hefpi::trends_subnational_mean_default
-#     }
-#     if(is.null(pop_list)){
-#       NULL
-#     } else {
-#       pd <- pop_list[[1]]
-# 
-#       indicator <- pop_list[[3]]
-# 
-#       plot_title <- HTML(str_glue('
-#                         <div class="chart-header-labels-row">
-#                            <div class="chart-label"> Trends </div> 
-#                            <div class="chart-label"> {indicator} </div>
-#                           </div>
-#                           '))
-#       
-#       plot_title
-#       
-#     }
-#   })
-#   
-#   
-#   # ---- RENDER PLOT ---- #
-#   output$trends_mean <- renderPlotly({
-#     pop_list <- chart_data$plot_data
-#     if(length(pop_list)==1){
-#       pop_list <- hefpi::trends_subnational_mean_default
-#     }
-#     if(is.null(pop_list)){
-#       NULL
-#     } else {
-#       pd <- pop_list[[1]]
-#       if(nrow(pd)==0){
-#         empty_plot <- function(title = NULL){
-#           p <- plotly_empty(type = "scatter", mode = "markers") %>%
-#             config(
-#               displayModeBar = FALSE
-#             ) %>%
-#             layout(
-#               title = list(
-#                 text = title,
-#                 yref = "paper",
-#                 y = 0.5
-#               )
-#             )
-#         } 
-#         fig <- empty_plot("No data available for the selected inputs")
-#       } else {
-#         pd <- pop_list[[1]]
-#         unit_of_measure <- pop_list[[2]]
-#         indicator <- pop_list[[3]]
-#         date_range <- pop_list[[4]]
-#         value_range <- pop_list[[5]]
-#         yn <- pop_list[[6]]
-#         # get title and subtitle
-#         # plot_title <- paste0('Trends - Subnational mean - ', indicator)
-#         y_axis_text <- paste0(indicator)
-#         x_axis_text <- paste0('', '\n', 'Year')
-#         # condition on unit of measure
-#         if(unit_of_measure == '%'){
-#           pd$value<- pd$value*100
-#           value_range[2] <- value_range[2]*100
-#           value_range[1] <- value_range[1]*100
-#           
-#         }
-#        
-#         # text for plot
-#         mytext <- paste(
-#           "Indicator: ", indicator,"<br>", 
-#           "Economy: ", as.character(pd$country), '<br>',
-#           "Subregion: ", as.character(pd$key),"<br>", 
-#           "Value: ", paste0(round(pd$value, digits = 2), ' (', unit_of_measure, ')'), "<br>",
-#           "Year: ", as.character(pd$year),"<br>",
-#           sep="") %>%
-#           lapply(htmltools::HTML)
-#         temp <- tableau_color_pal(palette = "Tableau 20")
-#         trend_palette <- rep(temp(n = 20), 50)
-#         
-#         if(yn){
-#           # condition if we connect the dots
-#           p <-  ggplot(data = pd, aes(as.numeric(year), value,color= key, group =key, text=mytext)) +
-#             geom_point() + 
-#             geom_line() +
-#             scale_color_manual(name = '',
-#                                values = trend_palette) +
-#             scale_y_continuous(limits = c(value_range[1], (value_range[2]+2)), 
-#                                expand = c(0,0))+
-#             scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-#                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-#                                expand = c(0,0)) +
-#             labs(x=x_axis_text,
-#                  y = y_axis_text
-#                  # ,
-#                  # title = plot_title
-#                  ) 
-#         } else {
-#           # condition if we connect the dots
-#           p <- ggplot(data = pd, aes(as.numeric(year), value, color= key, text=mytext)) +
-#             geom_point() + 
-#             # geom_line(aes(group = ADM1_NAME)) +
-#             scale_color_manual(name = '',
-#                                values = trend_palette) +
-#             scale_y_continuous(limits = c(value_range[1], (value_range[2]+2)), 
-#                                expand = c(0,0))+
-#             scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-#                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-#                                expand = c(0,0)) +
-#             labs(x=x_axis_text,
-#                  y=y_axis_text
-#                  # ,
-#                  # title = plot_title
-#                  ) 
-#           p <- p + hefpi::theme_hefpi(grid_major_x = NA,
-#                                       x_axis_angle = 90,
-#                                       x_axis_hjust = 1)
-#         }
-#         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
-#                                     x_axis_angle = 90,
-#                                     x_axis_vjust =0.5,
-#                                     y_axis_vjust = 0.5,
-#                                     y_axis_hjust = 1,
-#                                     x_axis_size = 12)
-#         fig <- ggplotly(p, 
-#                         tooltip = 'text') %>%
-#           config(displayModeBar = F)
-#         fig
-#       }
-#       
-#     }
-#   })
-# }
+mod_trends_mean_sub_ui <- function(id){
+  ns <- NS(id)
+  tagList(
+    fluidPage(
+      column(9,
+             uiOutput(ns('trends_mean_title')),
+             plotlyOutput(
+               ns('trends_mean'), height = '600px'
+             )),
+      
+      column(3,
+             useShinyalert(),
+             actionButton(ns("plot_info"), label = "Plot Info"),
+             actionButton(ns('generate_chart'), label = 'Generate chart'),
+             actionButton(ns('share_chart'), 'Share chart'),
+             br(), br(),
+             p('Indicator'),
+             div(style='border-color: grey; color:grey',selectInput(ns('indicator'), label=NULL,
+                                                                    choices = indicators_list,
+                                                                    selected = "4+ antenatal care visits (%)")),
+             p('Country'),
+             div(style='border-color: grey; color:grey',selectInput(inputId = ns("country"),
+                                                                    label = NULL, 
+                                                                    choices = as.character(sort(unique(sub_national$country))),
+                                                                    selected ='Belize')),
+             uiOutput(ns('ui_outputs')),
+             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
+    )
+  )
+}
+
+# SERVER FOR TRENDS (SUBNATIONAL MEAN)
+mod_trends_mean_sub_server <- function(input, output, session){
+  
+  # Observe changes to inputs in order to generate changes to the map
+  observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert(title = "Trends - Subnational mean", 
+               text = "This chart allows tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+               type = "info", 
+               closeOnClickOutside = TRUE, 
+               showCancelButton = FALSE, 
+               showConfirmButton = FALSE)
+  })
+  
+  # ---- GENERATE UI OUTPUTS ---- #
+  output$ui_outputs <- renderUI({
+    # get inputs
+    indicator <- input$indicator
+    country_name <- input$country
+    date_range <- c(1982, 2018)
+    
+    # Get the data to be plotted
+    pd <- hefpi::sub_national %>%
+      filter(country == country_name)%>%
+      filter(indicator_short_name == indicator) %>%
+      group_by(ISO3 = iso3c, country,gaul_code) %>%
+      filter(year >= min(date_range),
+             year <= max(date_range)) 
+    # get shape files
+    shp <- hefpi::gaul
+    # joine with data
+    shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
+    # remove polygons associated with NA - keeps only that region
+    na_rows <- which(!is.na(shp@data$value))
+    shp <- shp[na_rows,]
+    shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
+    df <- shp@data
+    max_value <- round(max(df$value), 2)
+    min_value <- round(min(df$value), 2)
+    if(max_value<1){
+      min_value=0
+      max_value = 1
+    } else {
+      min_value = 0
+      max_value = ceiling(max_value)
+    }
+    sub_regions_top <- df %>% group_by(country,ADM1_NAME) %>% 
+      summarise(counts = n()) %>%
+      top_n(10) %>%
+      arrange(ADM1_NAME) %>%
+      .$ADM1_NAME
+    sub_regions <- sort(unique(df$ADM1_NAME))
+    
+    fluidPage(
+      fluidRow(
+        p('Subnational region'),
+        shinyWidgets::dropdownButton(circle = FALSE,  
+                                     label = 'Select the region(s)', 
+                                     status = "danger",
+                                     actionButton(session$ns("all_regions"), label="Select/Deselect all"),
+                                     div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = session$ns("sub_country"),
+                                                                                                        label = '', 
+                                                                                                        choices = sub_regions,
+                                                                                                        selected = sub_regions_top))),
+        p('Y axis range'),
+        sliderInput(session$ns('value_range'),
+                    label = NULL,
+                    min = min_value,
+                    max = max_value,
+                    value = c(min_value, max_value),
+                    sep = ''),
+        p('Date range'),
+        sliderInput(session$ns('date_range'),
+                    label = NULL,
+                    min = 1982,
+                    max = 2018,
+                    value = c(1982, 2018),
+                    step = 1,
+                    sep = ''),
+        checkboxInput(session$ns('interpolate'), 
+                      label = 'Interpolate missing values',
+                      value = TRUE)
+      )
+    )
+  })
+  
+  # ---- SELECT/DESLECT ALL BUTTONS ---- #
+  # REGIONS
+  observe({
+    all_regions <- input$all_regions
+    message(all_regions)
+    if(is.null(all_regions)){
+      NULL
+    } else {
+      if (all_regions > 0) {
+        # get inputs
+        indicator <- input$indicator
+        country_name <- input$country
+        date_range <- c(1982, 2018)
+        # Get the data to be plotted
+        pd <- hefpi::sub_national %>%
+          filter(country == country_name)%>%
+          filter(indicator_short_name == indicator) %>%
+          group_by(ISO3 = iso3c, country,gaul_code) %>%
+          filter(year >= min(date_range),
+                 year <= max(date_range)) 
+        # get shape files
+        shp <- hefpi::gaul
+        # joine with data
+        shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
+        # remove polygons associated with NA - keeps only that region
+        na_rows <- which(!is.na(shp@data$value))
+        shp <- shp[na_rows,]
+        shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
+        df <- shp@data
+        
+        sub_regions_top <- df %>% group_by(country,ADM1_NAME) %>% 
+          summarise(counts = n()) %>%
+          top_n(10) %>%
+          arrange(ADM1_NAME) %>%
+          .$ADM1_NAME
+        sub_regions <- sort(unique(df$ADM1_NAME))
+        
+        if (all_regions %% 2 == 0){
+          updateCheckboxGroupInput(session=session,
+                                   inputId ="sub_country",
+                                   choices = sub_regions,
+                                   selected = sub_regions)
+          
+        } else {
+          updateCheckboxGroupInput(session=session,  
+                                   inputId ="sub_country",
+                                   choices =  sub_regions,
+                                   selected = c())
+          
+        }}
+    }
+    
+  })
+  
+  chart_data <- reactiveValues(plot_data = 'new') 
+  observeEvent(input$generate_chart, {
+    message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
+    # get inputs
+    indicator <- input$indicator
+    region <- input$region
+    sub_regions <- input$sub_country
+    date_range <- input$date_range
+    value_range <- input$value_range
+    country_name <- input$country
+    yn <- input$interpolate
+    
+    # condition for data that is temporariliy null
+    if(is.null(value_range) | is.null(date_range)){
+      NULL
+    } else {
+      # get list to store plot objects
+      pop_list <- list()
+      indicators <- hefpi::indicators
+      ind_info <- indicators %>%
+        filter(indicator_short_name == indicator) %>%
+        select(variable_name, unit_of_measure)
+      variable_name = ind_info$variable_name
+      unit_of_measure = ind_info$unit_of_measure
+      # get data
+      pd <- hefpi::sub_national %>%
+        filter(country == country_name) %>%
+        filter(indicator_short_name == indicator) %>%
+        group_by(ISO3 = iso3c, country,gaul_code) %>%
+        filter(year >= min(date_range),
+               year <= max(date_range))
+      names(pd)[names(pd)=='region'] <- 'region_name'
+      # get shape files
+      shp <- hefpi::gaul
+      # joine with data
+      shp@data <- shp@data %>% dplyr::right_join(pd, by=c('ADM1_CODE'='gaul_code'))
+      # remove polygons associated with NA - keeps only that region
+      na_rows <- which(!is.na(shp@data$value))
+      shp <- shp[na_rows,]
+      shp@data$ADM1_NAME <- as.character(shp@data$ADM1_NAME)
+      pd <- shp@data
+      pd <- pd %>% filter(ADM1_NAME %in% sub_regions)
+      pd <- pd %>% mutate_all(as.character)
+      pd$value <- as.numeric(pd$value)
+      drop_cols <- c("G2008_1_", "G2008_1_ID", "ADM0_NAME", "ADM0_CODE", "AREA", "PERIMETER")
+      pd <- pd %>% select(-one_of(drop_cols)) %>% group_by_if(is.character) %>% summarise_if(is.numeric, funs(mean))
+      # change name of subregion to national if it is the countries name 
+      this_name = unique(pd$ADM1_NAME)[unique(pd$ADM1_NAME) %in% country_name]
+      if(length(this_name) != 0){
+        pd$ADM1_NAME <- ifelse(pd$ADM1_NAME == this_name, 'National', pd$ADM1_NAME)
+      }
+      pd <- pd %>% filter(value >= value_range[1],
+                          value <= value_range[2])
+      
+      pop_list <- list(pd, unit_of_measure, indicator, date_range, value_range,yn)
+      
+      chart_data$plot_data <- pop_list
+      
+    }
+  },
+  ignoreNULL = FALSE,
+  ignoreInit = TRUE)
+  
+  # ---- DOWNLOAD DATA FROM MAP ---- #
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste0("trends_mean_sub_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      # get map
+      pop_list <- chart_data$plot_data
+      if(length(pop_list)==1){
+        pop_list <- hefpi::trends_subnational_mean_default
+      }
+      
+      if(is.null(pop_list)){
+        NULL
+      } else {
+        pd <- pop_list[[1]]
+        if(nrow(pd)==0){
+          temp <- data_frame()
+        } else {
+          temp <- pd
+          temp <- temp %>% filter(!is.na(value))
+          names(temp) <- tolower(names(temp))
+          names(temp)[which(names(temp)=='adm1_name')] <- 'level'
+          temp$parameter <- 'Mean'
+          temp <- temp %>% ungroup %>% select(region_name, country, iso3, year,  
+                                              survey, indic, indicator_short_name,
+                                              indicator_description, parameter, level, value, unit_of_measure)
+          names(temp) <- c('Region', 'national','Country_iso3', 'Year', 'Survey_name', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Value', 'Unit_of_measurement')
+          save(temp, file='temp_subdata.rda')
+          temp_stamp <- temp[1,]
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
+          temp_stamp$national <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp <- rbind(temp, temp_stamp)
+        }
+        write.csv(x = temp, file)
+      }
+    }
+  )
+  
+  # ---- DOWNLOAD MAP IMAGE ---- #
+  output$dl_plot <- downloadHandler(filename = paste0("trends_mean_sub", Sys.Date(),".png"),
+                                    content = function(file) {
+                                      pop_list <- chart_data$plot_data
+                                      if(length(pop_list)==1){
+                                        pop_list <- hefpi::trends_subnational_mean_default
+                                      }
+                                      if(is.null(pop_list)){
+                                        NULL
+                                      } else {
+                                        pd <- pop_list[[1]]
+                                        if(nrow(pd)==0){
+                                          empty_plot <- function(title = NULL){
+                                            p <- plotly_empty(type = "scatter", mode = "markers") %>%
+                                              config(
+                                                displayModeBar = FALSE
+                                              ) %>%
+                                              layout(
+                                                title = list(
+                                                  text = title,
+                                                  yref = "paper",
+                                                  y = 0.5
+                                                )
+                                              )
+                                          } 
+                                          p <- empty_plot("No data available for the selected inputs")
+                                          p
+                                          ggsave(file, width = 8, height = 8)
+                                        } else {
+                                          pd <- pop_list[[1]]
+                                          unit_of_measure <- pop_list[[2]]
+                                          indicator <- pop_list[[3]]
+                                          date_range <- pop_list[[4]]
+                                          value_range <- pop_list[[5]]
+                                          yn <- pop_list[[6]]
+                                          # get title and subtitle
+                                          plot_title <- paste0('Trends - Subnational mean - ', indicator)
+                                          y_axis_text <- paste0(indicator)
+                                          x_axis_text <- paste0('', '\n', 'Year')
+                                          caption_text = 'HEFPI database, The World Bank, 2021'
+                                          
+                                          # condition on unit of measure
+                                          if(unit_of_measure == '%'){
+                                            pd$value<- pd$value*100
+                                            value_range[2] <- value_range[2]*100
+                                            value_range[1] <- value_range[1]*100
+                                            
+                                          }
+                                          pd <- pd %>% filter(value >= value_range[1],
+                                                              value <= value_range[2])
+                                          # text for plot
+                                          mytext <- paste(
+                                            "Indicator: ", indicator,"<br>", 
+                                            "Economy: ", as.character(pd$country), '<br>',
+                                            "Subregion: ", as.character(pd$ADM1_NAME),"<br>", 
+                                            "Value: ", paste0(round(pd$value, digits = 2), ' (', unit_of_measure, ')'), "<br>",
+                                            "Year: ", as.character(pd$year),"<br>",
+                                            sep="") %>%
+                                            lapply(htmltools::HTML)
+                                          temp <- tableau_color_pal(palette = "Tableau 20")
+                                          trend_palette <- rep(temp(n = 20), 50)
+                                          
+                                          
+                                          if(yn){
+                                            # condition if we connect the dots
+                                            p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME)) +
+                                              geom_point() + 
+                                              geom_line() +
+                                              scale_color_manual(name = '',
+                                                                 values = trend_palette) +
+                                              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                 expand = c(0,0))+
+                                              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                 expand = c(0,0)) +
+                                              labs(x=x_axis_text,
+                                                   y = y_axis_text,
+                                                   title = '',
+                                                   caption = caption_text) 
+                                          } else {
+                                            # condition if we connect the dots
+                                            p <- ggplot(data = pd, aes(as.numeric(year), value, color= ADM1_NAME)) +
+                                              geom_point() + 
+                                              # geom_line(aes(group = ADM1_NAME)) +
+                                              scale_color_manual(name = '',
+                                                                 values = trend_palette) +
+                                              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                 expand = c(0,0))+
+                                              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                 expand = c(0,0)) +
+                                              labs(x=x_axis_text,
+                                                   y=y_axis_text,
+                                                   title = '',
+                                                   caption = caption_text) 
+                                            p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                                                        x_axis_angle = 90,
+                                                                        x_axis_hjust = 1)
+                                          }
+                                          
+                                          p <- p + ggtitle('') +
+                                            hefpi::theme_hefpi(grid_major_x = NA,
+                                                               x_axis_angle = 90,
+                                                               x_axis_vjust =0.5,
+                                                               y_axis_vjust = 0.5,
+                                                               y_axis_hjust = 1,
+                                                               x_axis_size = 12,
+                                                               legend_position = 'top',
+                                                               legend_direction = 'horizontal',
+                                                               legend_text_size = 2/3)
+                                          p
+                                          ggsave(file, width = 8, height = 8)
+                                        }
+                                      }
+                                    })
+  
+  
+  # ---- RENDER PLOT Title ---- #
+  output$trends_mean_title <- renderUI({
+    pop_list <- chart_data$plot_data
+    if(length(pop_list)==1){
+      pop_list <- hefpi::trends_subnational_mean_default
+    }
+    if(is.null(pop_list)){
+      NULL
+    } else {
+      pd <- pop_list[[1]]
+      
+      indicator <- pop_list[[3]]
+      
+      plot_title <- HTML(str_glue('
+                        <div class="chart-header-labels-row">
+                           <div class="chart-label"> Trends </div> 
+                           <div class="chart-label"> {indicator} </div>
+                          </div>
+                          '))
+      
+      plot_title
+      
+    }
+  })
+  
+  
+  # ---- RENDER PLOT ---- #
+  output$trends_mean <- renderPlotly({
+    pop_list <- chart_data$plot_data
+    if(length(pop_list)==1){
+      pop_list <- hefpi::trends_subnational_mean_default
+    }
+    if(is.null(pop_list)){
+      NULL
+    } else {
+      pd <- pop_list[[1]]
+      if(nrow(pd)==0){
+        empty_plot <- function(title = NULL){
+          p <- plotly_empty(type = "scatter", mode = "markers") %>%
+            config(
+              displayModeBar = FALSE
+            ) %>%
+            layout(
+              title = list(
+                text = title,
+                yref = "paper",
+                y = 0.5
+              )
+            )
+        } 
+        fig <- empty_plot("No data available for the selected inputs")
+      } else {
+        pd <- pop_list[[1]]
+        unit_of_measure <- pop_list[[2]]
+        indicator <- pop_list[[3]]
+        date_range <- pop_list[[4]]
+        value_range <- pop_list[[5]]
+        yn <- pop_list[[6]]
+        # get title and subtitle
+        # plot_title <- paste0('Trends - Subnational mean - ', indicator)
+        y_axis_text <- paste0(indicator)
+        x_axis_text <- paste0('', '\n', 'Year')
+        # condition on unit of measure
+        if(unit_of_measure == '%'){
+          pd$value<- pd$value*100
+          value_range[2] <- value_range[2]*100
+          value_range[1] <- value_range[1]*100
+          
+        }
+        
+        # text for plot
+        mytext <- paste(
+          "Indicator: ", indicator,"<br>", 
+          "Economy: ", as.character(pd$country), '<br>',
+          "Subregion: ", as.character(pd$ADM1_NAME),"<br>", 
+          "Value: ", paste0(round(pd$value, digits = 2), ' (', unit_of_measure, ')'), "<br>",
+          "Year: ", as.character(pd$year),"<br>",
+          sep="") %>%
+          lapply(htmltools::HTML)
+        temp <- tableau_color_pal(palette = "Tableau 20")
+        trend_palette <- rep(temp(n = 20), 50)
+        
+        if(yn){
+          # condition if we connect the dots
+          p <-  ggplot(data = pd, aes(as.numeric(year), value,color= ADM1_NAME, group =ADM1_NAME, text=mytext)) +
+            geom_point() + 
+            geom_line() +
+            scale_color_manual(name = '',
+                               values = trend_palette) +
+            scale_y_continuous(limits = c(value_range[1], (value_range[2]+2)), 
+                               expand = c(0,0))+
+            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                               expand = c(0,0)) +
+            labs(x=x_axis_text,
+                 y = y_axis_text
+                 # ,
+                 # title = plot_title
+            ) 
+        } else {
+          # condition if we connect the dots
+          p <- ggplot(data = pd, aes(as.numeric(year), value, color= ADM1_NAME, text=mytext)) +
+            geom_point() + 
+            # geom_line(aes(group = ADM1_NAME)) +
+            scale_color_manual(name = '',
+                               values = trend_palette) +
+            scale_y_continuous(limits = c(value_range[1], (value_range[2]+2)), 
+                               expand = c(0,0))+
+            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                               expand = c(0,0)) +
+            labs(x=x_axis_text,
+                 y=y_axis_text
+                 # ,
+                 # title = plot_title
+            ) 
+          p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                      x_axis_angle = 90,
+                                      x_axis_hjust = 1)
+        }
+        p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                    x_axis_angle = 90,
+                                    x_axis_vjust =0.5,
+                                    y_axis_vjust = 0.5,
+                                    y_axis_hjust = 1,
+                                    x_axis_size = 12)
+        fig <- ggplotly(p, 
+                        tooltip = 'text') %>%
+          config(displayModeBar = F)
+        fig
+      }
+      
+    }
+  })
+}
 
 
 
@@ -1027,25 +1065,25 @@ mod_trends_con_ui <- function(id){
                ns('trends_con'), height = '600px'
              )),
       column(3,
-             #useShinyalert(),
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
              br(), br(),
              p('Indicator'),
              div(style='border-color: grey; color:grey',selectInput(ns('indicator'),
-                         label = NULL,
-                         choices = indicators_list,
-                         selected = '4+ antenatal care visits (%)')),
+                                                                    label = NULL,
+                                                                    choices = indicators_list,
+                                                                    selected = '4+ antenatal care visits (%)')),
              p('Region'),
              shinyWidgets::dropdownButton(circle = FALSE,  
                                           label = 'Select the region(s)', 
                                           status = "danger",
                                           actionButton(ns("all_regions"), label="Select/Deselect all"),
-             div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = ns("region"),
-                         label = '', 
-                         choices = as.character(region_list$region),
-                         selected = as.character(region_list$region)[1]))),
+                                          div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = ns("region"),
+                                                                                                             label = '', 
+                                                                                                             choices = as.character(region_list$region),
+                                                                                                             selected = as.character(region_list$region)[1]))),
              uiOutput(ns('ui_outputs')),
              p('Date range'),
              sliderInput(ns('date_range'),
@@ -1059,7 +1097,7 @@ mod_trends_con_ui <- function(id){
                            value = TRUE),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
-
+      
     )
   )
 }
@@ -1091,7 +1129,7 @@ mod_trends_con_server <- function(input, output, session){
       filter(indicator_short_name == indicator) %>%
       .$variable_name
     # subset data by variable and region code
-    df <- hefpi::hefpi_df
+    df <- hefpi::df
     df <- df[df$indic == variable,]
     df <- df[df$regioncode %in% region_code,]
     countries <- unique(df$country)
@@ -1104,10 +1142,10 @@ mod_trends_con_server <- function(input, output, session){
                        label = 'Select the countries', 
                        status = "danger",
                        actionButton(session$ns("all_countries"), label="Select/Deselect all"),
-        div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = session$ns("country"),
-                    label = '', 
-                    choices = countries,
-                    selected = countries))),
+                       div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = session$ns("country"),
+                                                                                          label = '', 
+                                                                                          choices = countries,
+                                                                                          selected = countries))),
         p('Y axis range'),
         sliderInput(session$ns('value_range'),
                     label = NULL,
@@ -1165,7 +1203,7 @@ mod_trends_con_server <- function(input, output, session){
           filter(indicator_short_name == indicator) %>%
           .$variable_name
         # subset data by variable and region code
-        df <- hefpi::hefpi_df
+        df <- hefpi::df
         df <- df[df$indic == variable,]
         df <- df[df$regioncode %in% region_code,]
         countries <- unique(df$country)
@@ -1208,12 +1246,15 @@ mod_trends_con_server <- function(input, output, session){
       ind_info <- indicators %>%
         filter(indicator_short_name == indicator) %>%
         select(variable_name, unit_of_measure)
+      unit_of_measure = ind_info$unit_of_measure
       variable_name = ind_info$variable_name
       # subet by variable, region code and a list of countries
-      df <- hefpi::hefpi_df
+      df <- hefpi::df
       df <- df[df$indic == variable_name,]
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
+      
+      
       pd <- pd %>% filter(year >= min(date_range),
                           year <= max(date_range)) 
       pd$unit_of_measure <- 'CI'
@@ -1224,7 +1265,7 @@ mod_trends_con_server <- function(input, output, session){
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
-
+  
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
@@ -1245,18 +1286,17 @@ mod_trends_con_server <- function(input, output, session){
         } else {
           temp <- pd
           temp <- temp %>% filter(!is.na(CI))
-
           names(temp) <- tolower(names(temp))
           temp$parameter <- 'Concentration Index'
           temp$level <- 'National'
-          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, indic, indicator_short_name,
+          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
                                   indicator_description, parameter, level, ci, unit_of_measure)
-          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
           temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
-          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
           write.csv(temp, file)
           
@@ -1308,36 +1348,73 @@ mod_trends_con_server <- function(input, output, session){
                                           
                                           temp <- tableau_color_pal(palette = "Tableau 20")
                                           trend_palette <- rep(temp(n = 20), 10)
-                                          if(yn){
-                                            # condition if we connect the dots
-                                            p <- ggplot(data = pd, aes(year, CI, color= country)) +
-                                              geom_point() + 
-                                              geom_line(aes(group = country)) +
-                                              scale_color_manual(name = '',
-                                                                 values = trend_palette) +
-                                              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                                                                 expand = c(0,0))+
-                                              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-                                                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                                                                 expand = c(0,0)) +
-                                              labs(title = plot_title,
-                                                   x=x_axis_text,
-                                                   y = y_axis_text,
-                                                   caption=caption_text) 
-                                          } else {
-                                            # condition if we connect the dots
-                                            p <- ggplot(data = pd, aes(year, CI, color= country)) +
-                                              geom_point() +
-                                              scale_color_manual(name = '',
-                                                                 values = trend_palette) +
-                                              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                                                                 expand = c(0,0))+
-                                              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-                                                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                                                                 expand = c(0,0)) +
-                                              labs(x=x_axis_text,
-                                                   y = y_axis_text,
-                                                   caption = caption_text) 
+                                          if(yn){ # condition if we connect the dots
+                                            
+                                            # if indicator % value
+                                            if(str_detect(indicator, '%')) {
+                                              p <- ggplot(data = pd, aes(year, CI, color= country)) +
+                                                geom_point() + 
+                                                geom_line(aes(group = country)) +
+                                                scale_color_manual(name = '',
+                                                                   values = trend_palette) +
+                                                scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                   expand = c(0,0), labels = scales::percent)+
+                                                scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                   breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                   expand = c(0,0)) +
+                                                labs(title = plot_title,
+                                                     x=x_axis_text,
+                                                     y = y_axis_text,
+                                                     caption=caption_text) 
+                                            } else {
+                                              p <- ggplot(data = pd, aes(year, CI, color= country)) +
+                                                geom_point() + 
+                                                geom_line(aes(group = country)) +
+                                                scale_color_manual(name = '',
+                                                                   values = trend_palette) +
+                                                scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                   expand = c(0,0))+
+                                                scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                   breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                   expand = c(0,0)) +
+                                                labs(title = plot_title,
+                                                     x=x_axis_text,
+                                                     y = y_axis_text,
+                                                     caption=caption_text) 
+                                            }
+                                            
+                                          } else {# condition if we connect the dots
+                                            
+                                            # if indicator % value
+                                            if(str_detect(indicator, '%')) {
+                                              p <- ggplot(data = pd, aes(year, CI, color= country)) +
+                                                geom_point() +
+                                                scale_color_manual(name = '',
+                                                                   values = trend_palette) +
+                                                scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                   expand = c(0,0), labels = scales::percent)+
+                                                scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                   breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                   expand = c(0,0)) +
+                                                labs(x=x_axis_text,
+                                                     y = y_axis_text,
+                                                     caption = caption_text) 
+                                            } else {
+                                              p <- ggplot(data = pd, aes(year, CI, color= country)) +
+                                                geom_point() +
+                                                scale_color_manual(name = '',
+                                                                   values = trend_palette) +
+                                                scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                                                   expand = c(0,0))+
+                                                scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                                                   breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                                                   expand = c(0,0)) +
+                                                labs(x=x_axis_text,
+                                                     y = y_axis_text,
+                                                     caption = caption_text) 
+                                            }
+                                            
+                                            
                                           }                                         
                                           p <- p + ggtitle('') +
                                             hefpi::theme_hefpi(grid_major_x = NA,
@@ -1366,22 +1443,22 @@ mod_trends_con_server <- function(input, output, session){
       NULL
     } else {
       
-        # unit_of_measure <- con_list[[2]]
-        indicator <- con_list[[2]]
-        # get title and subtitle
-        
-        plot_title_unlist_tmp <- unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1]))
-        
-        # plot_title <- paste0('Trends - Concentration index - ', )
-        plot_title <- HTML(str_glue('
+      # unit_of_measure <- con_list[[2]]
+      indicator <- con_list[[2]]
+      # get title and subtitle
+      
+      plot_title_unlist_tmp <- unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1]))
+      
+      # plot_title <- paste0('Trends - Concentration index - ', )
+      plot_title <- HTML(str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Concentration index </div>
                            <div class="chart-label"> Trends </div> 
                            <div class="chart-label"> {plot_title_unlist_tmp} </div>
                           </div>
                           '))
-  
-        plot_title
+      
+      plot_title
       
     }
     
@@ -1422,7 +1499,7 @@ mod_trends_con_server <- function(input, output, session){
         yn <- con_list[[5]]
         # get title and subtitle
         # plot_title_unlist_tmp <- unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1]))
-
+        
         # plot_title <- paste0('Trends - Concentration index - ', )
         # plot_title <- paste0(HTML(str_glue('
         #                 <div class="chart-header-labels-row">
@@ -1437,42 +1514,77 @@ mod_trends_con_server <- function(input, output, session){
         mytext <- paste(
           "Indicator: ", indicator,"<br>", 
           "Economy: ", as.character(pd$country),"<br>", 
-          "Value: ", round(pd$CI, digits = 2), "<br>",
+          "Value: ", paste0(ifelse(str_detect(indicator, '%'), round(pd$CI, digits = 2) * 100, round(pd$CI, digits = 2)), ' (', pd$unit_of_measure, ')'), "<br>",
           "Year: ", as.character(pd$year),"<br>",
           "Data source: ", as.character(pd$referenceid_list), "<br>",
           sep="") %>%
           lapply(htmltools::HTML)
         temp <- tableau_color_pal(palette = "Tableau 20")
         trend_palette <- rep(temp(n = 20), 10)
-        if(yn){
-          # condition if we connect the dots
-          p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
-            geom_point() + 
-            geom_line(aes(group = country)) +
-            scale_color_manual(name = '',
-                               values = trend_palette) +
-            scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                               expand = c(0,0))+
-            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                               expand = c(0,0)) +
-            labs(
-                 # title = plot_title,
-                 x=x_axis_text,
-                 y = y_axis_text) 
-        } else {
-          # condition if we connect the dots
-          p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
-            geom_point() +
-            scale_color_manual(name = '',
-                               values = trend_palette) +
-            scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                               expand = c(0,0))+
-            scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
-                               breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
-                               expand = c(0,0)) +
-            labs(x=x_axis_text,
-                 y = y_axis_text) 
+        if(yn) { # condition if we connect the dots
+          
+          # condition if indicator is % value
+          if(str_detect(indicator, '%')) {
+            p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+              geom_point() + 
+              geom_line(aes(group = country)) +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0),labels = scales::percent)+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(
+                # title = plot_title,
+                x=x_axis_text,
+                y = y_axis_text)
+          } else {
+            p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+              geom_point() + 
+              geom_line(aes(group = country)) +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0))+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(
+                # title = plot_title,
+                x=x_axis_text,
+                y = y_axis_text)
+          }
+          
+        } else { # condition if we connect the dots
+          
+          # condition if indicator is % value
+          if(str_detect(indicator, '%')) {
+            p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+              geom_point() +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0), labels = scales::percent)+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(x=x_axis_text,
+                   y = y_axis_text) 
+          } else {
+            p <- ggplot(data = pd, aes(year, CI, color= country, text=mytext)) +
+              geom_point() +
+              scale_color_manual(name = '',
+                                 values = trend_palette) +
+              scale_y_continuous(limits = c(value_range[1], value_range[2]), 
+                                 expand = c(0,0))+
+              scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
+                                 breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                 expand = c(0,0)) +
+              labs(x=x_axis_text,
+                   y = y_axis_text) 
+          }
+          
         }
         
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
@@ -1504,21 +1616,21 @@ mod_trends_quin_ui <- function(id){
                ns('trends_quin'),  height = '600px'
              )),
       column(3,
-             #useShinyalert(),
+             useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'), 'Generate chart'),
              actionButton(ns('share_chart'), 'Share chart'),
              br(), br(),
              p('Indicator'),
              div(style='border-color: grey; color:grey',selectInput(ns('indicator'), 
-                         label = NULL,
-                         choices = indicators_list,
-                         selected = 'Inpatient care use, adults (%)')),
+                                                                    label = NULL,
+                                                                    choices = indicators_list,
+                                                                    selected = 'Inpatient care use, adults (%)')),
              p('Country'),
              div(style='border-color: grey; color:grey',selectInput(ns('country'), 
-                         label = NULL,
-                         choices = country_list,
-                         selected = 'United States')),
+                                                                    label = NULL,
+                                                                    choices = country_list,
+                                                                    selected = 'United States')),
              uiOutput(ns('ui_outputs')),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'))
@@ -1552,7 +1664,7 @@ mod_trends_quin_server <- function(input, output, session){
     variable_name = ind_info$variable_name
     unit_of_measure = ind_info$unit_of_measure
     # subset by country and variable
-    df <- hefpi::hefpi_df %>%
+    df <- hefpi::df %>%
       filter(country == country_names) %>%
       filter(indic == variable_name) %>%
       select(year, Q1:Q5) 
@@ -1583,8 +1695,8 @@ mod_trends_quin_server <- function(input, output, session){
                     sep = ''),
         p('View as'),
         div(style='border-color: grey; color:grey',selectInput(session$ns('view_as'), 
-                    label = NULL,
-                    choices =c('Slope chart', 'Line chart')))
+                                                               label = NULL,
+                                                               choices =c('Slope chart', 'Line chart')))
       )
     )
     
@@ -1611,12 +1723,12 @@ mod_trends_quin_server <- function(input, output, session){
       variable_name = ind_info$variable_name
       unit_of_measure = ind_info$unit_of_measure
       # subset by country and variable
-      df <- hefpi::hefpi_df %>%
+      df <- hefpi::df %>%
         filter(country == country_names) %>%
         filter(indic == variable_name) %>%
         filter(year >= min(date_range),
                year <= max(date_range))  
-      #df <- df[complete.cases(df),]
+      df <- df[complete.cases(df),]
       if(view_as == 'Slope chart'){
         year_begin = min(df$year)
         year_end = max(df$year)
@@ -1642,7 +1754,7 @@ mod_trends_quin_server <- function(input, output, session){
         filter(value >=value_range[1],
                value<= value_range[2])
       
-     
+      
       quin_list <- list(df, unit_of_measure, indicator, date_range, value_range, view_as, country_names)
     }
     chart_data$plot_data <- quin_list
@@ -1650,7 +1762,7 @@ mod_trends_quin_server <- function(input, output, session){
   ignoreNULL = FALSE,
   ignoreInit = TRUE)
   
- 
+  
   # ---- DOWNLOAD DATA FROM MAP ---- #
   output$dl_data <- downloadHandler(
     filename = function() {
@@ -1675,14 +1787,14 @@ mod_trends_quin_server <- function(input, output, session){
           # subset by  
           temp$parameter <- 'Mean'
           # temp$level <- 'National'
-          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list,indic, indicator_short_name,
+          temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, survey_list, indic, indicator_short_name,
                                   indicator_description, parameter, level, value, unit_of_measure)
-          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 
+          names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid', 'Survey_name', 
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
           temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
-          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
+          temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
         write.csv(temp, file)
@@ -1789,14 +1901,14 @@ mod_trends_quin_server <- function(input, output, session){
     } else {
       pd <- quin_list[[1]]
       
-
-        indicator <- quin_list[[3]]
-
-        country_names <- quin_list[[7]]
-
-        
-        # plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
-        plot_title <- HTML(str_glue('
+      
+      indicator <- quin_list[[3]]
+      
+      country_names <- quin_list[[7]]
+      
+      
+      # plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
+      plot_title <- HTML(str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Quintile </div> 
                            <div class="chart-label"> Trends </div>
@@ -1804,9 +1916,9 @@ mod_trends_quin_server <- function(input, output, session){
                            <div class="chart-label"> {country_names} </div>
                           </div>
                           '))
-        plot_title
-        
-        
+      plot_title
+      
+      
     }
   })
   
@@ -1874,7 +1986,7 @@ mod_trends_quin_server <- function(input, output, session){
                x = x_axis_text
                # ,
                # title = plot_title
-               ) 
+          ) 
         
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_angle = 90,
@@ -1882,18 +1994,18 @@ mod_trends_quin_server <- function(input, output, session){
                                     y_axis_vjust = 0.5,
                                     y_axis_hjust = 1,
                                     x_axis_size = 12) +
-                      theme(
-                        panel.grid.major.y = element_line(size = 0.5, linetype = 'solid',
-                                                          colour = "#cccccc"),
-                        panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid',
-                                                          colour = "#cccccc"),
-                        panel.grid.major.x = element_blank(),
-                        panel.grid.minor.x = element_blank(),
-                        axis.ticks = element_line(size = 0.5, linetype = 'solid',
-                                                  colour = "#cccccc"),
-                        axis.line = element_line(colour = "#cccccc", 
-                                                 size = 0.5, linetype = "solid")
-                      )
+          theme(
+            panel.grid.major.y = element_line(size = 0.5, linetype = 'solid',
+                                              colour = "#cccccc"),
+            panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid',
+                                              colour = "#cccccc"),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            axis.ticks = element_line(size = 0.5, linetype = 'solid',
+                                      colour = "#cccccc"),
+            axis.line = element_line(colour = "#cccccc", 
+                                     size = 0.5, linetype = "solid")
+          )
         fig <- ggplotly(p, 
                         tooltip = 'text') %>%
           config(displayModeBar = F)

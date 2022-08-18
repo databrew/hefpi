@@ -9,7 +9,7 @@
 #'
 #' @keywords internal
 #' @export 
-mod_recent_mean_sub_ui <- function(id){
+mod_rural_ui <- function(id){
   # let leaflet know that selections should persist
   # options(persistent = TRUE)
   ns <- NS(id)
@@ -23,7 +23,7 @@ mod_recent_mean_sub_ui <- function(id){
            p('Choose country to highlight'),
            selectInput(ns('country'), 
                        label = NULL,
-                       choices = country_list, selected = 'India'),
+                       choices = unique(hefpi::hefpi_df$country), selected = 'India'),
            # sliderInput(ns('date_range'),
            #             label = NULL,
            #             min = 1982,
@@ -46,30 +46,32 @@ mod_recent_mean_sub_ui <- function(id){
 }
 
 # SERVER FOR MOST RECENT VALUE SUBNATIONAL MEAN
-mod_recent_mean_sub_server <- function(input, output, session){
+mod_rural_server <- function(input, output, session){
   
   # ---- UI output for region within country ---#
   output$ind_ui <- renderUI({
     #cn = 'India'
     #plot_years = c(1982, 2017)
+    req(input$country)
+    
     cn = input$country
     # plot_years <- input$date_range
     
-    df <- hefpi::hefpi_sub_df %>% 
-      filter(country == cn) %>%
-      # filter(year %in% plot_years) %>%
-      group_by(key) %>%
-      filter(year == max(year, na.rm = TRUE)) %>%
-      summarise(value = first(value),
-                indic = indic,
-                year = year,
-                region_name = region_name,
-                #survey_list = survey_list,
-                indicator_short_name = indicator_short_name,
-                unit_of_measure = unit_of_measure) 
+    hefpi::hefpi_sub_df
     
-    ind = sort(unique(df$indicator_short_name))
-    rn = sort(unique(df$key))
+    ind <- hefpi::hefpi_df %>% 
+      as_tibble() %>% 
+      select(country, year, regioncode, indic, urb, rur) %>%
+      filter(country == cn) %>%
+      left_join(
+        hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+        by = c('indic' = 'variable_name')
+      ) %>%
+      select(indicator_short_name) %>%
+      pull() %>%
+      unique() %>%
+      sort()
+
     
     fluidPage(
       fluidRow(
@@ -98,18 +100,25 @@ mod_recent_mean_sub_server <- function(input, output, session){
       # indicator <- 'Diastolic blood pressure (mmHg)'
       # region <- input$region
       # region <- 'Europe & Central Asia'
-      country_name <- input$country
+      cn <- input$country
       # country_name <- 'Ukraine'
       # get data
       # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
-      pd <- hefpi::hefpi_sub_df
+      pd <- hefpi::hefpi_df 
       
       years <- pd %>%
+        as_tibble() %>% 
+        select(country, year, regioncode, indic, urb, rur) %>%
+        filter(country == cn) %>%
+        left_join(
+          hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+          by = c('indic' = 'variable_name')
+        ) %>%
         filter(indicator_short_name == indicator) %>%
-        filter(country == country_name) %>%
         select(year) %>%
-        distinct() %>%
-        pull()
+        pull() %>%
+        unique() %>%
+        sort(decreasing = TRUE)
       
       
       updateSelectInput(session,
@@ -125,8 +134,11 @@ mod_recent_mean_sub_server <- function(input, output, session){
   # ----------- REACTIVE DATA ---------------#
   hefpi_sub_df__reactive <- reactive({
     
+    req(input$country)
+    req(input$indicator)
+    req(input$date_range)
     #cn = 'India'
-    #plot_years = c(1982, 2017)
+    #plot_years = c(2015)
     #indicator = "4+ antenatal care visits (%)"
     #rn = rn[1]
     # get inputs
@@ -138,12 +150,19 @@ mod_recent_mean_sub_server <- function(input, output, session){
     if(is.null(indicator)){
       return(NULL)
     } else {
-      df <- hefpi::hefpi_sub_df %>% 
+      df <- hefpi::hefpi_df %>% 
         filter(country == cn) %>%
+        as_tibble() %>%
+        select(country, year, regioncode, indic, urb, rur) %>%
+        # filter(country == cn) %>%
+        left_join(
+          hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+          by = c('indic' = 'variable_name')
+        ) %>%
         filter(indicator_short_name == indicator) %>%
-        filter(year >= min(plot_years),
-               year <= max(plot_years)) %>%
-        group_by(key) %>%
+        filter(year %in% plot_years) %>%
+        pivot_longer(cols = c('urb', 'rur'), names_to = 'urb_rur') %>%
+        group_by(urb_rur) %>%
         filter(year == max(year, na.rm = TRUE)) %>%
         summarise(value = first(value),
                   indic = indic,
@@ -206,12 +225,12 @@ mod_recent_mean_sub_server <- function(input, output, session){
           bar_palette = 'Reds'
         }
         # relevel factor for chart
-        temp$key <- factor(temp$key, levels = unique(temp$key)[order(temp$value, decreasing = TRUE)])
+        temp$urb_rur <- factor(temp$urb_rur, levels = unique(temp$urb_rur)[order(temp$value, decreasing = TRUE)])
         
         # get plot objects
         plot_text <- paste(
           "Indicator: ",  indicator,' (',unit_of_measure,')',"<br>",
-          "Economy: ", as.character(temp$key),"<br>", 
+          "Economy: ", as.character(temp$urb_rur),"<br>", 
           "Value: ", paste0(ifelse(unit_of_measure == '%', round(temp$value, digits = 2) * 100, round(temp$value, digits = 2)), ' (', unit_of_measure, ')'), "<br>",
           # 'Value: ', round(temp$value, digits = 2),' (',unit_of_measure,')',"<br>",
           "Year: ", as.character(temp$year),"<br>",
@@ -224,13 +243,13 @@ mod_recent_mean_sub_server <- function(input, output, session){
         # the selected country gets a value of NA which the palette will make black.
         # temp$value_col[temp$key == rn] <- NA
         # add higlight functionality to plot
-        temp <- highlight_key(temp, key=~key)
+        temp <- highlight_key(temp, key=~urb_rur)
         
         
-        if(length(df$key) > 5) {
-          gg <- ggplot(temp, aes(forcats::fct_rev(factor(key)), value, text = plot_text))
+        if(length(df$urb_rur) > 5) {
+          gg <- ggplot(temp, aes(forcats::fct_rev(factor(urb_rur)), value, text = plot_text))
         } else {
-          gg <- ggplot(temp, aes(key, value, text = plot_text))
+          gg <- ggplot(temp, aes(urb_rur, value, text = plot_text))
         }
         
         # If unit_of_measure is '%'
@@ -241,7 +260,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
                        scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-                       labs(x='Sub national region',
+                       labs(x = 'Sub national region',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,
@@ -263,7 +282,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
           
         }
         
-        if(length(df$key) > 5) {
+        if(length(df$urb_rur) > 5) {
           p <- p +
             coord_flip()
         } 
@@ -356,7 +375,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
       fluidRow(
         HTML(str_glue('
                         <div class="chart-header-labels-row">
-                           <div class="chart-label"> Most recent value </div>
+                           <div class="chart-label"> Urban-rural </div>
                            <div class="chart-label"> {indicator_name} </div>
                           </div>
                           '))
@@ -370,7 +389,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
 
 
 ## To be copied in the UI
-# mod_recent_mean_sub_ui("leaf2")
+# mod_rural_ui("rural")
 
 ## To be copied in the server
-# callModule(mod_recent_mean_sub_server, 'leaf2')
+# callModule(mod_rural_server, 'rural')
