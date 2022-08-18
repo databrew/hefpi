@@ -2583,3 +2583,7 @@ footer .btn {
 .selectizeWidth .open>.dropdown-menu {
     width: 100% !important;
 }
+
+.selectizeWidth {
+    width: fit-content !important;
+}

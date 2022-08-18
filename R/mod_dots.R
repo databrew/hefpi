@@ -538,7 +538,7 @@ mod_dots_ind_ui <- function(id){
                          label = NULL, 
                          choices = indicators$indicator_short_name,
                          selected = indicators$indicator_short_name))),
-             checkboxInput(ns('only_percent_measure'), 'Keep only % values', value = TRUE, width = NULL),
+             checkboxInput(ns('only_percent_measure'), 'Show only % indicators', value = TRUE, width = NULL),
              uiOutput(ns('ui_outputs')),
              p('Date range'),
              sliderInput(ns('date_range'),
