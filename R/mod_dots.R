@@ -568,7 +568,7 @@ mod_dots_ind_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
-  # ---- GENERATE UI OUTPUTS---- #
+  # # ---- GENERATE UI OUTPUTS---- #
   output$ui_outputs <- renderUI({
     #date_range <- c(1982, 2018)
     #indicator <- indicators$indicator_short_name[1:2]
@@ -576,23 +576,23 @@ mod_dots_ind_server <- function(input, output, session){
     date_range <- input$date_range
     indicator <- input$indicator
     #country_names <- input$country
-    
+
     # Get the variable
     variable <- indicators %>%
       filter(indicator_short_name %in% indicator) %>%
       .$variable_name
     # subset by country and variable
-    temp <- hefpi::hefpi_df %>%
+   df <- hefpi::hefpi_df %>%
       #filter(country == country_names) %>%
       filter(indic %in% variable) %>%
       filter(year >= date_range[1],
              year <= date_range[2])
     # get year and keep only necessary columns
-    df <- temp %>%
+    df <- df %>%
       group_by(country, indicator_short_name) %>%
       arrange(desc(year)) %>%
-      dplyr::filter(year == dplyr::first(year)) 
-    
+      dplyr::filter(year == dplyr::first(year))
+
     # made data long form
     id_vars <- names(df)[!grepl('Q', names(df))]
     df <- melt(df, id.vars = id_vars)
@@ -607,16 +607,16 @@ mod_dots_ind_server <- function(input, output, session){
     #df <- df[complete.cases(df),]
     max_value <- round(max(df$value), 2)
     min_value <- round(min(df$value), 2)
-    
+
     # get min max of percent (*100)
-    df_per <- df %>% filter(unit_of_measure=='%')
-    max_per <- round(max(df_per$value*100), 2)
-    min_per <- round(min(df_per$value*100), 2)
-    
+    df <- df %>% filter(unit_of_measure=='%')
+    max_per <- round(max(df$value*100), 2)
+    min_per <- round(min(df$value*100), 2)
+
     # evaulate together
     min_value <- min(min_value, min_per)
     max_value <- max(max_value, max_per)
-    
+
     if(max_value<1){
       min_value=0
       max_value = 1
@@ -627,7 +627,7 @@ mod_dots_ind_server <- function(input, output, session){
     fluidPage(
       fluidRow(
     p('Country'),
-    selectInput(session$ns('country'), 
+    selectInput(session$ns('country'),
                 label = NULL,
                 choices = country_names),
     p('X axis range'),
@@ -655,16 +655,16 @@ mod_dots_ind_server <- function(input, output, session){
                                    inputId ="indicator",
                                    choices = indicators$indicator_short_name,
                                    selected = indicators$indicator_short_name)
-          
+
         } else {
-          updateCheckboxGroupInput(session=session,  
+          updateCheckboxGroupInput(session=session,
                                    inputId ="indicator",
                                    choices = indicators$indicator_short_name,
                                    selected = c())
-          
+
         }}
     }
-    
+
   })
   
   chart_data <- reactiveValues(plot_data = 'new') 
@@ -897,8 +897,6 @@ mod_dots_ind_server <- function(input, output, session){
       
     }
   })
-  
-  
   
     
   # ---- GENERATE PLOT ---- #
