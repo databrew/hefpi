@@ -240,8 +240,10 @@ mod_recent_mean_sub_server <- function(input, output, session){
                        geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
-                       scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-                       labs(x='Sub national region',
+                       #scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
+                       scale_y_continuous(labels = function(x) paste0(x*100)) + 
+          
+                       labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,
@@ -254,7 +256,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                        geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
-                       labs(x='Sub national region',
+                       labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,

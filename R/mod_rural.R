@@ -23,7 +23,7 @@ mod_rural_ui <- function(id){
            p('Choose country to highlight'),
            selectInput(ns('country'), 
                        label = NULL,
-                       choices = unique(hefpi::hefpi_df$country), selected = 'India'),
+                       choices = unique(hefpi::hefpi_df$country), selected = 'Morocco'),
            # sliderInput(ns('date_range'),
            #             label = NULL,
            #             min = 1982,
@@ -240,6 +240,7 @@ mod_rural_server <- function(input, output, session){
         
         # Create value_color vector, identical to value
         temp$value_col <- temp$value
+        temp$urb_rur <- ifelse(temp$urb_rur == 'urb', 'Urban', 'Rural')
         # the selected country gets a value of NA which the palette will make black.
         # temp$value_col[temp$key == rn] <- NA
         # add higlight functionality to plot
@@ -259,8 +260,9 @@ mod_rural_server <- function(input, output, session){
                        geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
-                       scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-                       labs(x = 'Sub national region',
+                       # scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
+                       scale_y_continuous(labels = function(x) paste0(x*100)) +
+                       labs(x = '',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,
@@ -273,7 +275,7 @@ mod_rural_server <- function(input, output, session){
                        geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
-                       labs(x='Sub national region',
+                       labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,
