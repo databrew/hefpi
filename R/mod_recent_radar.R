@@ -46,8 +46,8 @@ mod_recent_radar_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2017,
-                         value = c(1982, 2018),
+                         max = 2021,
+                         value = c(1982, 2021),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -72,7 +72,7 @@ mod_recent_radar_server <- function(input, output, session){
   # ui output for indicator
   output$indicator_ui <- renderUI({
     
-    plot_years <- c(1982, 2017)
+    plot_years <- c(1982, 2021)
     country_names <- hefpi::country_list[1:4]
     country_names <- input$country
     plot_years <- input$date_range

@@ -36,8 +36,8 @@ mod_dat_ind_alt_ui <- function(id){
              sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
-                         max = 2017,
-                         value = c(2012, 2017),
+                         max = 2021,
+                         value = c(2012, 2021),
                          step = 1,
                          sep = ''),
              #useShinyalert(),  # Set up shinyalert

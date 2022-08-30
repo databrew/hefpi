@@ -48,8 +48,8 @@ mod_trends_mean_ui <- function(id){
              sliderInput(ns('date_range'),
                          label =  NULL,
                          min = 1982,
-                         max = 2018,
-                         value = c(1982, 2018),
+                         max = 2021,
+                         value = c(1982, 2021),
                          step = 1,
                          sep = ''),
              checkboxInput(ns('interpolate'), 'Interpolate missing values',
@@ -572,7 +572,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
     # get inputs
     indicator <- input$indicator
     country_name <- input$country
-    date_range <- c(1982, 2018)
+    date_range <- c(1982, 2021)
     
     # Get the data to be plotted
     pd <- hefpi::sub_national %>%
@@ -628,8 +628,8 @@ mod_trends_mean_sub_server <- function(input, output, session){
         sliderInput(session$ns('date_range'),
                     label = NULL,
                     min = 1982,
-                    max = 2018,
-                    value = c(1982, 2018),
+                    max = 2021,
+                    value = c(1982, 2021),
                     step = 1,
                     sep = ''),
         checkboxInput(session$ns('interpolate'), 
@@ -651,7 +651,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
         # get inputs
         indicator <- input$indicator
         country_name <- input$country
-        date_range <- c(1982, 2018)
+        date_range <- c(1982, 2021)
         # Get the data to be plotted
         pd <- hefpi::sub_national %>%
           filter(country == country_name)%>%
@@ -1089,8 +1089,8 @@ mod_trends_con_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2018,
-                         value = c(1982, 2018),
+                         max = 2021,
+                         value = c(1982, 2021),
                          step = 1,
                          sep = ''),
              checkboxInput(ns('interpolate'), 'Interpolate missing values',
@@ -1689,8 +1689,8 @@ mod_trends_quin_server <- function(input, output, session){
         sliderInput(session$ns('date_range'),
                     'Date range',
                     min = 1982,
-                    max = 2018,
-                    value = c(1982, 2018),
+                    max = 2021,
+                    value = c(1982, 2021),
                     step = 1,
                     sep = ''),
         p('View as'),
