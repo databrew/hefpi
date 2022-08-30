@@ -17,24 +17,24 @@ mod_recent_mean_sub_ui <- function(id){
     column(8,
            uiOutput(ns('map_title_ui')),
            plotlyOutput(
-             ns('recent_sub_mean_plot'), height = 550
+             ns('recent_sub_mean_plot'), height = 1200
            )),
     column(4,
            p('Choose country to highlight'),
            selectInput(ns('country'), 
                        label = NULL,
                        choices = country_list, selected = 'India'),
-           # sliderInput(ns('date_range'),
-           #             label = NULL,
-           #             min = 1982,
-           #             max = 2017,
-           #             value = c(1982, 2017),
-           #             step = 1,
-           #             sep = ''),
-           selectInput(ns('date_range'),
-                       label = 'Year',
-                       choices = NULL
-                       ),
+           sliderInput(ns('date_range'),
+                       label = NULL,
+                       min = 1982,
+                       max = 2021,
+                       value = c(1982, 2021),
+                       step = 1,
+                       sep = ''),
+           # selectInput(ns('date_range'),
+           #             label = 'Year',
+           #             choices = NULL
+           #             ),
            uiOutput(ns('ind_ui')),
            downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
            downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
@@ -94,39 +94,39 @@ mod_recent_mean_sub_server <- function(input, output, session){
     
   })
   
-  observe({
-    req(input$country)
-    req(input$indicator)
-    
-    if(!is.null(input$country)) {
-      
-      indicator <- input$indicator
-      # indicator <- 'Diastolic blood pressure (mmHg)'
-      # region <- input$region
-      # region <- 'Europe & Central Asia'
-      country_name <- input$country
-      # country_name <- 'Ukraine'
-      # get data
-      # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
-      pd <- hefpi::hefpi_sub_df
-      
-      years <- pd %>%
-        filter(indicator_short_name == indicator) %>%
-        filter(country == country_name) %>%
-        select(year) %>%
-        distinct() %>%
-        pull()
-      
-      
-      updateSelectInput(session,
-                        inputId = "date_range",
-                        label = 'Year',
-                        choices = years,
-                        selected = years[1]
-      )
-    }
-    
-  })
+  # observe({
+  #   req(input$country)
+  #   req(input$indicator)
+  #   
+  #   if(!is.null(input$country)) {
+  #     
+  #     indicator <- input$indicator
+  #     # indicator <- 'Diastolic blood pressure (mmHg)'
+  #     # region <- input$region
+  #     # region <- 'Europe & Central Asia'
+  #     country_name <- input$country
+  #     # country_name <- 'Ukraine'
+  #     # get data
+  #     # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
+  #     pd <- hefpi::hefpi_sub_df
+  #     
+  #     years <- pd %>%
+  #       filter(indicator_short_name == indicator) %>%
+  #       filter(country == country_name) %>%
+  #       select(year) %>%
+  #       distinct() %>%
+  #       pull()
+  #     
+  #     
+  #     updateSelectInput(session,
+  #                       inputId = "date_range",
+  #                       label = 'Year',
+  #                       choices = years,
+  #                       selected = years[1]
+  #     )
+  #   }
+  #   
+  # })
   
   # ----------- REACTIVE DATA ---------------#
   hefpi_sub_df__reactive <- reactive({
@@ -136,7 +136,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     #indicator = "4+ antenatal care visits (%)"
     #rn = rn[1]
     # get inputs
-    plot_years <- input$date_range
+    plot_years <- c(min(input$date_range):max(input$date_range))
     indicator <- input$indicator
     cn <- input$country
     # rn <- input$region_name
@@ -220,7 +220,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
           "Economy: ", as.character(temp$key),"<br>", 
           "Value: ", paste0(ifelse(unit_of_measure == '%', round(temp$value, digits = 2) * 100, round(temp$value, digits = 2)), ' (', unit_of_measure, ')'), "<br>",
           # 'Value: ', round(temp$value, digits = 2),' (',unit_of_measure,')',"<br>",
-          "Year: ", as.character(temp$year),"<br>",
+          # "Year: ", as.character(temp$year),"<br>",
           sep="") %>%
           lapply(htmltools::HTML)
         y_axis_text = paste0(indicator)
@@ -254,6 +254,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,
                                           x_axis_line = NA,
+                                          y_axis_size = 10,
                                           legend_position = 'none')
           
         } else {
