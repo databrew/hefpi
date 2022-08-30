@@ -71,12 +71,18 @@ mod_recent_mean_sub_server <- function(input, output, session){
     ind = sort(unique(df$indicator_short_name))
     rn = sort(unique(df$key))
     
+    indicator_intersect <- indicators_list
+    indicator_intersect$`Financial Protection` <- intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
+    indicator_intersect$`Healthcare Coverage` <- intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
+    indicator_intersect$`Health Outcomes` <- intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
+    
+    
     fluidPage(
       fluidRow(
         selectInput(inputId = session$ns('indicator'),
                     label = 'Indicator', 
-                    choices = ind, 
-                    selected = ind[1])
+                    choices = indicator_intersect, 
+                    selected = indicator_intersect[[1]])
         # ,
         # selectInput(inputId =session$ns('region_name'),
         #             label = 'Choose region',
