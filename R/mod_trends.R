@@ -1842,8 +1842,9 @@ mod_trends_quin_server <- function(input, output, session){
                                           
                                           
                                           # get color graident 
-                                          col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-                                          col_vec <- col_vec[-1]
+                                          # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+                                          # col_vec <- col_vec[-1]
+                                          col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
                                           # make plot title
                                           plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
                                           y_axis_text = paste0(indicator)
@@ -1957,8 +1958,9 @@ mod_trends_quin_server <- function(input, output, session){
         view_as<- quin_list[[6]]
         country_names <- quin_list[[7]]
         # get color graident 
-        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-        col_vec <- col_vec[-1]
+        # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+        # col_vec <- col_vec[-1]
+        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
         # make plot title
         plot_title = paste0('Quintile - Trends - ',indicator, ' - ', country_names)
         y_axis_text = paste0(indicator)

@@ -322,8 +322,10 @@ mod_dots_country_server <- function(input, output, session){
                                         
                                         
                                         # get color graident 
-                                        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-                                        col_vec <- col_vec[-1]
+                                        # col_vec <- brewer.pal(name = 'PRGn', n = length(unique(df$variable)) + 1)
+                                        # col_vec <- col_vec[-1]
+                                        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
+                                        
                                         # make plot title 
                                         plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
                                         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
@@ -450,8 +452,9 @@ mod_dots_country_server <- function(input, output, session){
         
         
         # get color graident 
-        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-        col_vec <- col_vec[-1]
+        # col_vec <- brewer.pal(name = 'PRGn', n = length(unique(df$variable)) + 1)
+        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
+        # col_vec <- col_vec[-1]
         # make plot title 
         # plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
@@ -807,8 +810,10 @@ mod_dots_ind_server <- function(input, output, session){
                                         date_range <- dot_list[[4]]
                                         value_range <- dot_list[[5]]
                                         # get color graident 
-                                        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-                                        col_vec <- col_vec[-1]
+                                        # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+                                        # col_vec <- col_vec[-1]
+                                        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
+                                        
                                         # get length of variable 
                                         col_length <- length(unique(df$variable))
                                         # make plot title 
@@ -936,8 +941,9 @@ mod_dots_ind_server <- function(input, output, session){
         date_range <- dot_list[[4]]
         value_range <- dot_list[[5]]
         # get color graident 
-        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-        col_vec <- col_vec[-1]
+        # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+        # col_vec <- col_vec[-1]
+        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
         # get length of variable 
         col_length <- length(unique(df$variable))
         # make plot title 
