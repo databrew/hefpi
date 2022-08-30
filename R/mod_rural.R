@@ -20,21 +20,21 @@ mod_rural_ui <- function(id){
              ns('recent_sub_mean_plot'), height = 550
            )),
     column(4,
-           p('Choose country to highlight'),
+           p('Country'),
            selectInput(ns('country'), 
                        label = NULL,
                        choices = unique(hefpi::hefpi_df$country), selected = 'Morocco'),
-           # sliderInput(ns('date_range'),
-           #             label = NULL,
-           #             min = 1982,
-           #             max = 2017,
-           #             value = c(1982, 2017),
-           #             step = 1,
-           #             sep = ''),
-           selectInput(ns('date_range'),
+           sliderInput(ns('date_range'),
                        label = 'Year',
-                       choices = NULL
-                       ),
+                       min = 1982,
+                       max = 2021,
+                       value = c(1982, 2021),
+                       step = 1,
+                       sep = ''),
+           # selectInput(ns('date_range'),
+           #             label = 'Year',
+           #             choices = NULL
+           #             ),
            uiOutput(ns('ind_ui')),
            downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
            downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
@@ -94,46 +94,48 @@ mod_rural_server <- function(input, output, session){
     
   })
   
-  observe({
-    req(input$country)
-    req(input$indicator)
-    
-    if(!is.null(input$country)) {
-      
-      indicator <- input$indicator
-      # indicator <- 'Diastolic blood pressure (mmHg)'
-      # region <- input$region
-      # region <- 'Europe & Central Asia'
-      cn <- input$country
-      # country_name <- 'Ukraine'
-      # get data
-      # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
-      pd <- hefpi::hefpi_df 
-      
-      years <- pd %>%
-        as_tibble() %>% 
-        select(country, year, regioncode, indic, urb, rur) %>%
-        filter(country == cn) %>%
-        left_join(
-          hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
-          by = c('indic' = 'variable_name')
-        ) %>%
-        filter(indicator_short_name == indicator) %>%
-        select(year) %>%
-        pull() %>%
-        unique() %>%
-        sort(decreasing = TRUE)
-      
-      
-      updateSelectInput(session,
-                        inputId = "date_range",
-                        label = 'Year',
-                        choices = years,
-                        selected = years[1]
-      )
-    }
-    
-  })
+  # observe({
+  #   req(input$country)
+  #   req(input$indicator)
+  #   
+  #   if(!is.null(input$country)) {
+  #     
+  #     indicator <- input$indicator
+  #     # indicator <- 'Diastolic blood pressure (mmHg)'
+  #     # region <- input$region
+  #     # region <- 'Europe & Central Asia'
+  #     cn <- input$country
+  #     # country_name <- 'Ukraine'
+  #     # get data
+  #     # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
+  #     pd <- hefpi::hefpi_df 
+  #     
+  #     years <- pd %>%
+  #       as_tibble() %>% 
+  #       select(country, year, regioncode, indic, urb, rur) %>%
+  #       filter(country == cn) %>%
+  #       left_join(
+  #         hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+  #         by = c('indic' = 'variable_name')
+  #       ) %>%
+  #       filter(indicator_short_name == indicator) %>%
+  #       select(year) %>%
+  #       pull() %>%
+  #       unique() %>%
+  #       sort(decreasing = TRUE)
+  #     
+  #     
+  #     # updateSelectInput(session,
+  #     #                   inputId = "date_range",
+  #     #                   label = 'Year',
+  #     #                   choices = years,
+  #     #                   selected = years[1]
+  #     # )
+  #     
+  #     
+  #   }
+  #   
+  # })
   
   # ----------- REACTIVE DATA ---------------#
   hefpi_sub_df__reactive <- reactive({
@@ -146,7 +148,7 @@ mod_rural_server <- function(input, output, session){
     #indicator = "4+ antenatal care visits (%)"
     #rn = rn[1]
     # get inputs
-    plot_years <- input$date_range
+    plot_years <- c(min(input$date_range):max(input$date_range))
     indicator <- input$indicator
     cn <- input$country
     # rn <- input$region_name
@@ -237,7 +239,7 @@ mod_rural_server <- function(input, output, session){
           "Economy: ", as.character(temp$urb_rur),"<br>", 
           "Value: ", paste0(ifelse(unit_of_measure == '%', round(temp$value, digits = 2) * 100, round(temp$value, digits = 2)), ' (', unit_of_measure, ')'), "<br>",
           # 'Value: ', round(temp$value, digits = 2),' (',unit_of_measure,')',"<br>",
-          "Year: ", as.character(temp$year),"<br>",
+          # "Year: ", as.character(temp$year),"<br>",
           sep="") %>%
           lapply(htmltools::HTML)
         y_axis_text = paste0(indicator)
