@@ -154,9 +154,9 @@ mod_rural_server <- function(input, output, session){
             sliderInput(inputId = session$ns('axis'),
                         label = 'Axis', 
                         min = 0,
-                        max = 1,
-                        step = 0.01,
-                        value = 1)
+                        max = 100,
+                        step = 1,
+                        value = 100)
           )
         )
       })
@@ -308,7 +308,7 @@ mod_rural_server <- function(input, output, session){
                        geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
-                       scale_y_continuous(limits = c(0, input$axis), labels = scales::percent) +
+                       scale_y_continuous(limits = c(0, input$axis/100), labels = function(x) paste0(x*100)) +
                        # scale_y_continuous(labels = function(x) paste0(x*100)) +
                        labs(x = '',
                             y = y_axis_text) +
