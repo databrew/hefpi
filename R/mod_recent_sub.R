@@ -51,7 +51,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
   
   # ---- UI output for region within country ---#
   output$ind_ui <- renderUI({
-    #cn = 'India'
+    #cn = 'Ukraine'
     #plot_years = c(1982, 2017)
     cn = input$country
     # plot_years <- input$date_range
@@ -127,6 +127,17 @@ mod_recent_mean_sub_server <- function(input, output, session){
         select(year) %>%
         distinct() %>%
         pull()
+      
+      values_range <- hefpi::hefpi_sub_df %>%
+        filter(indicator_short_name == indicator) %>%
+        filter(country == country_name) %>%
+        select(value) %>%
+        distinct() %>%
+        pull()
+
+      values_range_slider <- c()
+      values_range_slider[1] <- floor(min(values_range, na.rm = TRUE))
+      values_range_slider[2] <- ceiling(max(values_range, na.rm = TRUE))
 
 
       updateSelectInput(session,
@@ -157,7 +168,12 @@ mod_recent_mean_sub_server <- function(input, output, session){
       output$axis_ui <- renderUI({
         fluidPage(
           fluidRow(
-            NULL
+            sliderInput(inputId = session$ns('axis'),
+                        label = 'Axis',
+                        min = 0,
+                        max = (values_range_slider[2] + 5),
+                        step = 1,
+                        value = values_range_slider[2])
           )
         )
       })
@@ -301,6 +317,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                        geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
+                       scale_y_continuous(limits = c(0, input$axis), labels = function(x) paste0(x)) + 
                        labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
