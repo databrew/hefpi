@@ -24,18 +24,19 @@ mod_recent_mean_sub_ui <- function(id){
            selectInput(ns('country'), 
                        label = NULL,
                        choices = country_list, selected = 'India'),
-           sliderInput(ns('date_range'),
-                       label = NULL,
-                       min = 1982,
-                       max = 2021,
-                       value = c(1982, 2021),
-                       step = 1,
-                       sep = ''),
-           # selectInput(ns('date_range'),
-           #             label = 'Year',
-           #             choices = NULL
-           #             ),
+           # sliderInput(ns('date_range'),
+           #             label = NULL,
+           #             min = 1982,
+           #             max = 2021,
+           #             value = c(1982, 2021),
+           #             step = 1,
+           #             sep = ''),
+           selectInput(ns('date_range'),
+                       label = 'Year',
+                       choices = NULL
+                       ),
            uiOutput(ns('ind_ui')),
+           uiOutput(ns('axis_ui')),
            downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
            downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
            
@@ -94,39 +95,75 @@ mod_recent_mean_sub_server <- function(input, output, session){
     
   })
   
-  # observe({
-  #   req(input$country)
-  #   req(input$indicator)
-  #   
-  #   if(!is.null(input$country)) {
-  #     
-  #     indicator <- input$indicator
-  #     # indicator <- 'Diastolic blood pressure (mmHg)'
-  #     # region <- input$region
-  #     # region <- 'Europe & Central Asia'
-  #     country_name <- input$country
-  #     # country_name <- 'Ukraine'
-  #     # get data
-  #     # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
-  #     pd <- hefpi::hefpi_sub_df
-  #     
-  #     years <- pd %>%
-  #       filter(indicator_short_name == indicator) %>%
-  #       filter(country == country_name) %>%
-  #       select(year) %>%
-  #       distinct() %>%
-  #       pull()
-  #     
-  #     
-  #     updateSelectInput(session,
-  #                       inputId = "date_range",
-  #                       label = 'Year',
-  #                       choices = years,
-  #                       selected = years[1]
-  #     )
-  #   }
-  #   
-  # })
+  observe({
+    req(input$country)
+    req(input$indicator)
+    
+    ind_selected = input$indicator
+    
+    measure_unit <- hefpi::hefpi_sub_df %>%
+      filter(indicator_short_name == ind_selected) %>%
+      filter(country == input$country) %>%
+      distinct() %>%
+      slice(1) %>%
+      select(unit_of_measure) %>%
+      pull()
+
+    if(!is.null(input$country)) {
+
+      indicator <- input$indicator
+      # indicator <- 'Diastolic blood pressure (mmHg)'
+      # region <- input$region
+      # region <- 'Europe & Central Asia'
+      country_name <- input$country
+      # country_name <- 'Ukraine'
+      # get data
+      # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
+      pd <- hefpi::hefpi_sub_df
+
+      years <- pd %>%
+        filter(indicator_short_name == indicator) %>%
+        filter(country == country_name) %>%
+        select(year) %>%
+        distinct() %>%
+        pull()
+
+
+      updateSelectInput(session,
+                        inputId = "date_range",
+                        label = 'Year',
+                        choices = years,
+                        selected = years[1]
+      )
+    }
+    
+    
+    if(str_detect(measure_unit, '%')) {
+      
+      output$axis_ui <- renderUI({
+        fluidPage(
+          fluidRow(
+            sliderInput(inputId = session$ns('axis'),
+                        label = 'Axis', 
+                        min = 0,
+                        max = 1,
+                        step = 0.01,
+                        value = 1)
+          )
+        )
+      })
+      
+    } else {
+      output$axis_ui <- renderUI({
+        fluidPage(
+          fluidRow(
+            NULL
+          )
+        )
+      })
+    }
+
+  })
   
   # ----------- REACTIVE DATA ---------------#
   hefpi_sub_df__reactive <- reactive({
@@ -136,7 +173,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
     #indicator = "4+ antenatal care visits (%)"
     #rn = rn[1]
     # get inputs
-    plot_years <- c(min(input$date_range):max(input$date_range))
+    plot_years <- input$date_range
+    # plot_years <- c(min(input$date_range):max(input$date_range))
     indicator <- input$indicator
     cn <- input$country
     # rn <- input$region_name
@@ -247,7 +285,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
                        #scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-                       scale_y_continuous(labels = function(x) paste0(x*100)) + 
+                       scale_y_continuous(limits = c(0, input$axis), labels = function(x) paste0(x*100)) + 
           
                        labs(x='',
                             y = y_axis_text) +
