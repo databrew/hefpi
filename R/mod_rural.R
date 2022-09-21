@@ -35,7 +35,11 @@ mod_rural_ui <- function(id){
                        label = 'Year',
                        choices = NULL
                        ),
-           uiOutput(ns('ind_ui')),
+           selectInput(ns('indicator'),
+                       label = 'Indicator',
+                       choices = NULL
+                       ),
+           # uiOutput(ns('ind_ui')),
            uiOutput(ns('axis_ui')),
            downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
            downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
@@ -49,10 +53,51 @@ mod_rural_ui <- function(id){
 # SERVER FOR MOST RECENT VALUE SUBNATIONAL MEAN
 mod_rural_server <- function(input, output, session){
   
-  # ---- UI output for region within country ---#
-  output$ind_ui <- renderUI({
-    #cn = 'India'
-    #plot_years = c(1982, 2017)
+  # # ---- UI output for region within country ---#
+  # output$ind_ui <- renderUI({
+  #   #cn = 'India'
+  #   #plot_years = c(1982, 2017)
+  #   req(input$country)
+  #   
+  #   cn = input$country
+  #   plot_years <- input$date_range
+  #   
+  #   hefpi::hefpi_sub_df
+  #   
+  #   ind <- hefpi::hefpi_df %>% 
+  #     as_tibble() %>% 
+  #     select(country, year, regioncode, indic, urb, rur) %>%
+  #     filter(country == cn) %>%
+  #     # filter(year == plot_years) %>%
+  #     left_join(
+  #       hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+  #       by = c('indic' = 'variable_name')
+  #     ) %>%
+  #     select(indicator_short_name) %>%
+  #     pull() %>%
+  #     unique() %>%
+  #     sort()
+  # 
+  #   indicator_intersect <- indicators_list
+  #   indicator_intersect$`Financial Protection` <- intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
+  #   indicator_intersect$`Healthcare Coverage` <- intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
+  #   indicator_intersect$`Health Outcomes` <- intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
+  #   
+  #   fluidPage(
+  #     fluidRow(
+  #       selectInput(inputId = session$ns('indicator'),
+  #                   label = 'Indicator', 
+  #                   choices = indicator_intersect,
+  #                   selected = indicator_intersect[[1]])
+  # 
+  #     )
+  #   )
+  #  
+  #   
+  # })
+  
+  observeEvent(input$country, {
+    
     req(input$country)
     
     cn = input$country
@@ -73,26 +118,22 @@ mod_rural_server <- function(input, output, session){
       pull() %>%
       unique() %>%
       sort()
-
+    
     indicator_intersect <- indicators_list
     indicator_intersect$`Financial Protection` <- intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
     indicator_intersect$`Healthcare Coverage` <- intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
     indicator_intersect$`Health Outcomes` <- intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
     
-    fluidPage(
-      fluidRow(
-        selectInput(inputId = session$ns('indicator'),
-                    label = 'Indicator', 
-                    choices = indicator_intersect,
-                    selected = indicator_intersect[[1]])
-
-      )
-    )
-   
+    updateSelectInput(session,
+                      inputId = "indicator",
+                      choices = indicator_intersect,
+                      selected = indicator_intersect[[1]])
     
   })
   
-  observe({
+  
+  
+  observeEvent(input$indicator, {
     req(input$country)
     req(input$indicator)
 
@@ -184,7 +225,7 @@ mod_rural_server <- function(input, output, session){
     req(input$indicator)
     req(input$date_range)
     #cn = 'India'
-    #plot_years = c(2015)
+    #plot_years = c(2019)
     #indicator = "4+ antenatal care visits (%)"
     #indicator = "Height, adults (Centimeter)"
     #rn = rn[1]
