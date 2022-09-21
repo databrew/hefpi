@@ -578,6 +578,7 @@ mod_dots_ind_server <- function(input, output, session){
     #country_names = 'Afghanistan'
     date_range <- input$date_range
     indicator <- input$indicator
+    percent_measure <- input$only_percent_measure
     #country_names <- input$country
 
     # Get the variable
@@ -627,21 +628,43 @@ mod_dots_ind_server <- function(input, output, session){
       min_value = 0
       max_value = ceiling(max_value) + 3
     }
-    fluidPage(
-      fluidRow(
-    p('Country'),
-    selectInput(session$ns('country'),
-                label = NULL,
-                choices = country_names),
-    p('X axis range'),
-    sliderInput(session$ns('value_range'),
-                label = NULL,
-                min = min_value,
-                max = max_value,
-                value = c(min_value, max_value),
-                sep = '')
+    
+    if(percent_measure) {
+      fluidPage(
+        fluidRow(
+          p('Country'),
+          selectInput(session$ns('country'),
+                      label = NULL,
+                      choices = country_names),
+          p('X axis range'),
+          sliderInput(session$ns('value_range'),
+                      label = NULL,
+                      min = 0,
+                      max = 100,
+                      value = c(0, 100),
+                      step = 1,
+                      sep = '')
+        )
       )
-    )
+    } else {
+      fluidPage(
+        fluidRow(
+          p('Country'),
+          selectInput(session$ns('country'),
+                      label = NULL,
+                      choices = country_names),
+          p('X axis range'),
+          sliderInput(session$ns('value_range'),
+                      label = NULL,
+                      min = min_value,
+                      max = max_value,
+                      value = c(min_value, max_value),
+                      sep = '')
+        )
+      )
+    }
+    
+
   })
   
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
@@ -940,6 +963,9 @@ mod_dots_ind_server <- function(input, output, session){
         indicator <- dot_list[[3]]
         date_range <- dot_list[[4]]
         value_range <- dot_list[[5]]
+        
+        message("Result value_range: ")
+        print(value_range)
         # get color graident 
         # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
         # col_vec <- col_vec[-1]
