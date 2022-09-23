@@ -20,22 +20,27 @@ mod_rural_ui <- function(id){
              ns('recent_sub_mean_plot'), height = 550
            )),
     column(4,
-           p('Choose country to highlight'),
+           p('Country'),
            selectInput(ns('country'), 
                        label = NULL,
                        choices = unique(hefpi::hefpi_df$country), selected = 'Morocco'),
            # sliderInput(ns('date_range'),
-           #             label = NULL,
+           #             label = 'Year',
            #             min = 1982,
-           #             max = 2017,
-           #             value = c(1982, 2017),
+           #             max = 2021,
+           #             value = c(1982, 2021),
            #             step = 1,
            #             sep = ''),
            selectInput(ns('date_range'),
                        label = 'Year',
                        choices = NULL
                        ),
-           uiOutput(ns('ind_ui')),
+           selectInput(ns('indicator'),
+                       label = 'Indicator',
+                       choices = NULL
+                       ),
+           # uiOutput(ns('ind_ui')),
+           uiOutput(ns('axis_ui')),
            downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
            downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
            
@@ -48,14 +53,55 @@ mod_rural_ui <- function(id){
 # SERVER FOR MOST RECENT VALUE SUBNATIONAL MEAN
 mod_rural_server <- function(input, output, session){
   
-  # ---- UI output for region within country ---#
-  output$ind_ui <- renderUI({
-    #cn = 'India'
-    #plot_years = c(1982, 2017)
+  # # ---- UI output for region within country ---#
+  # output$ind_ui <- renderUI({
+  #   #cn = 'India'
+  #   #plot_years = c(1982, 2017)
+  #   req(input$country)
+  #   
+  #   cn = input$country
+  #   plot_years <- input$date_range
+  #   
+  #   hefpi::hefpi_sub_df
+  #   
+  #   ind <- hefpi::hefpi_df %>% 
+  #     as_tibble() %>% 
+  #     select(country, year, regioncode, indic, urb, rur) %>%
+  #     filter(country == cn) %>%
+  #     # filter(year == plot_years) %>%
+  #     left_join(
+  #       hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+  #       by = c('indic' = 'variable_name')
+  #     ) %>%
+  #     select(indicator_short_name) %>%
+  #     pull() %>%
+  #     unique() %>%
+  #     sort()
+  # 
+  #   indicator_intersect <- indicators_list
+  #   indicator_intersect$`Financial Protection` <- intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
+  #   indicator_intersect$`Healthcare Coverage` <- intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
+  #   indicator_intersect$`Health Outcomes` <- intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
+  #   
+  #   fluidPage(
+  #     fluidRow(
+  #       selectInput(inputId = session$ns('indicator'),
+  #                   label = 'Indicator', 
+  #                   choices = indicator_intersect,
+  #                   selected = indicator_intersect[[1]])
+  # 
+  #     )
+  #   )
+  #  
+  #   
+  # })
+  
+  observeEvent(input$country, {
+    
     req(input$country)
     
     cn = input$country
-    # plot_years <- input$date_range
+    plot_years <- input$date_range
     
     hefpi::hefpi_sub_df
     
@@ -63,6 +109,7 @@ mod_rural_server <- function(input, output, session){
       as_tibble() %>% 
       select(country, year, regioncode, indic, urb, rur) %>%
       filter(country == cn) %>%
+      # filter(year == plot_years) %>%
       left_join(
         hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
         by = c('indic' = 'variable_name')
@@ -71,31 +118,37 @@ mod_rural_server <- function(input, output, session){
       pull() %>%
       unique() %>%
       sort()
-
     
-    fluidPage(
-      fluidRow(
-        selectInput(inputId = session$ns('indicator'),
-                    label = 'Indicator', 
-                    choices = ind, 
-                    selected = ind[1])
-        # ,
-        # selectInput(inputId =session$ns('region_name'),
-        #             label = 'Choose region',
-        #             choices = rn,
-        #             selected = rn[1])
-      )
-    )
-   
+    indicator_intersect <- indicators_list
+    indicator_intersect$`Financial Protection` <- intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
+    indicator_intersect$`Healthcare Coverage` <- intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
+    indicator_intersect$`Health Outcomes` <- intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
+    
+    updateSelectInput(session,
+                      inputId = "indicator",
+                      choices = indicator_intersect,
+                      selected = indicator_intersect[[1]])
     
   })
   
-  observe({
+  
+  
+  observeEvent(input$indicator, {
     req(input$country)
     req(input$indicator)
+
+    ind_selected = input$indicator
+    
+    measure_unit <- hefpi::indicators %>%
+      select(indicator_short_name, unit_of_measure) %>%
+      filter(indicator_short_name == ind_selected) %>%
+      distinct() %>%
+      slice(1) %>%
+      select(unit_of_measure) %>%
+      pull()
     
     if(!is.null(input$country)) {
-      
+
       indicator <- input$indicator
       # indicator <- 'Diastolic blood pressure (mmHg)'
       # region <- input$region
@@ -104,10 +157,10 @@ mod_rural_server <- function(input, output, session){
       # country_name <- 'Ukraine'
       # get data
       # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
-      pd <- hefpi::hefpi_df 
-      
+      pd <- hefpi::hefpi_df
+
       years <- pd %>%
-        as_tibble() %>% 
+        as_tibble() %>%
         select(country, year, regioncode, indic, urb, rur) %>%
         filter(country == cn) %>%
         left_join(
@@ -121,15 +174,49 @@ mod_rural_server <- function(input, output, session){
         sort(decreasing = TRUE)
       
       
+
       updateSelectInput(session,
                         inputId = "date_range",
                         label = 'Year',
                         choices = years,
                         selected = years[1]
       )
+      
+
+
     }
     
+    
+    if(str_detect(measure_unit, '%')) {
+      
+      output$axis_ui <- renderUI({
+        fluidPage(
+          fluidRow(
+            sliderInput(inputId = session$ns('axis'),
+                        label = 'Axis', 
+                        min = 0,
+                        max = 100,
+                        step = 1,
+                        value = 100)
+          )
+        )
+      })
+      
+    } else {
+      output$axis_ui <- renderUI({
+        fluidPage(
+          fluidRow(
+            NULL
+          )
+        )
+      })
+    }
+    
+
   })
+  
+
+
   
   # ----------- REACTIVE DATA ---------------#
   hefpi_sub_df__reactive <- reactive({
@@ -138,10 +225,12 @@ mod_rural_server <- function(input, output, session){
     req(input$indicator)
     req(input$date_range)
     #cn = 'India'
-    #plot_years = c(2015)
+    #plot_years = c(2019)
     #indicator = "4+ antenatal care visits (%)"
+    #indicator = "Height, adults (Centimeter)"
     #rn = rn[1]
     # get inputs
+    # plot_years <- c(min(input$date_range):max(input$date_range))
     plot_years <- input$date_range
     indicator <- input$indicator
     cn <- input$country
@@ -233,7 +322,7 @@ mod_rural_server <- function(input, output, session){
           "Economy: ", as.character(temp$urb_rur),"<br>", 
           "Value: ", paste0(ifelse(unit_of_measure == '%', round(temp$value, digits = 2) * 100, round(temp$value, digits = 2)), ' (', unit_of_measure, ')'), "<br>",
           # 'Value: ', round(temp$value, digits = 2),' (',unit_of_measure,')',"<br>",
-          "Year: ", as.character(temp$year),"<br>",
+          # "Year: ", as.character(temp$year),"<br>",
           sep="") %>%
           lapply(htmltools::HTML)
         y_axis_text = paste0(indicator)
@@ -260,8 +349,8 @@ mod_rural_server <- function(input, output, session){
                        geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
-                       # scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-                       scale_y_continuous(labels = function(x) paste0(x*100)) +
+                       scale_y_continuous(limits = c(0, input$axis/100), labels = function(x) paste0(x*100)) +
+                       # scale_y_continuous(labels = function(x) paste0(x*100)) +
                        labs(x = '',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,

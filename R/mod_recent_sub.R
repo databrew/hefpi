@@ -17,7 +17,7 @@ mod_recent_mean_sub_ui <- function(id){
     column(8,
            uiOutput(ns('map_title_ui')),
            plotlyOutput(
-             ns('recent_sub_mean_plot'), height = 550
+             ns('recent_sub_mean_plot'), height = 1200
            )),
     column(4,
            p('Choose country to highlight'),
@@ -27,8 +27,8 @@ mod_recent_mean_sub_ui <- function(id){
            # sliderInput(ns('date_range'),
            #             label = NULL,
            #             min = 1982,
-           #             max = 2017,
-           #             value = c(1982, 2017),
+           #             max = 2021,
+           #             value = c(1982, 2021),
            #             step = 1,
            #             sep = ''),
            selectInput(ns('date_range'),
@@ -36,6 +36,7 @@ mod_recent_mean_sub_ui <- function(id){
                        choices = NULL
                        ),
            uiOutput(ns('ind_ui')),
+           uiOutput(ns('axis_ui')),
            downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
            downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
            
@@ -50,7 +51,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
   
   # ---- UI output for region within country ---#
   output$ind_ui <- renderUI({
-    #cn = 'India'
+    #cn = 'Ukraine'
     #plot_years = c(1982, 2017)
     cn = input$country
     # plot_years <- input$date_range
@@ -71,12 +72,18 @@ mod_recent_mean_sub_server <- function(input, output, session){
     ind = sort(unique(df$indicator_short_name))
     rn = sort(unique(df$key))
     
+    indicator_intersect <- indicators_list
+    indicator_intersect$`Financial Protection` <- intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
+    indicator_intersect$`Healthcare Coverage` <- intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
+    indicator_intersect$`Health Outcomes` <- intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
+    
+    
     fluidPage(
       fluidRow(
         selectInput(inputId = session$ns('indicator'),
                     label = 'Indicator', 
-                    choices = ind, 
-                    selected = ind[1])
+                    choices = indicator_intersect, 
+                    selected = indicator_intersect[[1]])
         # ,
         # selectInput(inputId =session$ns('region_name'),
         #             label = 'Choose region',
@@ -92,8 +99,18 @@ mod_recent_mean_sub_server <- function(input, output, session){
     req(input$country)
     req(input$indicator)
     
+    ind_selected = input$indicator
+    
+    measure_unit <- hefpi::hefpi_sub_df %>%
+      filter(indicator_short_name == ind_selected) %>%
+      filter(country == input$country) %>%
+      distinct() %>%
+      slice(1) %>%
+      select(unit_of_measure) %>%
+      pull()
+
     if(!is.null(input$country)) {
-      
+
       indicator <- input$indicator
       # indicator <- 'Diastolic blood pressure (mmHg)'
       # region <- input$region
@@ -103,7 +120,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
       # get data
       # TEMPORARILY COMMENT OUT CODE FOR FAKE DATA BELOW
       pd <- hefpi::hefpi_sub_df
-      
+
       years <- pd %>%
         filter(indicator_short_name == indicator) %>%
         filter(country == country_name) %>%
@@ -111,7 +128,18 @@ mod_recent_mean_sub_server <- function(input, output, session){
         distinct() %>%
         pull()
       
-      
+      values_range <- hefpi::hefpi_sub_df %>%
+        filter(indicator_short_name == indicator) %>%
+        filter(country == country_name) %>%
+        select(value) %>%
+        distinct() %>%
+        pull()
+
+      values_range_slider <- c()
+      values_range_slider[1] <- floor(min(values_range, na.rm = TRUE))
+      values_range_slider[2] <- ceiling(max(values_range, na.rm = TRUE))
+
+
       updateSelectInput(session,
                         inputId = "date_range",
                         label = 'Year',
@@ -120,6 +148,37 @@ mod_recent_mean_sub_server <- function(input, output, session){
       )
     }
     
+    
+    if(str_detect(measure_unit, '%')) {
+      
+      output$axis_ui <- renderUI({
+        fluidPage(
+          fluidRow(
+            sliderInput(inputId = session$ns('axis'),
+                        label = 'Axis', 
+                        min = 0,
+                        max = 100,
+                        step = 1,
+                        value = 100)
+          )
+        )
+      })
+      
+    } else {
+      output$axis_ui <- renderUI({
+        fluidPage(
+          fluidRow(
+            sliderInput(inputId = session$ns('axis'),
+                        label = 'Axis',
+                        min = 0,
+                        max = (values_range_slider[2] + 5),
+                        step = 1,
+                        value = values_range_slider[2])
+          )
+        )
+      })
+    }
+
   })
   
   # ----------- REACTIVE DATA ---------------#
@@ -131,6 +190,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
     #rn = rn[1]
     # get inputs
     plot_years <- input$date_range
+    # plot_years <- c(min(input$date_range):max(input$date_range))
     indicator <- input$indicator
     cn <- input$country
     # rn <- input$region_name
@@ -214,7 +274,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
           "Economy: ", as.character(temp$key),"<br>", 
           "Value: ", paste0(ifelse(unit_of_measure == '%', round(temp$value, digits = 2) * 100, round(temp$value, digits = 2)), ' (', unit_of_measure, ')'), "<br>",
           # 'Value: ', round(temp$value, digits = 2),' (',unit_of_measure,')',"<br>",
-          "Year: ", as.character(temp$year),"<br>",
+          # "Year: ", as.character(temp$year),"<br>",
           sep="") %>%
           lapply(htmltools::HTML)
         y_axis_text = paste0(indicator)
@@ -241,13 +301,14 @@ mod_recent_mean_sub_server <- function(input, output, session){
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
                        #scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
-                       scale_y_continuous(labels = function(x) paste0(x*100)) + 
+                       scale_y_continuous(limits = c(0, input$axis/100), labels = function(x) paste0(x*100)) + 
           
                        labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,
                                           x_axis_line = NA,
+                                          y_axis_size = 10,
                                           legend_position = 'none')
           
         } else {
@@ -256,6 +317,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                        geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
+                       scale_y_continuous(limits = c(0, input$axis), labels = function(x) paste0(x)) + 
                        labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,

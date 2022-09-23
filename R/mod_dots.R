@@ -117,8 +117,8 @@ mod_dots_country_server <- function(input, output, session){
         sliderInput(session$ns('date_range'),
                     label = NULL,
                     min = 1982,
-                    max = 2018,
-                    value = c(1982, 2018),
+                    max = 2021,
+                    value = c(1982, 2021),
                     step = 1,
                     sep = ''),
       )
@@ -322,8 +322,10 @@ mod_dots_country_server <- function(input, output, session){
                                         
                                         
                                         # get color graident 
-                                        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-                                        col_vec <- col_vec[-1]
+                                        # col_vec <- brewer.pal(name = 'PRGn', n = length(unique(df$variable)) + 1)
+                                        # col_vec <- col_vec[-1]
+                                        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
+                                        
                                         # make plot title 
                                         plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
                                         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
@@ -450,8 +452,9 @@ mod_dots_country_server <- function(input, output, session){
         
         
         # get color graident 
-        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-        col_vec <- col_vec[-1]
+        # col_vec <- brewer.pal(name = 'PRGn', n = length(unique(df$variable)) + 1)
+        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
+        # col_vec <- col_vec[-1]
         # make plot title 
         # plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
@@ -544,8 +547,8 @@ mod_dots_ind_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2018,
-                         value = c(1982, 2018),
+                         max = 2021,
+                         value = c(1982, 2021),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -575,6 +578,7 @@ mod_dots_ind_server <- function(input, output, session){
     #country_names = 'Afghanistan'
     date_range <- input$date_range
     indicator <- input$indicator
+    percent_measure <- input$only_percent_measure
     #country_names <- input$country
 
     # Get the variable
@@ -624,22 +628,47 @@ mod_dots_ind_server <- function(input, output, session){
       min_value = 0
       max_value = ceiling(max_value) + 3
     }
-    fluidPage(
-      fluidRow(
-    p('Country'),
-    selectInput(session$ns('country'),
-                label = NULL,
-                choices = country_names),
-    p('X axis range'),
-    sliderInput(session$ns('value_range'),
-                label = NULL,
-                min = min_value,
-                max = max_value,
-                value = c(min_value, max_value),
-                sep = '')
+    
+    if(percent_measure) {
+      fluidPage(
+        fluidRow(
+          p('Country'),
+          selectInput(session$ns('country'),
+                      label = NULL,
+                      choices = country_names,
+                      selected = 'Albania'),
+          p('X axis range'),
+          sliderInput(session$ns('value_range'),
+                      label = NULL,
+                      min = 0,
+                      max = 100,
+                      value = c(0, 100),
+                      step = 1,
+                      sep = '')
+        )
       )
-    )
+    } else {
+      fluidPage(
+        fluidRow(
+          p('Country'),
+          selectInput(session$ns('country'),
+                      label = NULL,
+                      choices = country_names,
+                      selected = 'Albania'),
+          p('X axis range'),
+          sliderInput(session$ns('value_range'),
+                      label = NULL,
+                      min = min_value,
+                      max = max_value,
+                      value = c(min_value, max_value),
+                      sep = '')
+        )
+      )
+    }
+    
+
   })
+  
   
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
   # INDICATORS
@@ -807,8 +836,10 @@ mod_dots_ind_server <- function(input, output, session){
                                         date_range <- dot_list[[4]]
                                         value_range <- dot_list[[5]]
                                         # get color graident 
-                                        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-                                        col_vec <- col_vec[-1]
+                                        # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+                                        # col_vec <- col_vec[-1]
+                                        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
+                                        
                                         # get length of variable 
                                         col_length <- length(unique(df$variable))
                                         # make plot title 
@@ -935,9 +966,13 @@ mod_dots_ind_server <- function(input, output, session){
         indicator <- dot_list[[3]]
         date_range <- dot_list[[4]]
         value_range <- dot_list[[5]]
+        
+        message("Result value_range: ")
+        print(value_range)
         # get color graident 
-        col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
-        col_vec <- col_vec[-1]
+        # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
+        # col_vec <- col_vec[-1]
+        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
         # get length of variable 
         col_length <- length(unique(df$variable))
         # make plot title 

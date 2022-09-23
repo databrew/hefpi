@@ -46,8 +46,8 @@ mod_recent_radar_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2017,
-                         value = c(1982, 2018),
+                         max = 2021,
+                         value = c(1982, 2021),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -62,7 +62,7 @@ mod_recent_radar_server <- function(input, output, session){
   observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
     shinyalert(title = "Most recent value - National mean", 
-               text = "This chart displays a world map in which countries are color-coded according to the most recent value of an indicator’s population level mean. To give users a better idea of a country’s relative positioning, the map is complemented by a bar chart that ranks countries by indicator value. By default, the map and bar chart use the latest available HEFPI data point, but users can choose the time period from which this latest data point is chosen.", 
+               text = "Radar or spiderweb charts allow the displaying of achievement for multiple indicators at the same time and hence are a method to display the different dimensions of Universal Health Coverage in a single chart. Moreover, when data from multiple countries is included, radar charts allow multi-indicators cross-country comparisons. By default, radar charts use the latest available HEFPI data point for each selected indicator, but users can choose the time period from which this latest data point is chosen.",
                type = "info", 
                closeOnClickOutside = TRUE, 
                showCancelButton = FALSE, 
@@ -72,7 +72,7 @@ mod_recent_radar_server <- function(input, output, session){
   # ui output for indicator
   output$indicator_ui <- renderUI({
     
-    plot_years <- c(1982, 2017)
+    plot_years <- c(1982, 2021)
     country_names <- hefpi::country_list[1:4]
     country_names <- input$country
     plot_years <- input$date_range
@@ -176,6 +176,8 @@ mod_recent_radar_server <- function(input, output, session){
                                     # axis.label.size = 3,
                                     # grid.label.size = 5,
                                     # group.colours = lcols,
+                                    plot.extent.y.sf = 1.2,
+                                    plot.extent.x.sf = 2.5,
                                     background.circle.colour = "white",
                                     gridline.min.linetype = 1,
                                     gridline.mid.linetype = 1,

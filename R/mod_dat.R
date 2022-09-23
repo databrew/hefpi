@@ -45,8 +45,8 @@ mod_dat_country_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2018,
-                         value = c(1982, 2018),
+                         max = 2021,
+                         value = c(1982, 2021),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'))
@@ -97,7 +97,7 @@ mod_dat_country_server <- function(input, output, session){
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     country_name = 'United States'
     indicator = indicators$indicator_short_name
-    date_range = c(1982, 2018)
+    date_range = c(1982, 2021)
     country_name <- input$country
     indicator = input$indicator
     date_range = input$date_range
@@ -397,8 +397,8 @@ mod_dat_ind_server <- function(input, output, session){
         sliderInput(inputId = session$ns('date_range'),
                     label = NULL,
                     min = 1982,
-                    max = 2018,
-                    value = c(1982, 2018),
+                    max = 2021,
+                    value = c(1982, 2021),
                     step = 1,
                     sep = '')
       )
@@ -477,7 +477,7 @@ mod_dat_ind_server <- function(input, output, session){
     # get inputs
     region = as.character(region_list$region)[1]
     indicator <- indicators$indicator_short_name[1]
-    date_range = c(1982,2018)
+    date_range = c(1982,2021)
     indicator <- input$indicator
     region <- input$region
     country_names <- input$country

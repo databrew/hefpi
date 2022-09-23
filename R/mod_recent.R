@@ -37,8 +37,8 @@ mod_recent_mean_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2017,
-                         value = c(1982, 2017),
+                         max = 2021,
+                         value = c(1982, 2021),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -129,8 +129,10 @@ mod_recent_mean_server <- function(input, output, session){
       } 
       if(good_or_bad == 'Good'){
         map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="#CECECE")
+        map_palette_rev <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="#CECECE", reverse = TRUE)
       } else {
-        map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE")
+        map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE", reverse = TRUE)
+        map_palette_rev <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE", reverse = TRUE)
       }
       # text for map
       map_text <- paste(
@@ -171,7 +173,14 @@ mod_recent_mean_server <- function(input, output, session){
           )
         ) %>% 
         setView(lat=0, lng=0 , zoom=1.7) %>%
-        addLegend( pal=map_palette,title = unit_of_measure, values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" )
+        addLegend( pal=map_palette_rev,
+                    title = unit_of_measure, 
+                    values=~value, 
+                   opacity=0.9, 
+                   position = "bottomleft", 
+                   na.label = "NA",
+                   labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE))
+                   )
       # store palette, text, map object, and data in list
       pop_map_list<- list(pop_map, shp, unit_of_measure, good_or_bad, year_title)
     }
@@ -451,8 +460,8 @@ mod_recent_con_ui <- function(id){
              sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
-                         max = 2017,
-                         value = c(1982, 2017),
+                         max = 2021,
+                         value = c(1982, 2021),
                          step = 1,
                          sep = ''),
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -532,6 +541,8 @@ mod_recent_con_server <- function(input, output, session){
       
       # generate map
       map_palette <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="#CECECE")
+      map_palette_rev <- colorNumeric(palette = brewer.pal(11, "BrBG"), domain=shp@data$value, na.color="#CECECE", reverse = TRUE)
+      
       map_text <- paste(
         "Indicator: ",  indicator,"<br>",
         "Economy: ", as.character(shp@data$NAME),"<br/>", 
@@ -567,7 +578,14 @@ mod_recent_con_server <- function(input, output, session){
             direction = "auto"
           )
         ) %>% setView(lat=0, lng=0 , zoom=1.7) %>%
-        addLegend(pal=map_palette, title = 'CI', values=~value, opacity=0.9, position = "bottomleft", na.label = "NA" ) 
+        addLegend(pal=map_palette_rev, 
+                  title = 'CI', 
+                  values=~value, 
+                  opacity=0.9, 
+                  position = "bottomleft", 
+                  na.label = "NA",
+                  labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE))
+                  ) 
       con_map_list<- list(con_map, shp, unit_of_measure,year_title)
       map_data$map <- con_map
     }
