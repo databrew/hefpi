@@ -635,7 +635,8 @@ mod_dots_ind_server <- function(input, output, session){
           p('Country'),
           selectInput(session$ns('country'),
                       label = NULL,
-                      choices = country_names),
+                      choices = country_names,
+                      selected = 'Albania'),
           p('X axis range'),
           sliderInput(session$ns('value_range'),
                       label = NULL,
@@ -652,7 +653,8 @@ mod_dots_ind_server <- function(input, output, session){
           p('Country'),
           selectInput(session$ns('country'),
                       label = NULL,
-                      choices = country_names),
+                      choices = country_names,
+                      selected = 'Albania'),
           p('X axis range'),
           sliderInput(session$ns('value_range'),
                       label = NULL,
@@ -666,6 +668,7 @@ mod_dots_ind_server <- function(input, output, session){
     
 
   })
+  
   
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
   # INDICATORS
