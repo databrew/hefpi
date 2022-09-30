@@ -2587,3 +2587,16 @@ footer .btn {
 .selectizeWidth {
     width: fit-content !important;
 }
+
+@media screen and (max-width: 1385px) {
+  .headerTitleCust {
+    font-size: 23px !important;
+  }
+}
+
+@media screen and (max-width: 1180px) {
+  .headerTitleCust {
+    margin-right: 1% !important;
+  }
+}
+

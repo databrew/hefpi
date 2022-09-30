@@ -41,7 +41,7 @@ app_ui <- function() {
         tabName = 'hefpi_vis',
         startExpanded = TRUE,
         menuSubItem(
-          text=" National",
+          text=" Country Level",
           tabName="national",
           icon = shiny::icon("angle-right")
         ),
@@ -289,7 +289,7 @@ app_ui <- function() {
           br(), br(),
           fluidRow(
             column(3,
-                   div(img(src= 'www/working_paper_1.png', height = '400px', width = '375px'), style = 'text-align:left;') 
+                   div(img(src= 'www/working_paper_1.png', height = '400px', width = '100%'), style = 'text-align:left;') 
                    ),
             column(9,
                    tags$div(class="header", checked=NA,
@@ -311,7 +311,7 @@ app_ui <- function() {
           hr(style = "border-top: 2px solid black;"),         
           fluidRow(
             column(3,
-                   div(img(src= 'www/working_paper_2.png', height = '450px', width = '375px'), style = 'text-align:left;') 
+                   div(img(src= 'www/working_paper_2.png', height = '450px', width = '100%'), style = 'text-align:left;') 
             ),
             column(9,
                    tags$div(class="header", checked=NA,
