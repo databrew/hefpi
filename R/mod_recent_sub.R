@@ -38,7 +38,9 @@ mod_recent_mean_sub_ui <- function(id){
            uiOutput(ns('ind_ui')),
            uiOutput(ns('axis_ui')),
            downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-           downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
+           downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
+           br(), br(),
+           actionButton(ns('share_chart'), 'Share chart'),
            
            )
     
@@ -420,7 +422,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
       fluidRow(
         HTML(str_glue('
                         <div class="chart-header-labels-row">
-                           <div class="chart-label"> Most recent value </div>
                            <div class="chart-label"> {indicator_name} </div>
                           </div>
                           '))
