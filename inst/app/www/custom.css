@@ -1578,6 +1578,15 @@ label {
 
 /* button used in app */
 .btn-default {
+    background-color: #ffffff;
+    color: #666667;
+    border-color: #666;
+    border-opacity: 0.1;
+    margin: 0px 0px 0px 0px !important;
+}
+
+/* old
+.btn-default {
     background-color: #009FDA;
     color: #fff;
     border-color: #fff;
@@ -1585,8 +1594,10 @@ label {
     margin: 0px 0px 0px 0px !important;
    
 }
+*/
+
 .btn-default.hover,.btn-default:active,.btn-default:hover {
-    background-color: #002244;
+    background-color: #666666;
     color: #fff;
     border-opacity: 0.1;
     border-color: #fff;
