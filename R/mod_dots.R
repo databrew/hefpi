@@ -16,7 +16,7 @@ mod_dots_country_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
-       column(9,
+       column(8,
                  uiOutput(ns('dots_country_title')),
                  tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dots_country'), height = '600px', width = '1000px') )
       ),
@@ -520,7 +520,7 @@ mod_dots_ind_ui <- function(id){
   ns <- NS(id)
   tagList(
     fluidPage(
-      column(9,
+      column(8,
              uiOutput(ns('dots_ind_title')),
              tags$div(style='overflow-y: scroll; position: relative', 
                       plotlyOutput(ns('dots_ind'), height = '600px', width = '2500px') )),
