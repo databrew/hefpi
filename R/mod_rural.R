@@ -193,7 +193,7 @@ mod_rural_server <- function(input, output, session){
         fluidPage(
           fluidRow(
             sliderInput(inputId = session$ns('axis'),
-                        label = 'Axis', 
+                        label = 'Y - Axis', 
                         min = 0,
                         max = 100,
                         step = 1,
@@ -342,6 +342,11 @@ mod_rural_server <- function(input, output, session){
           gg <- ggplot(temp, aes(urb_rur, value, text = plot_text))
         }
         
+        if(nchar(y_axis_text) > 55) {
+          y_axis_text_split <- y_axis_text
+          y_axis_text <- as.character(str_glue('{substr(y_axis_text_split, 1, 55)}\n - {substr(y_axis_text_split, 56, nchar(y_axis_text_split))}'))
+        } 
+        
         # If unit_of_measure is '%'
         if(str_detect(unit_of_measure, '%')) {
           
@@ -354,9 +359,10 @@ mod_rural_server <- function(input, output, session){
                        labs(x = '',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
-                                          x_axis_angle = 0,
+                                          x_axis_angle = 45,
                                           x_axis_line = NA,
-                                          legend_position = 'none')
+                                          axis_title_size = 0.51,
+                                          legend_position = 'none') 
           
         } else {
           
@@ -367,9 +373,9 @@ mod_rural_server <- function(input, output, session){
                        labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
-                                          x_axis_angle = 0,
+                                          x_axis_angle = 45,
                                           x_axis_line = NA,
-                                          legend_position = 'none')
+                                          legend_position = 'none') 
           
         }
         

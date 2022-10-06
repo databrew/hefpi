@@ -299,24 +299,23 @@ mod_recent_mean_sub_server <- function(input, output, session){
         if(str_detect(unit_of_measure, '%')) {
           
           p <- gg +
-                       geom_bar(stat = 'identity', aes(fill = value_col)) +
+                       geom_bar(stat = 'identity', aes(fill = value_col), width = 0.75) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
                        #scale_y_continuous(limits = c(0, 1), labels = scales::percent) +
                        scale_y_continuous(limits = c(0, input$axis/100), labels = function(x) paste0(x*100)) + 
-          
                        labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,
-                                          x_axis_line = NA,
+                                          # x_axis_line = NA,
                                           y_axis_size = 10,
                                           legend_position = 'none')
           
         } else {
           
           p <- gg +
-                       geom_bar(stat = 'identity', aes(fill = value_col)) +
+                       geom_bar(stat = 'identity', aes(fill = value_col), width = 0.75) +
                        
                        scale_fill_distiller(palette = bar_palette, direction = 1) +
                        scale_y_continuous(limits = c(0, input$axis), labels = function(x) paste0(x)) + 
@@ -324,7 +323,6 @@ mod_recent_mean_sub_server <- function(input, output, session){
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 0,
-                                          x_axis_line = NA,
                                           legend_position = 'none')
           
         }
@@ -332,6 +330,8 @@ mod_recent_mean_sub_server <- function(input, output, session){
         if(length(df$key) > 5) {
           p <- p +
             coord_flip()
+          
+            
         } 
         
         return(p)
@@ -369,7 +369,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
                          persistent = FALSE,
                          color = 'black',
                          opacityDim = 0.6) %>%
-               layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
+               layout(xaxis = list(fixedrange = TRUE, side ="top"), yaxis = list(fixedrange = TRUE))
         p
     }
   })
