@@ -44,8 +44,9 @@ mod_recent_mean_ui <- function(id){
              downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(), br(),
-             actionButton(ns("plot_info"), label = "Plot Info"),
-             actionButton(ns('share_chart'), 'Share chart')
+             actionButton(ns("plot_info"), label = "Plot Info")
+             # ,
+             # actionButton(ns('share_chart'), 'Share chart')
       )
     ),
     br(), br(),
@@ -453,7 +454,7 @@ mod_recent_con_ui <- function(id){
       column(4,
              #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info", class = 'btn-primary'),
-             actionButton(ns('share_chart'), 'Share chart'),
+             # actionButton(ns('share_chart'), 'Share chart'),
              p('Indicator'),
              selectInput(ns('indicator'),
                          label = NULL,

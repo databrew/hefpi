@@ -26,7 +26,7 @@ mod_recent_radar_ui <- function(id){
       column(4,
              useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
-             actionButton(ns('share_chart'), 'Share chart'),
+             # actionButton(ns('share_chart'), 'Share chart'),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
              p('Country'),
