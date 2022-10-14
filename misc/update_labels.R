@@ -111,3 +111,9 @@ df <- df %>%
                                        'Blood sugar measured, adults (%)', indicator_short_name)))))
          ) 
 save(df, file = 'data/df.rda')
+
+# indicators_list.rda
+load('data/indicators_list.rda')
+indicators_list[["Healthcare Coverage"]][[3]] <- "Blood pressure measured, adults (%)"
+indicators_list[["Healthcare Coverage"]][[4]] <- "Blood sugar measured, adults (%)"
+save(indicators_list, file = 'data/indicators_list.rda')
