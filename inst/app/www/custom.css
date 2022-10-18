@@ -2510,6 +2510,12 @@ footer .btn {
     margin-right: 10px;
 }
 
+@media only screen and (min-width: 1600px) {
+    .selectizeWidth {
+        width: fit-content !important;
+    }
+}
+
 /* Footer about cards width for small screens */
 @media only screen and (max-width: 2633px) {
   .box-footer {
@@ -2595,9 +2601,9 @@ footer .btn {
     width: 100% !important;
 }
 
-.selectizeWidth {
+/*.selectizeWidth {
     width: fit-content !important;
-}
+}*/
 
 @media screen and (max-width: 1385px) {
   .headerTitleCust {
