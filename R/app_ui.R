@@ -135,13 +135,13 @@ app_ui <- function() {
         ),
       tabItem(
         tabName="subnational_region",
-        navbarPage(title = '',
+        # navbarPage(title = '',
            mod_recent_mean_sub_ui("recent_mean_sub_leaf")
           #,
           # tabPanel("Trends",
           #          mod_trends_mean_sub_ui("trends_sub_mean")
           # )
-        )
+        # )
         # navbarPage(title = '',
         #            navbarMenu("Most recent value",
         #                       tabPanel("Subnational mean",

@@ -25,7 +25,7 @@ mod_dots_country_ui <- function(id){
              #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
-             actionButton(ns('share_chart'), 'Share chart'),
+             # actionButton(ns('share_chart'), 'Share chart'),
              br(), br(),
              p('Indicator'),
              selectInput(inputId = ns("indicator"),
@@ -529,7 +529,7 @@ mod_dots_ind_ui <- function(id){
              #useShinyalert(),
              actionButton(ns("plot_info"), label = "Plot Info"),
              actionButton(ns('generate_chart'),label = 'Generate chart'),
-             actionButton(ns('share_chart'), 'Share chart'),
+             # actionButton(ns('share_chart'), 'Share chart'),
 
              br(), br(),
              p('Indicator'),
