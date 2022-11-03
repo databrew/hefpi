@@ -522,6 +522,7 @@ mod_dots_ind_ui <- function(id){
     fluidPage(
       column(8,
              uiOutput(ns('dots_ind_title')),
+             p(class='note_class', 'Chart only displays indicators for which data are available'),
              tags$div(style='overflow-y: scroll; position: relative', 
                       plotlyOutput(ns('dots_ind'), height = '600px', width = '2500px') )),
       column(3,
@@ -969,6 +970,10 @@ mod_dots_ind_server <- function(input, output, session){
         
         message("Result value_range: ")
         print(value_range)
+        
+        if(value_range[2] == 10000) {
+           value_range[2] <- 100 
+        }
         # get color graident 
         # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
         # col_vec <- col_vec[-1]

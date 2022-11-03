@@ -172,6 +172,7 @@ mod_recent_radar_server <- function(input, output, session){
       # use this as guide https://github.com/ricardo-bion/ggradar/blob/master/R/ggradar.R
       pd <- as.data.frame(pd)
       save(pd, file = 'temp_pd.rda')
+      # names(pd) <- stringr::str_replace_all(names(pd),pattern = ' ', replacement = '\n' )
       pop_radar <- ggradar::ggradar(pd,
                                     # axis.label.size = 3,
                                     # grid.label.size = 5,
