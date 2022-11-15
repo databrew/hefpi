@@ -201,58 +201,61 @@ app_ui <- function() {
           fluidRow(
             # div(img(src= 'www/hefpi_banner.png', height = '300px', width = '1200px'), style = 'text-align:center;'),
 
+            
+            
+            
             column(12,
                    br(),
                    p('Most health systems aspire to deliver health services to people who need them, without causing financial hardship for the families involved. How close do health systems around the world come to achieving this goal of universal health coverage?'),
                    p('What percentage of children and women in different countries get key preventive health interventions such as antenatal care and cervical cancer screening? How does this percentage differ between the poor and less poor? What percentage of adults in different countries receive inpatient care, and how does this percentage compare to the WHO benchmark? What does the gradient across socioeconomic groups look like, and does it look different in low-, middle- and high-income countries? What are the gaps between the poor and the less poor in health outcomes, such as childhood stunting and adult obesity?'),
                    p('What fraction of households spend more than 10% of their income or out-of-pocket consumption on health care? Is the fraction higher among the poor? What fraction of households are impoverished by out-of-pocket health expenses? How do these numbers vary across countries? How have they changed over time?'),
-                   p('The Health Equity and Financial Protection Indicators (HEFPI) dataset allows you to answer these questions. The dataset has grown over time from the first dataset published in 2000 which pulled data from 42 surveys and one type of survey, covered just 42 countries, and included just 34 indicators, which all concerned maternal and child health. In 2013, for the first time, the database included household out-of-pocket health expenditures, noncommunicable disease indicators (NCD), and data from high-income countries. The 2018 database follows this trend by employing over 1,600 surveys, covering 183 countries, and encompassing multiple years of data, richer NCD data, and more extensive data on household out-of-pocket expenditures.')
+                   p('The Health Equity and Financial Protection Indicators (HEFPI) dataset allows you to answer these questions. The dataset has grown over time from the first dataset published in 2000 which pulled data from 42 surveys and one type of survey, covered just 42 countries, and included just 34 indicators, which all concerned maternal and child health. In 2013, for the first time, the database included household out-of-pocket health expenditures, noncommunicable disease indicators (NCD), and data from high-income countries. A major extension in 2018 and a subsequent 2019 update increased the number of household surveys included in HEFPI to over 1,700, covering 197 countries, and added richer NCD data as well as more extensive data on household out-of-pocket expenditures. The current 2022 version of the HEFPI database continues this trend, sourcing from almost 1,900 household surveys and covering 204 countries, and extending the number of indicators to 104, including new indicators of financial protection and, for the first time, indicators of effective health coverage and quality. Finally, the 2022 version of the database provides insights into regional inequities in indicators by making them available by urban and rural area of residence and by subnational regions.')
             )
        
           ),
-          tags$div(class = "row", 
-            tags$div(class = "cards-section",
-              column(4,
-                       box(
-                         fluidRow(
-                           div(img(src= 'www/card_1.jpg', width = '100%'), style = 'text-align:center;')),
-                           footer = tags$div(class="header", checked=NA,
-                                             tags$h4("A History of the World Bank's Health Equity and Financial Protection Indicators"),
-                                             tags$p("This project – a collaboration between the Bank’s research group, data group, and health, nutrition and population global – stretches back to 2000."),
-                                             tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/history.html", "Read more", style="color:#009FDA")
-                           ),
-                           width =12,
-                         
-                       )
-                  ),
-              column(4, 
-                box(
-                  fluidRow(
-                    div(img(src= 'www/card_2.jpg', width = '100%'), style = 'text-align:center;')),
-                  footer = tags$div(class="header", checked=NA,
-                                    tags$h4("Did the Poor Get Left Behind by the Health MDGs?"),
-                                    tags$p("One question that is often asked is whether the focus on population averages in the MDGs resulted in the poor being left behind. The HEFPI dataset allows us to answer this with some precision."),
-                                    tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/left_behind.html", "Read more", style="color:#009FDA")
-                  ),
-                  width =12,
-                  
-                )
-              ),
-              column(4,
-                box(
-                  fluidRow(
-                    div(img(src= 'www/card_3.jpg', width = '100%'), style = 'text-align:center;')),
-                  footer = tags$div(class="header", checked=NA,
-                                    tags$h4("Tracking Progress Towards UHC Using the HEFPI Database"),
-                                    tags$p("The idea underlying Universal Health Coverage (UHC) is that everyone, irrespective of their means, receives the health services they need, without suffering financial hardship in the process."),
-                                    tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/tracking_progress.html", "Read more", style="color:#009FDA")
-                  ),
-                  width =12,
-                  
-                )
-              )
-            )
-          ),
+          # tags$div(class = "row", 
+          #   tags$div(class = "cards-section",
+          #     column(4,
+          #              box(
+          #                fluidRow(
+          #                  div(img(src= 'www/card_1.jpg', width = '100%'), style = 'text-align:center;')),
+          #                  footer = tags$div(class="header", checked=NA,
+          #                                    tags$h4("A History of the World Bank's Health Equity and Financial Protection Indicators"),
+          #                                    tags$p("This project – a collaboration between the Bank’s research group, data group, and health, nutrition and population global – stretches back to 2000."),
+          #                                    tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/history.html", "Read more", style="color:#009FDA")
+          #                  ),
+          #                  width =12,
+          #                
+          #              )
+          #         ),
+          #     column(4, 
+          #       box(
+          #         fluidRow(
+          #           div(img(src= 'www/card_2.jpg', width = '100%'), style = 'text-align:center;')),
+          #         footer = tags$div(class="header", checked=NA,
+          #                           tags$h4("Did the Poor Get Left Behind by the Health MDGs?"),
+          #                           tags$p("One question that is often asked is whether the focus on population averages in the MDGs resulted in the poor being left behind. The HEFPI dataset allows us to answer this with some precision."),
+          #                           tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/left_behind.html", "Read more", style="color:#009FDA")
+          #         ),
+          #         width =12,
+          #         
+          #       )
+          #     ),
+          #     column(4,
+          #       box(
+          #         fluidRow(
+          #           div(img(src= 'www/card_3.jpg', width = '100%'), style = 'text-align:center;')),
+          #         footer = tags$div(class="header", checked=NA,
+          #                           tags$h4("Tracking Progress Towards UHC Using the HEFPI Database"),
+          #                           tags$p("The idea underlying Universal Health Coverage (UHC) is that everyone, irrespective of their means, receives the health services they need, without suffering financial hardship in the process."),
+          #                           tags$a(href="https://datatopics.worldbank.org/health-equity-and-financial-protection/tracking_progress.html", "Read more", style="color:#009FDA")
+          #         ),
+          #         width =12,
+          #         
+          #       )
+          #     )
+          #   )
+          # ),
           br(), br(),
           # fluidRow(
           #   column(6,
