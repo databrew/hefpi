@@ -29,7 +29,10 @@ Imports:
     sp,
     shinyjs,
     shinydashboard,
-    shinyalert
+    shinyalert,
+    rcartocolor,
+    fmsb,
+    textshape
 RoxygenNote: 7.1.2
 URL: https://github.com/databrew/hefpi
 BugReports: https://github.com/databrew/hefpi/issues

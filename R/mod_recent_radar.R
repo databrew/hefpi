@@ -171,26 +171,58 @@ mod_recent_radar_server <- function(input, output, session){
       # lcols <- c("#EEA236", "#5CB85C", "#46B8DA")
       # use this as guide https://github.com/ricardo-bion/ggradar/blob/master/R/ggradar.R
       pd <- as.data.frame(pd)
+      pd <- pd %>% tibble::column_to_rownames(var="country")
       save(pd, file = 'temp_pd.rda')
       # names(pd) <- stringr::str_replace_all(names(pd),pattern = ' ', replacement = '\n' )
-      pop_radar <- ggradar::ggradar(pd,
-                                    # axis.label.size = 3,
-                                    # grid.label.size = 5,
-                                    # group.colours = lcols,
-                                    plot.extent.y.sf = 1.2,
-                                    plot.extent.x.sf = 2.5,
-                                    background.circle.colour = "white",
-                                    gridline.min.linetype = 1,
-                                    gridline.mid.linetype = 1,
-                                    gridline.max.linetype = 1, 
-                                    legend.position = 'bottom') 
+      # CUSTOM radar plot
+
+      # clear plots in workspace
+      plot.new()
+      
+      
+      par(
+                      fmsb::radarchart(
+                        pd, axistype = 1,
+                        # Customize the polygon
+                        pcol = rcartocolor::carto_pal(ncol(pd), "Vivid"), pfcol = scales::alpha(rcartocolor::carto_pal(ncol(pd), "Vivid"), 0.35), plwd = 2, plty = 1,
+                        # Customize the grid
+                        cglcol = "grey", cglty = 1, cglwd = 0.8,
+                        # Customize the axis
+                        axislabcol = "grey", 
+                        # Variable labels
+                        vlcex = 0.7, vlabels = colnames(pd),
+                        maxmin = FALSE,
+                        caxislabels = NULL, title = NULL
+                      ),
+                      mfrow = c(1, 1)
+      )
+      # Add an horizontal legend
+      legend(
+        x = "bottom", legend = rownames(pd), horiz = TRUE,
+        bty = "n", pch = 20 , col = rcartocolor::carto_pal(ncol(pd), "Vivid"),
+        text.col = "black", cex = 1, pt.cex = 1.5
+      )
+      
+      pop_radar <- recordPlot()
+      
+      # pop_radar <- ggradar::ggradar(pd,
+      #                               # axis.label.size = 3,
+      #                               # grid.label.size = 5,
+      #                               # group.colours = lcols,
+      #                               plot.extent.y.sf = 1.2,
+      #                               plot.extent.x.sf = 2.5,
+      #                               background.circle.colour = "white",
+      #                               gridline.min.linetype = 1,
+      #                               gridline.mid.linetype = 1,
+      #                               gridline.max.linetype = 1, 
+      #                               legend.position = 'bottom') 
       
       
       year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
       
       # store palette, text, map object, and data in list
       pop_radar_list <- list(pop_radar, pd, year_title)
-      # save(pop_radar_list, file = '../data/pop_radar_list.rda')
+      # save(pop_radar_list, file = 'data/pop_radar_list.rda')
       # save(pop_radar_list, file = 'data/pop_radar_list.rda')
     }
     
