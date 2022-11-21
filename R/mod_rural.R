@@ -12,16 +12,16 @@
 mod_rural_ui <- function(id){
   # let leaflet know that selections should persist
   # options(persistent = TRUE)
-  ns <- NS(id)
-  fluidRow(
-    column(8,
-           uiOutput(ns('map_title_ui')),
-           plotlyOutput(
-             ns('recent_sub_mean_plot'), height = 550
-           )),
-    column(4,
+  ns <- shiny::NS(id)
+  shiny::fluidRow(
+    shiny::column(8,
+                  shiny::uiOutput(ns('map_title_ui')),
+                  plotly::plotlyOutput(
+                   ns('recent_sub_mean_plot'), height = 550
+                 )),
+    shiny::column(4,
            p('Country'),
-           selectInput(ns('country'), 
+           shiny::selectInput(ns('country'), 
                        label = NULL,
                        choices = unique(hefpi::hefpi_df$country), selected = 'Morocco'),
            # sliderInput(ns('date_range'),
@@ -31,18 +31,18 @@ mod_rural_ui <- function(id){
            #             value = c(1982, 2021),
            #             step = 1,
            #             sep = ''),
-           selectInput(ns('date_range'),
+           shiny::selectInput(ns('date_range'),
                        label = 'Year',
                        choices = NULL
                        ),
-           selectInput(ns('indicator'),
+           shiny::selectInput(ns('indicator'),
                        label = 'Indicator',
                        choices = NULL
                        ),
            # uiOutput(ns('ind_ui')),
-           uiOutput(ns('axis_ui')),
-           downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-           downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
+           shiny::uiOutput(ns('axis_ui')),
+           shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+           shiny::downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
            
            )
     
@@ -96,9 +96,9 @@ mod_rural_server <- function(input, output, session){
   #   
   # })
   
-  observeEvent(input$country, {
+  shiny::observeEvent(input$country, {
     
-    req(input$country)
+    shiny::req(input$country)
     
     cn = input$country
     plot_years <- input$date_range
@@ -106,25 +106,25 @@ mod_rural_server <- function(input, output, session){
     hefpi::hefpi_sub_df
     
     ind <- hefpi::hefpi_df %>% 
-      as_tibble() %>% 
-      select(country, year, regioncode, indic, urb, rur) %>%
-      filter(country == cn) %>%
+      tidyr::as_tibble() %>% 
+      dplyr::select(country, year, regioncode, indic, urb, rur) %>%
+      dplyr::filter(country == cn) %>%
       # filter(year == plot_years) %>%
-      left_join(
-        hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+      dplyr::left_join(
+        hefpi::indicators %>% dplyr::select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
         by = c('indic' = 'variable_name')
       ) %>%
-      select(indicator_short_name) %>%
-      pull() %>%
+      dplyr::select(indicator_short_name) %>%
+      dplyr::pull() %>%
       unique() %>%
       sort()
     
     indicator_intersect <- indicators_list
-    indicator_intersect$`Financial Protection` <- intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
-    indicator_intersect$`Healthcare Coverage` <- intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
-    indicator_intersect$`Health Outcomes` <- intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
+    indicator_intersect$`Financial Protection` <- dplyr::intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
+    indicator_intersect$`Healthcare Coverage` <- dplyr::intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
+    indicator_intersect$`Health Outcomes` <- dplyr::intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
     
-    updateSelectInput(session,
+    shiny::updateSelectInput(session,
                       inputId = "indicator",
                       choices = indicator_intersect,
                       selected = indicator_intersect[[1]])
@@ -133,19 +133,19 @@ mod_rural_server <- function(input, output, session){
   
   
   
-  observeEvent(input$indicator, {
-    req(input$country)
-    req(input$indicator)
+  shiny::observeEvent(input$indicator, {
+    shiny::req(input$country)
+    shiny::req(input$indicator)
 
     ind_selected = input$indicator
     
     measure_unit <- hefpi::indicators %>%
-      select(indicator_short_name, unit_of_measure) %>%
-      filter(indicator_short_name == ind_selected) %>%
-      distinct() %>%
-      slice(1) %>%
-      select(unit_of_measure) %>%
-      pull()
+      dplyr::select(indicator_short_name, unit_of_measure) %>%
+      dplyr::filter(indicator_short_name == ind_selected) %>%
+      dplyr::distinct() %>%
+      dplyr::slice(1) %>%
+      dplyr::select(unit_of_measure) %>%
+      dplyr::pull()
     
     if(!is.null(input$country)) {
 
@@ -160,22 +160,22 @@ mod_rural_server <- function(input, output, session){
       pd <- hefpi::hefpi_df
 
       years <- pd %>%
-        as_tibble() %>%
-        select(country, year, regioncode, indic, urb, rur) %>%
-        filter(country == cn) %>%
-        left_join(
-          hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+        tidyr::as_tibble() %>%
+        dplyr::select(country, year, regioncode, indic, urb, rur) %>%
+        dplyr::filter(country == cn) %>%
+        dplyr::left_join(
+          hefpi::indicators %>% dplyr::select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
           by = c('indic' = 'variable_name')
         ) %>%
-        filter(indicator_short_name == indicator) %>%
-        select(year) %>%
-        pull() %>%
+        dplyr::filter(indicator_short_name == indicator) %>%
+        dplyr::select(year) %>%
+        dplyr::pull() %>%
         unique() %>%
         sort(decreasing = TRUE)
       
       
 
-      updateSelectInput(session,
+      shiny::updateSelectInput(session,
                         inputId = "date_range",
                         label = 'Year',
                         choices = years,
@@ -187,12 +187,12 @@ mod_rural_server <- function(input, output, session){
     }
     
     
-    if(str_detect(measure_unit, '%')) {
+    if(stringr::str_detect(measure_unit, '%')) {
       
-      output$axis_ui <- renderUI({
-        fluidPage(
-          fluidRow(
-            sliderInput(inputId = session$ns('axis'),
+      output$axis_ui <- shiny::renderUI({
+        shiny::fluidPage(
+          shiny::fluidRow(
+            shiny::sliderInput(inputId = session$ns('axis'),
                         label = 'Y - Axis', 
                         min = 0,
                         max = 100,
@@ -203,9 +203,9 @@ mod_rural_server <- function(input, output, session){
       })
       
     } else {
-      output$axis_ui <- renderUI({
-        fluidPage(
-          fluidRow(
+      output$axis_ui <- shiny::renderUI({
+        shiny::fluidPage(
+          shiny::fluidRow(
             NULL
           )
         )
@@ -219,11 +219,11 @@ mod_rural_server <- function(input, output, session){
 
   
   # ----------- REACTIVE DATA ---------------#
-  hefpi_sub_df__reactive <- reactive({
+  hefpi_sub_df__reactive <- shiny::reactive({
     
-    req(input$country)
-    req(input$indicator)
-    req(input$date_range)
+    shiny::req(input$country)
+    shiny::req(input$indicator)
+    shiny::req(input$date_range)
     #cn = 'India'
     #plot_years = c(2019)
     #indicator = "4+ antenatal care visits (%)"
@@ -240,20 +240,20 @@ mod_rural_server <- function(input, output, session){
       return(NULL)
     } else {
       df <- hefpi::hefpi_df %>% 
-        filter(country == cn) %>%
-        as_tibble() %>%
-        select(country, year, regioncode, indic, urb, rur) %>%
+        dplyr::filter(country == cn) %>%
+        tidyr::as_tibble() %>%
+        dplyr::select(country, year, regioncode, indic, urb, rur) %>%
         # filter(country == cn) %>%
-        left_join(
-          hefpi::indicators %>% select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+        dplyr::left_join(
+          hefpi::indicators %>% dplyr::select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
           by = c('indic' = 'variable_name')
         ) %>%
-        filter(indicator_short_name == indicator) %>%
-        filter(year %in% plot_years) %>%
-        pivot_longer(cols = c('urb', 'rur'), names_to = 'urb_rur') %>%
-        group_by(urb_rur) %>%
-        filter(year == max(year, na.rm = TRUE)) %>%
-        summarise(value = first(value),
+        dplyr::filter(indicator_short_name == indicator) %>%
+        dplyr::filter(year %in% plot_years) %>%
+        tidyr::pivot_longer(cols = c('urb', 'rur'), names_to = 'urb_rur') %>%
+        dplyr::group_by(urb_rur) %>%
+        dplyr::filter(year == max(year, na.rm = TRUE)) %>%
+        dplyr::summarise(value = first(value),
                   indic = indic,
                   year = year,
                   # region_name = rn,
@@ -269,9 +269,9 @@ mod_rural_server <- function(input, output, session){
   
   
   # ---- PLOT FROM REACTIVE DATA ---- #
-  hefpi_sub_plot__reactive <- reactive({
+  hefpi_sub_plot__reactive <- shiny::reactive({
     
-    req(hefpi_sub_df__reactive())
+    shiny::req(hefpi_sub_df__reactive())
     
     plot_years <- input$date_range
     indicator <- input$indicator
@@ -288,11 +288,11 @@ mod_rural_server <- function(input, output, session){
       # create null plot if data is empty
       if(nrow(df)==0){
         empty_plot <- function(title = NULL){
-          p <- plotly_empty(type = "scatter", mode = "markers") %>%
-            config(
+          p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
+            plotly::config(
               displayModeBar = FALSE
             ) %>%
-            layout(
+            plotly::layout(
               title = list(
                 text = title,
                 yref = "paper",
@@ -333,13 +333,13 @@ mod_rural_server <- function(input, output, session){
         # the selected country gets a value of NA which the palette will make black.
         # temp$value_col[temp$key == rn] <- NA
         # add higlight functionality to plot
-        temp <- highlight_key(temp, key=~urb_rur)
+        temp <- plotly::highlight_key(temp, key=~urb_rur)
         
         
         if(length(df$urb_rur) > 5) {
-          gg <- ggplot(temp, aes(forcats::fct_rev(factor(urb_rur)), value, text = plot_text))
+          gg <- ggplot2::ggplot(temp, ggplot2::aes(forcats::fct_rev(factor(urb_rur)), value, text = plot_text))
         } else {
-          gg <- ggplot(temp, aes(urb_rur, value, text = plot_text))
+          gg <- ggplot2::ggplot(temp, ggplot2::aes(urb_rur, value, text = plot_text))
         }
         
         if(nchar(y_axis_text) > 55) {
@@ -351,13 +351,13 @@ mod_rural_server <- function(input, output, session){
         if(str_detect(unit_of_measure, '%')) {
           
           p <- gg +
-                       geom_bar(stat = 'identity', aes(fill = value_col)) +
+                       ggplot2::geom_bar(stat = 'identity', ggplot2::aes(fill = value_col)) +
                        
-                       scale_fill_distiller(palette = bar_palette, direction = 1) +
-                       scale_y_continuous(limits = c(0, input$axis/100), labels = function(x) paste0(x*100)) +
+                        ggplot2::scale_fill_distiller(palette = bar_palette, direction = 1) +
+                        ggplot2::scale_y_continuous(limits = c(0, input$axis/100), labels = function(x) paste0(x*100)) +
                        # scale_y_continuous(labels = function(x) paste0(x*100)) +
-                       labs(x = '',
-                            y = y_axis_text) +
+                        ggplot2::labs(x = '',
+                                      y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 45,
                                           x_axis_line = NA,
@@ -367,10 +367,10 @@ mod_rural_server <- function(input, output, session){
         } else {
           
           p <- gg +
-                       geom_bar(stat = 'identity', aes(fill = value_col)) +
+            ggplot2::geom_bar(stat = 'identity', aes(fill = value_col)) +
                        
-                       scale_fill_distiller(palette = bar_palette, direction = 1) +
-                       labs(x='',
+            ggplot2::scale_fill_distiller(palette = bar_palette, direction = 1) +
+            ggplot2::labs(x='',
                             y = y_axis_text) +
                        hefpi::theme_hefpi(grid_major_x=NA,
                                           x_axis_angle = 45,
@@ -381,7 +381,7 @@ mod_rural_server <- function(input, output, session){
         
         if(length(df$urb_rur) > 5) {
           p <- p +
-            coord_flip()
+            ggplot2::coord_flip()
         } 
         
         return(p)
@@ -393,7 +393,7 @@ mod_rural_server <- function(input, output, session){
   })
   
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
-  output$recent_sub_mean_plot <- renderPlotly({
+  output$recent_sub_mean_plot <- plotly::renderPlotly({
     #cn = 'India'
     #plot_years = c(1982, 2017)
     #indicator = "4+ antenatal care visits (%)"
@@ -403,43 +403,43 @@ mod_rural_server <- function(input, output, session){
     indicator <- input$indicator
     cn <- input$country
     
-    req(hefpi_sub_plot__reactive())
+    shiny::req(hefpi_sub_plot__reactive())
     # rn <- input$region_name
     # while map (generate from reactive object) is null, plot is null
     if(is.null(hefpi_sub_plot__reactive())){
       NULL
     } else {
-      p <- ggplotly(
-             ggplotly(
+      p <- plotly::ggplotly(
+              plotly::ggplotly(
                       hefpi_sub_plot__reactive(),
                       tooltip = 'text')
               ) %>% 
-               config(displayModeBar = T) %>%
-               highlight(on='plotly_hover',
+               plotly::config(displayModeBar = T) %>%
+                plotly::highlight(on='plotly_hover',
                          persistent = FALSE,
                          color = 'black',
                          opacityDim = 0.6) %>%
-               layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
+                plotly::layout(xaxis = list(fixedrange = TRUE), yaxis = list(fixedrange = TRUE))
         p
     }
   })
   
   
   # ---- DOWNLOAD PLOT IMAGE ---- #
-  output$dl_plot <- downloadHandler(
+  output$dl_plot <- shiny::downloadHandler(
     filename = function() { 
       paste0("barchart_", Sys.Date(), ".png")
     },
     content = function(file) {
       device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = "in")
-      ggsave(file, plot = hefpi_sub_plot__reactive(), device = device)
+      ggplot2::ggsave(file, plot = hefpi_sub_plot__reactive(), device = device)
     }
   )
   
   
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
-  output$dl_data <- downloadHandler(
+  output$dl_data <- shiny::downloadHandler(
     filename = function() {
       paste0("most_recent_value_mean_regional_barchart_", Sys.Date(), ".csv")
     },
@@ -462,15 +462,15 @@ mod_rural_server <- function(input, output, session){
   
   
   
-  output$map_title_ui <- renderUI({
-    req(input$indicator)
+  output$map_title_ui <- shiny::renderUI({
+    shiny::req(input$indicator)
     
     
     indicator_name <- input$indicator
     
-    fluidPage(
-      fluidRow(
-        HTML(str_glue('
+    shiny::fluidPage(
+      shiny::fluidRow(
+        HTML(stringr::str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Urban-rural </div>
                            <div class="chart-label"> {indicator_name} </div>

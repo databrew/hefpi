@@ -14,10 +14,10 @@
 #' @export 
 #' @importFrom shiny NS tagList 
 mod_social_ui <- function(id){
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   tagList(
     # Social media share buttons
-    column(12, align = 'center',
+    shiny::column(12, align = 'center',
            shinydashboard::box(
              width = 12, 
              status = 'success',
@@ -32,8 +32,8 @@ mod_social_ui <- function(id){
                type = "linkedin"
              ),
              
-             a(actionButton(inputId = "email", label = "", 
-                            icon = icon("envelope", lib = "font-awesome")),
+             a(shiny::actionButton(inputId = "email", label = "", 
+                            icon = shiny::icon("envelope", lib = "font-awesome")),
                href="mailto:?subject=https%3A%2F%2Fwww.bohemia.team/hefpi/&body=https%3A%2F%2Fwww.bohemia.team/hefpi/"),
              
              shinydashboardPlus::socialButton(

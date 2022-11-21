@@ -16,32 +16,32 @@
 
 app_server <- function(input, output,session) {
   
-  w <- Waiter$new(color = "#002244")
+  w <- waiter::Waiter$new(color = "#002244")
   
   # Capture URL parameters
-  shinyURL.server()
+  # shinyURL.server()
 
   # MOST RECENT VALUE MAPS
-  callModule(mod_recent_mean_server, 'recent_mean_leaf')
-  callModule(mod_recent_radar_server, 'recent_radar')
-  callModule(mod_recent_con_server, 'recent_con_leaf')
-  callModule(mod_recent_mean_sub_server, 'recent_mean_sub_leaf')
+  shiny::callModule(mod_recent_mean_server, 'recent_mean_leaf')
+  shiny::callModule(mod_recent_radar_server, 'recent_radar')
+  shiny::callModule(mod_recent_con_server, 'recent_con_leaf')
+  shiny::callModule(mod_recent_mean_sub_server, 'recent_mean_sub_leaf')
   # callModule(mod_recent_con_sub_server, 'recent_con_sub_leaf1')
   
   # TRENDS TAB
-  callModule(mod_trends_mean_server, 'trends_mean')
-  callModule(mod_rural_server, 'rural')
+  shiny::callModule(mod_trends_mean_server, 'trends_mean')
+  shiny::callModule(mod_rural_server, 'rural')
   
-  callModule(mod_trends_quin_server, 'trends_quin')
-  callModule(mod_trends_con_server, 'trends_con')
+  shiny::callModule(mod_trends_quin_server, 'trends_quin')
+  shiny::callModule(mod_trends_con_server, 'trends_con')
   
   # QUINTILES TAB
-  callModule(mod_dots_country_server, 'dots_country')
-  callModule(mod_dots_ind_server, 'dots_ind')
+  shiny::callModule(mod_dots_country_server, 'dots_country')
+  shiny::callModule(mod_dots_ind_server, 'dots_ind')
   
   # DATA AVAILABILITY TAB
-  callModule(mod_dat_country_server, 'dat_country')
-  callModule(mod_dat_ind_server, 'dat_ind')
+  shiny::callModule(mod_dat_country_server, 'dat_country')
+  shiny::callModule(mod_dat_ind_server, 'dat_ind')
   
   ## Social
   # callModule(mod_social_server, "social_module_1")
@@ -52,7 +52,7 @@ app_server <- function(input, output,session) {
   
   
   
-  output$style_tag <- renderUI({
+  output$style_tag <- shiny::renderUI({
 
     
     if(input$sidebar=='about' || input$sidebar=='docu'){
@@ -128,7 +128,7 @@ app_server <- function(input, output,session) {
     
   })
   
-  output$script_tag <- renderUI({
+  output$script_tag <- shiny::renderUI({
     if(input$sidebar=='about' || input$sidebar =='docu'){
       # $("header").find("nav").append(\'<div class="headerTitleCust"></div>\');
       return( (
@@ -160,7 +160,7 @@ app_server <- function(input, output,session) {
     
   })
   
-  observeEvent(input$sidebar, {
+  shiny::observeEvent(input$sidebar, {
     w$show()
     Sys.sleep(3) # give time for wait screen to show
     w$hide()
@@ -168,7 +168,7 @@ app_server <- function(input, output,session) {
   })
   
 
-  output$plot1 <- renderPlot({
+  output$plot1 <- shiny::renderPlot({
     barplot(1:10, col = grey(seq(0, 1, length = 10)),
             main = 'This is a plot',
             sub = "You can't modify it from html/css, it's an image file")
@@ -176,24 +176,24 @@ app_server <- function(input, output,session) {
   
   library(leaflet)
   output$l1 <- leaflet::renderLeaflet({
-    leaflet() %>%
-      addProviderTiles('Esri.WorldImagery') %>%
-      addMarkers(data = tibble(lng = rnorm(10, sd = 40),
+    leaflet::leaflet() %>%
+      leaflet::addProviderTiles('Esri.WorldImagery') %>%
+      leaflet::addMarkers(data = tibble(lng = rnorm(10, sd = 40),
                                lat = rnorm(10, sd = 40)))
   })
   
-  observeEvent(input$action, {
-    showModal(
-      modalDialog(title = 'This is a modal',
+  shiny::observeEvent(input$action, {
+    shiny::showModal(
+      shiny::modalDialog(title = 'This is a modal',
                   size = 'l',
                   easyClose = TRUE,
                   fade = TRUE,
-                  fluidPage(
-                    fluidRow(
-                      column(6, h3('Here is some text'),
+                  shiny::fluidPage(
+                    shiny::fluidRow(
+                      shiny::column(6, h3('Here is some text'),
                              p('And some sub-text')),
-                      column(6, h3('Here is some more text'),
-                             helpText('And some helper text'))
+                      shiny::column(6, h3('Here is some more text'),
+                                    shiny::helpText('And some helper text'))
                     )
                   ))
     )
