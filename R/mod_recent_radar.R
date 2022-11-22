@@ -337,7 +337,7 @@ mod_recent_radar_server <- function(input, output, session){
     if(is.null(pop_radar)){
       NULL
     } else {
-      if(is.na(pop_radar)){
+      if(any(is.na(pop_radar))){
         
         h4('')
       } else {
@@ -371,7 +371,7 @@ mod_recent_radar_server <- function(input, output, session){
     if(is.null(pop_radar)){
       NULL
     } else {
-      if(is.na(pop_radar)){
+      if(any(is.na(pop_radar))){
         p <- ggplot2::ggplot() + ggplot2::labs(title = "No data available for the selected inputs")
         p
       } else {
@@ -397,7 +397,7 @@ mod_recent_radar_server <- function(input, output, session){
       if(is.null(pop_radar)){
         NULL
       } else {
-        if(is.na(pop_radar)){
+        if(any(is.na(pop_radar))){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
@@ -429,7 +429,7 @@ mod_recent_radar_server <- function(input, output, session){
                                       if(is.null(pop_radar)){
                                         NULL
                                       } else {
-                                        if(is.na(pop_radar)){
+                                        if(any(is.na(pop_radar))){
                                           empty_plot <- function(title = NULL){
                                             p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
                                               plotly::config(

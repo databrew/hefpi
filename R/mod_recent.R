@@ -197,7 +197,7 @@ mod_recent_mean_server <- function(input, output, session){
     if(is.null(pop_map)){
       NULL
     } else {
-      if(is.na(pop_map)){
+      if(any(is.na(pop_map))){
         
         h4('')
       } else {
@@ -229,7 +229,7 @@ mod_recent_mean_server <- function(input, output, session){
     if(is.null(pop_map)){
       NULL
     } else {
-      if(is.na(pop_map)){
+      if(any(is.na(pop_map))){
         this_map <- leaflet::leaflet(options = leafletOptions(minZoom = 1, 
                                                      maxZoom = 10)) %>% 
           leaflet::addProviderTiles('CartoDB.VoyagerNoLabels') %>%
@@ -270,7 +270,7 @@ mod_recent_mean_server <- function(input, output, session){
       if(is.null(pop_map)){
         NULL
       } else {
-        if(is.na(pop_map)){
+        if(any(is.na(pop_map))){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
@@ -319,7 +319,7 @@ mod_recent_mean_server <- function(input, output, session){
                                       if(is.null(pop_map)){
                                         NULL
                                       } else {
-                                        if(is.na(pop_map)){
+                                        if(any(is.na(pop_map))){
                                           
                                           this_map <- leaflet::leaflet(options = leafletOptions(minZoom = 1, 
                                                                                        maxZoom = 10)) %>% 
@@ -361,7 +361,7 @@ mod_recent_mean_server <- function(input, output, session){
       NULL
     } else {
       # create null plot if data is empty
-      if(is.na(pop_map)){
+      if(any(is.na(pop_map))){
         empty_plot <- function(title = NULL){
           p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
             plotly::config(
@@ -602,7 +602,7 @@ mod_recent_con_server <- function(input, output, session){
     if(is.null(con_map)){
       NULL
     } else {
-      if(is.na(con_map)){
+      if(any(is.na(con_map))){
         shiny::fluidPage(
           shiny::fluidRow(
             h4('')
@@ -635,7 +635,7 @@ mod_recent_con_server <- function(input, output, session){
     if(is.null(con_map)){
       NULL
     } else {
-      if(is.na(con_map)){
+      if(any(is.na(con_map))){
         this_map <- leaflet::leaflet(options = leaflet::leafletOptions(minZoom = 1,
                                                      maxZoom = 10)) %>%
           leaflet::addProviderTiles('CartoDB.VoyagerNoLabels') %>%
@@ -724,7 +724,7 @@ mod_recent_con_server <- function(input, output, session){
                                       if(is.null(con_map)){
                                         NULL
                                       } else {
-                                        if(is.na(con_map)){
+                                        if(any(is.na(con_map))){
                                           this_map <- leaflet::leaflet(options = leaflet::leafletOptions(minZoom = 1,
                                                                                        maxZoom = 10)) %>%
                                             leaflet::addProviderTiles('OpenStreetMap.DE') %>%
@@ -766,7 +766,7 @@ mod_recent_con_server <- function(input, output, session){
       NULL
     } else {
       # create empty plot if data is null
-      if(is.na(con_map)){
+      if(any(is.na(con_map))){
         empty_plot <- function(title = NULL){
           p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
             plotly::config(

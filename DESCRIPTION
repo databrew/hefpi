@@ -10,12 +10,10 @@ Imports:
     shiny,
     golem,
     config,
-    ggradar,
     ggthemes,
     plotly,
     reshape2,
     scales,
-    shinyURL,
     tidyverse,
     shinyWidgets,
     DT,
@@ -33,7 +31,7 @@ Imports:
     rcartocolor,
     fmsb,
     textshape
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 URL: https://github.com/databrew/hefpi
 BugReports: https://github.com/databrew/hefpi/issues
 Suggests: 

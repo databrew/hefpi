@@ -1,5 +1,4 @@
 #' @import shiny
-#' @import shinyURL
 #' @import shinydashboard
 #' @import shinyWidgets
 #' @import shinyjs

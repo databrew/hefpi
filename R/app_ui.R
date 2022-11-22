@@ -1,11 +1,9 @@
 #' @import shiny
 #' @import shinydashboard
-#' @import shinyURL
 #' @import shinyWidgets
 #' @import shinyjs
 #' @import ggplot2
 #' @import tidyr
-#' @import ggradar
 #' @import htmltools
 #' @import RColorBrewer
 #' @import sp
