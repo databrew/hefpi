@@ -11,45 +11,45 @@
 #' @export 
 # UI FOR DATA AVAILABILITY (COUNTRY)
 mod_dat_country_ui <- function(id){
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   #tagList(
     
-    fluidPage(
-      column(9,
-             uiOutput(ns('dat_country_title')),
+  shiny::fluidPage(
+      shiny::column(9,
+             shiny::uiOutput(ns('dat_country_title')),
              div(style = 'margin-left:-100px',plotlyOutput(
                ns('dat_country'), height = '800px', width = '100%', 
              ))
              ),
       column(3,
              #useShinyalert(),
-             actionButton(ns("plot_info"), label = "Plot Info"),
-             actionButton(ns('generate_chart'),label = 'Generate chart'),
+             shiny::actionButton(ns("plot_info"), label = "Plot Info"),
+             shiny::actionButton(ns('generate_chart'),label = 'Generate chart'),
              # actionButton(ns('share_chart'), 'Share chart'),
              br(), br(),
              p('Indicator'),
              shinyWidgets::dropdownButton(circle = FALSE,  
                                           label = 'Select indicators', 
                                           status = "danger",
-                                          actionButton(ns("all_inds"), label="Select/Deselect all"),
+                                          shiny::actionButton(ns("all_inds"), label="Select/Deselect all"),
              div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = ns("indicator"),
                          label = NULL, 
                          choices = indicators$indicator_short_name,
                          selected = indicators$indicator_short_name))),
              p('Country'),
-             div(style='border-color: grey; color:grey',selectInput(ns('country'), 
+             div(style='border-color: grey; color:grey', shiny::selectInput(ns('country'), 
                          label = NULL,
                          choices = country_list,
                          selected = 'United States')),
              p('Date range'),
-             sliderInput(ns('date_range'),
+             shiny::sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
                          max = 2021,
                          value = c(1982, 2021),
                          step = 1,
                          sep = ''),
-             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'))
+             shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'))
     )
   #)
 }
@@ -58,9 +58,9 @@ mod_dat_country_ui <- function(id){
 mod_dat_country_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
-  observeEvent(input$plot_info, {
+  shiny::observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Data availability - By Country", 
+    shinyalert::shinyalert(title = "Data availability - By Country", 
                text = "This chart zooms in on the general data availability situation for a specific country. It allows users to explore, for instance, if data are frequently available for maternal and child health service coverage, while being largely missing for catastrophic healthcare spending. The chart’s vertical axis shows the indicators chosen by the user and the horizontal axis represents time. Years for which data are available for an indicator are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s country of interest.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
@@ -69,7 +69,7 @@ mod_dat_country_server <- function(input, output, session){
   })
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
   # INDICATORS
-  observe({
+  shiny::observe({
     all_inds <- input$all_inds
     message(all_inds)
     if(is.null(all_inds)){
@@ -77,13 +77,13 @@ mod_dat_country_server <- function(input, output, session){
     } else {
       if (all_inds > 0) {
         if (all_inds %% 2 == 0){
-          updateCheckboxGroupInput(session=session,
+          shiny::updateCheckboxGroupInput(session=session,
                                    inputId ="indicator",
                                    choices = indicators$indicator_short_name,
                                    selected = indicators$indicator_short_name)
           
         } else {
-          updateCheckboxGroupInput(session=session,  
+          shiny::updateCheckboxGroupInput(session=session,  
                                    inputId ="indicator",
                                    choices = indicators$indicator_short_name,
                                    selected = c())
@@ -92,8 +92,8 @@ mod_dat_country_server <- function(input, output, session){
     }
     
   })
-  chart_data <- reactiveValues(plot_data = 'new') 
-  observeEvent(input$generate_chart, {
+  chart_data <- shiny::reactiveValues(plot_data = 'new') 
+  shiny::observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     country_name = 'United States'
     indicator = indicators$indicator_short_name
@@ -109,14 +109,14 @@ mod_dat_country_server <- function(input, output, session){
     all_ind <- all_ind[all_ind %in% indicator]
     # subset data by country and join to get indicator short name 
     country_data<- hefpi::hefpi_df %>%
-      filter(country == country_name) %>%
-      filter(indicator_short_name %in% indicator) %>%
-      filter(year >= date_range[1],
+      dplyr::filter(country == country_name) %>%
+      dplyr::filter(indicator_short_name %in% indicator) %>%
+      dplyr::filter(year >= date_range[1],
              year <= date_range[2]) 
     # create data frame with year and indicator combinations
     df <- tidyr::expand_grid(year = all_years, indicator_short_name = all_ind) %>%
-      left_join(country_data) %>%
-      select(country, year, indicator_short_name, level2) 
+      dplyr::left_join(country_data) %>%
+      dplyr::select(country, year, indicator_short_name, level2) 
     # fill country NAs with United States and levle_2 NAs with "Missing Data"
     df$country[is.na(df$country)] <- country_name
     df$level2[is.na(df$level2)] <- 'Missing Data'
@@ -144,7 +144,7 @@ mod_dat_country_server <- function(input, output, session){
   
  
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0(Sys.Date(),"_data_availability_country", ".png"),
+  output$dl_plot <- shiny::downloadHandler(filename = paste0(Sys.Date(),"_data_availability_country", ".png"),
                                     content = function(file) {
                                       dat_list <- chart_data$plot_data
                                       if(length(dat_list)==1){
@@ -161,13 +161,13 @@ mod_dat_country_server <- function(input, output, session){
                                         caption_text = 'HEFPI database, The World Bank, 2021'
                                         
                                         # plot
-                                        p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
+                                        p <-  ggplot2::ggplot(df, ggplot2::aes(as.numeric(year), indicator_short_name, fill = level2)) + 
                                           geom_tile(alpha = 0.8, color = 'lightgrey') +
-                                          scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+                                          ggplot2::scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                                              expand = c(0,0)) +
-                                          scale_fill_manual(name = '',
+                                          ggplot2::scale_fill_manual(name = '',
                                                             values = col_vec) +
-                                          labs(x = 'Year',
+                                          ggplot2::labs(x = 'Year',
                                                y = '',
                                                title = '',
                                                caption=caption_text)
@@ -186,16 +186,16 @@ mod_dat_country_server <- function(input, output, session){
                                                                     legend_position = 'top',
                                                                     legend_direction = 'horizontal',
                                                                     legend_text_size = rel(1/2)) + 
-                                          labs(title = '',
+                                          ggplot2::labs(title = '',
                                                caption = caption_text)
                                         p
-                                        ggsave(file, width = 10, height = 8)
+                                        ggplot2::ggsave(file, width = 10, height = 8)
                                       }
                                     })
 
   
   # ---- GENERATE PLOT TITLE ---- #
-  output$dat_country_title <- renderUI({
+  output$dat_country_title <- shiny::renderUI({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
       dat_list <- hefpi::dat_country_default
@@ -209,7 +209,7 @@ mod_dat_country_server <- function(input, output, session){
         # make plot title 
         # plot_title = paste0('Data availability', ' - By country')
       
-      plot_title <- HTML(str_glue('
+      plot_title <- HTML(stringr::str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Data availability </div> 
                            <div class="chart-label"> By country </div>
@@ -225,7 +225,7 @@ mod_dat_country_server <- function(input, output, session){
   
     
   # ---- GENERATE PLOT ---- #
-  output$dat_country <- renderPlotly({
+  output$dat_country <- plotly::renderPlotly({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
       dat_list <- hefpi::dat_country_default
@@ -236,11 +236,11 @@ mod_dat_country_server <- function(input, output, session){
       df= dat_list[[1]]
       if(nrow(df) == 0) {
         empty_plot <- function(title = NULL){
-          p <- plotly_empty(type = "scatter", mode = "markers") %>%
-            config(
+          p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
+            plotly::config(
               displayModeBar = FALSE
             ) %>%
-            layout(
+            plotly::layout(
               title = list(
                 text = title,
                 yref = "paper",
@@ -279,20 +279,22 @@ mod_dat_country_server <- function(input, output, session){
           # arrange(indicator_short_name, level2) %>%
           # mutate(indicator_short_name = fct_reorder(indicator_short_name, level2))
           # select(indicator_short_name) %>% distinct() %>% pull() %>% as.character()
-          mutate(indicator_short_name = factor(indicator_short_name, levels =  c(df %>%
-                                                                                   arrange(level2) %>%
-                                                                                   select(indicator_short_name) %>% distinct() %>% pull() %>% as.character()))) %>%
-          mutate(indicator_short_name = fct_rev(indicator_short_name)) 
+          dplyr::mutate(indicator_short_name = factor(indicator_short_name, levels =  c(df %>%
+                                                                                          dplyr::arrange(level2) %>%
+                                                                                          dplyr::select(indicator_short_name) %>% 
+                                                                                          dplyr::distinct() %>% 
+                                                                                          dplyr::pull() %>% as.character()))) %>%
+          dplyr::mutate(indicator_short_name = fct_rev(indicator_short_name)) 
         
         
         
-        p<-   ggplot(df, aes(as.numeric(year), indicator_short_name, fill = level2)) + 
-          geom_tile(alpha = 0.8, color = 'lightgrey') +
-          scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
+        p <- ggplot2::ggplot(df, ggplot2::aes(as.numeric(year), indicator_short_name, fill = level2)) + 
+          ggplot2::geom_tile(alpha = 0.8, color = 'lightgrey') +
+          ggplot2::scale_x_continuous(breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                              expand = c(0,0)) +
-          scale_fill_manual(name = '',
+          ggplot2::scale_fill_manual(name = '',
                             values = col_vec) +
-          labs(x = 'Year',
+          ggplot2::labs(x = 'Year',
                y = ''
                # ,
                # title = plot_title
@@ -305,13 +307,13 @@ mod_dat_country_server <- function(input, output, session){
                                      grid_major_x = NA,
                                      grid_major_y = NA,
                                      legend_text_size = 2/3)
-        ggplotly(p, tooltip = 'none') %>%
-          layout(legend = list(
+        plotly::ggplotly(p, tooltip = 'none') %>%
+          plotly::layout(legend = list(
             orientation = "h",
             y = 1.15
           )
           ) %>%
-          config(displayModeBar = F)
+          plotly::config(displayModeBar = F)
       }
     }
   })
@@ -320,22 +322,22 @@ mod_dat_country_server <- function(input, output, session){
 #-------------------------------------------------------------------------------------------------------------
 # UI FOR DATA AVAILABILITY (INDICATOR)
 mod_dat_ind_ui <- function(id){
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   tagList(
-    fluidPage(
-      column(9,
-             uiOutput(ns('dat_ind_title')),
-             tags$div(style='overflow-y: scroll; position: relative', plotlyOutput(ns('dat_ind'), height = '600px', width = '100%') )
+    shiny::fluidPage(
+      shiny::column(9,
+                    shiny::uiOutput(ns('dat_ind_title')),
+             tags$div(style='overflow-y: scroll; position: relative', plotly::plotlyOutput(ns('dat_ind'), height = '600px', width = '100%') )
              ),
-      column(3,
+      shiny::column(3,
              #useShinyalert(),
-             actionButton(ns("plot_info"), label = "Plot Info"),
-             actionButton(ns('generate_chart'),label = 'Generate chart'),
+             shiny::actionButton(ns("plot_info"), label = "Plot Info"),
+             shiny::actionButton(ns('generate_chart'),label = 'Generate chart'),
              # actionButton(ns('share_chart'), 'Share chart'),
 
              br(), br(),
              p('Indicator'),
-             div(style='border-color: grey; color:grey',selectInput(ns('indicator'),
+             div(style='border-color: grey; color:grey', shiny::selectInput(ns('indicator'),
                          label = NULL,
                          choices = indicators$indicator_short_name,
                          selected =indicators$indicator_short_name[1])),
@@ -343,13 +345,13 @@ mod_dat_ind_ui <- function(id){
              shinyWidgets::dropdownButton(circle = FALSE,  
                                           label = 'Select the region(s)', 
                                           status = "danger",
-                                          actionButton(ns("all_regions"), label="Select/Deselect all"),
-             div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(ns('region'),
+                                          shiny::actionButton(ns("all_regions"), label="Select/Deselect all"),
+             div(style='max-height: 30vh; overflow-y: auto;', shiny::checkboxGroupInput(ns('region'),
                          label = NULL,
                          choices = as.character(region_list$region),
                          selected = as.character(region_list$region)[1]))),
-             uiOutput(ns('ui_outputs')),
-             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'))
+             shiny::uiOutput(ns('ui_outputs')),
+             shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'))
     )
   )
 }
@@ -358,9 +360,9 @@ mod_dat_ind_ui <- function(id){
 mod_dat_ind_server <- function(input, output, session){
   
   # Observe changes to inputs in order to generate changes to the map
-  observeEvent(input$plot_info, {
+  shiny::observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Data availability - By indicator", 
+    shinyalert::shinyalert(title = "Data availability - By indicator", 
                text = "This chart allows user to compare data availability for an indicator across countries and over time. Years for which data are available for a country are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s indicator of interest.", 
                type = "info", 
                closeOnClickOutside = TRUE, 
@@ -369,7 +371,7 @@ mod_dat_ind_server <- function(input, output, session){
   })
   
   # ---- GENERATE UI OUTPUTS ---- #
-  output$ui_outputs <- renderUI({
+  output$ui_outputs <- shiny::renderUI({
     region <- input$region
     # get region code
     region_list <- hefpi::region_list
@@ -377,24 +379,24 @@ mod_dat_ind_server <- function(input, output, session){
     # subset data by variable and region code - HERE need to get level2 for plot
     df<- hefpi::hefpi_df %>%
       # filter(indic == variable) %>%
-      filter(regioncode %in% region_code) %>%
+      dplyr::filter(regioncode %in% region_code) %>%
       # filter(country %in% country_name) %>%
-      select(year,country, indic, regioncode, referenceid_list) 
+      dplyr::select(year,country, indic, regioncode, referenceid_list) 
     country_names <- sort(unique(df$country))
     # get ui page
-    fluidPage(
+    shiny::fluidPage(
       fluidRow(
        p('Countries'),
        shinyWidgets::dropdownButton(circle = FALSE,  
                                     label = 'Select the countries)', 
                                     status = "danger",
-                                    actionButton(session$ns("all_countries"), label="Select/Deselect all"),
-       div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = session$ns("country"), 
+                                    shiny::actionButton(session$ns("all_countries"), label="Select/Deselect all"),
+       div(style='max-height: 30vh; overflow-y: auto;', shiny::checkboxGroupInput(inputId = session$ns("country"), 
                     label = NULL, 
                     choices = country_names, 
                     selected = country_names))),
         p('Date range'),
-        sliderInput(inputId = session$ns('date_range'),
+       shiny::sliderInput(inputId = session$ns('date_range'),
                     label = NULL,
                     min = 1982,
                     max = 2021,
@@ -407,7 +409,7 @@ mod_dat_ind_server <- function(input, output, session){
   
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
   # REGIONS
-  observe({
+  shiny::observe({
     all_regions <- input$all_regions
     message(all_regions)
     if(is.null(all_regions)){
@@ -416,13 +418,13 @@ mod_dat_ind_server <- function(input, output, session){
       if (all_regions > 0) {
         if (all_regions %% 2 == 0){
           message(region_list$region)
-          updateCheckboxGroupInput(session=session,
+          shiny::updateCheckboxGroupInput(session=session,
                                    inputId ="region",
                                    choices = as.character(region_list$region),
                                    selected = as.character(region_list$region))
           
         } else {
-          updateCheckboxGroupInput(session=session,  
+          shiny::updateCheckboxGroupInput(session=session,  
                                    inputId ="region",
                                    choices = as.character(region_list$region),
                                    selected = c())
@@ -435,7 +437,7 @@ mod_dat_ind_server <- function(input, output, session){
   
   
   # COUNTRY
-  observe({
+  shiny::observe({
     all_countries <- input$all_countries
     message(all_countries)
     if(is.null(all_countries)){
@@ -450,19 +452,19 @@ mod_dat_ind_server <- function(input, output, session){
         # subset data by variable and region code - HERE need to get level2 for plot
         df<- hefpi::hefpi_df %>%
           # filter(indic == variable) %>%
-          filter(regioncode %in% region_code) %>%
+          dplyr::filter(regioncode %in% region_code) %>%
           # filter(country %in% country_name) %>%
-          select(year,country, indic, regioncode, referenceid_list) 
+          dplyr::select(year,country, indic, regioncode, referenceid_list) 
         country_names <- sort(unique(df$country))
         if (all_countries %% 2 == 0){
           
-          updateCheckboxGroupInput(session=session,
+          shiny::updateCheckboxGroupInput(session=session,
                                    "country",
                                    choices = country_names,
                                    selected = country_names)
           
         } else {
-          updateCheckboxGroupInput(session=session, 
+          shiny::updateCheckboxGroupInput(session=session, 
                                    "country",
                                    choices = country_names,
                                    selected = c())
@@ -471,8 +473,8 @@ mod_dat_ind_server <- function(input, output, session){
     }
     
   })
-  chart_data <- reactiveValues(plot_data = 'new') 
-  observeEvent(input$generate_chart, {
+  chart_data <- shiny::reactiveValues(plot_data = 'new') 
+  shiny::observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs
     region = as.character(region_list$region)[1]
@@ -491,27 +493,27 @@ mod_dat_ind_server <- function(input, output, session){
       region_code <- as.character(region_list$region_code[region_list$region %in% region])
       # Get the variable
       variable <- indicators %>%
-        filter(indicator_short_name %in% indicator) %>%
+        dplyr::filter(indicator_short_name %in% indicator) %>%
         .$variable_name
       # subset data by variable and region code - HERE need to get level2 for plot
       df<- hefpi::hefpi_df %>%
-        filter(indic %in% variable) %>%
-        filter(regioncode %in% region_code) %>%
-        filter(country %in% country_names) %>%
-        select(year,country, indic, regioncode, referenceid_list, level2, indicator_short_name) 
+        dplyr::filter(indic %in% variable) %>%
+        dplyr::filter(regioncode %in% region_code) %>%
+        dplyr::filter(country %in% country_names) %>%
+        dplyr::select(year,country, indic, regioncode, referenceid_list, level2, indicator_short_name) 
       names(df)[names(df) == 'regioncode'] <- 'region'
       # create a region year country data
       country_data <- hefpi::hefpi_df %>% 
         # filter(indic == variable) %>%
-        filter(regioncode %in% region_code) %>% # consider removing this, to show all years, not just the years where a region has any data
-        select(year, country,regioncode, indic) 
+        dplyr::filter(regioncode %in% region_code) %>% # consider removing this, to show all years, not just the years where a region has any data
+        dplyr::select(year, country,regioncode, indic) 
       all_years <- sort(unique(hefpi::hefpi_df$year))
       all_countries <- sort(unique(country_data$country))
       temp_data <- expand_grid(year = all_years, country = all_countries) %>%
-        left_join(df)
+        dplyr::left_join(df)
       # subset by country_names
-      temp_data <- temp_data %>% filter(country %in% country_names)
-      temp_data <- temp_data %>% filter(year >= date_range[1],
+      temp_data <- temp_data %>% dplyr::filter(country %in% country_names)
+      temp_data <- temp_data %>% dplyr::filter(year >= date_range[1],
                                         year <= date_range[2]) 
       col_data <- data_frame(level_2 = c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
                              color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'transparent'))
@@ -539,7 +541,7 @@ mod_dat_ind_server <- function(input, output, session){
   ignoreInit = TRUE)
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0("data_indicators_",Sys.Date(), ".png"),
+  output$dl_plot <- shiny::downloadHandler(filename = paste0("data_indicators_",Sys.Date(), ".png"),
                                     content = function(file) {
                                       dat_list <- chart_data$plot_data
                                       if(length(dat_list)==1){
@@ -568,20 +570,20 @@ mod_dat_ind_server <- function(input, output, session){
                                         if(plot_height < 250){
                                           plot_height <- 250
                                         }
-                                        p <- ggplot(temp_data, aes(country, as.numeric(year), fill =level2)) + 
-                                          geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
-                                          scale_y_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
+                                        p <- ggplot2::ggplot(temp_data, ggplot2::aes(country, as.numeric(year), fill =level2)) + 
+                                          ggplot2::geom_tile(size = 0.5, alpha = 0.8, color = 'lightgrey') +
+                                          ggplot2::scale_y_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
                                                              breaks = seq(from = min(temp_data$year),
                                                                           to =max(temp_data$year), by = 1),
                                                              expand = c(0,-0.5)) +
-                                          scale_fill_manual(name = '',
+                                          ggplot2::scale_fill_manual(name = '',
                                                             values = col_vec) +
-                                          labs(x = '',
+                                          ggplot2::labs(x = '',
                                                y = '',
                                                title = '',
                                                caption = caption_text) +
-                                          coord_flip() +
-                                          theme(legend.position = "none") 
+                                          ggplot2::coord_flip() +
+                                          ggplot2::theme(legend.position = "none") 
                                         
                                         
                                         p =  p + theme_hefpi(grid_major_x = NA,
@@ -599,16 +601,16 @@ mod_dat_ind_server <- function(input, output, session){
                                                              legend_direction = 'horizontal',
                                                              legend_text_size = rel(1/2)) +
                                           
-                                          labs(title = '')
+                                          ggplot2::labs(title = '')
                                         p
-                                        ggsave(file, width = 8, height = 8)
+                                        ggplot2::ggsave(file, width = 8, height = 8)
                                       }
                                     })
 
   
   
   # ---- GENERATE PLOT TITLE dat_ind ---- #
-  output$dat_ind_title <- renderUI({
+  output$dat_ind_title <- shiny::renderUI({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
       dat_list <- hefpi::dat_indicator_default
@@ -623,7 +625,7 @@ mod_dat_ind_server <- function(input, output, session){
       # make plot title 
       # plot_title = paste0('Data availability',' - By ', 'indicator: ', indicator)
        
-      plot_title <- HTML(str_glue('
+      plot_title <- HTML(stringr::str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Data availability </div> 
                            <div class="chart-label"> By indicator: {indicator} </div>
@@ -639,7 +641,7 @@ mod_dat_ind_server <- function(input, output, session){
   
     
   # ---- GENERATE PLOT ---- #
-  output$dat_ind <- renderPlotly({
+  output$dat_ind <- plotly::renderPlotly({
     dat_list <- chart_data$plot_data
     if(length(dat_list)==1){
       dat_list <- hefpi::dat_indicator_default
@@ -650,11 +652,11 @@ mod_dat_ind_server <- function(input, output, session){
       pd <- dat_list[[1]]
       if(nrow(pd)==0){
         empty_plot <- function(title = NULL){
-          p <- plotly_empty(type = "scatter", mode = "markers") %>%
-            config(
+          p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
+            plotly::config(
               displayModeBar = FALSE
             ) %>%
-            layout(
+            plotly::layout(
               title = list(
                 text = title,
                 yref = "paper",
@@ -684,15 +686,15 @@ mod_dat_ind_server <- function(input, output, session){
           plot_height <- 250
         }
         
-        p <- ggplot(temp_data, aes(as.numeric(year),country, fill =level2, text =mytext)) + 
-          geom_tile(size = 0.2, alpha = 0.8, color = 'lightgrey') +
-          scale_x_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
+        p <- ggplot2::ggplot(temp_data, ggplot2::aes(as.numeric(year),country, fill =level2, text =mytext)) + 
+          ggplot2::geom_tile(size = 0.2, alpha = 0.8, color = 'lightgrey') +
+          ggplot2::scale_x_continuous(limits = c(min(temp_data$year),max(temp_data$year)),
                              breaks = seq(from = min(temp_data$year),
                                           to =max(temp_data$year), by = 1),
                              expand = c(0,-0.5)) +
-          scale_fill_manual(name = '',
+          ggplot2::scale_fill_manual(name = '',
                             values = col_vec) +
-          labs(x = '',
+          ggplot2::labs(x = '',
                y = ''
                # ,
                # title = plot_title
@@ -713,16 +715,16 @@ mod_dat_ind_server <- function(input, output, session){
                              y_axis_line = 'white',
                              x_axis_line = 'white',
                              legend_position = 'none') +
-          theme(legend.position = "none",
+          ggplot2::theme(legend.position = "none",
                 axis.ticks.x = element_blank(),    # Change x axis ticks only
                 axis.ticks.y = element_blank()) 
         p
       
-        fig <- ggplotly(p, 
+        fig <- plotly::ggplotly(p, 
                         tooltip = 'text',
                         height = plot_height) %>%
-          config(displayModeBar = F) %>%
-          layout(xaxis = list(side ="top" ), margin = list(t=130))  
+          plotly::config(displayModeBar = F) %>%
+          plotly::layout(xaxis = list(side ="top" ), margin = list(t=130))  
         fig
       }
     }

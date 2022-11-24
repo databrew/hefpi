@@ -13,45 +13,45 @@
 mod_recent_radar_ui <- function(id){
   # let leaflet know that selections should persist
   # options(persistent = TRUE)
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   # tagList(
-  fluidPage(
-    fluidRow(
+  shiny::fluidPage(
+    shiny::fluidRow(
       
-      column(8,
-             uiOutput(ns('radar_title_ui')),
-             plotOutput(
+      shiny::column(8,
+                    shiny::uiOutput(ns('radar_title_ui')),
+                    shiny::plotOutput(
                ns('recent_radar_plot'), height = 700 ),
       ),
-      column(4,
-             useShinyalert(),
-             actionButton(ns("plot_info"), label = "Plot Info"),
+      shiny::column(4,
+                    shinyalert::useShinyalert(),
+                    shiny::actionButton(ns("plot_info"), label = "Plot Info"),
              # actionButton(ns('share_chart'), 'Share chart'),
-             actionButton(ns('generate_chart'),label = 'Generate chart'),
+                    shiny::actionButton(ns('generate_chart'),label = 'Generate chart'),
              br(), br(),
              p('Country'),
              shinyWidgets::dropdownButton(circle = FALSE,  
                                           label = 'Select the countries', 
                                           status = "danger",
                                           div(style='max-height: 30vh; overflow-y: auto;',
-                                              checkboxGroupInput(inputId = ns("country"),
+                                              shiny::checkboxGroupInput(inputId = ns("country"),
                                                                  label = '', 
                                                                  choices = as.character(country_list),
                                                                  selected = as.character(country_list)[1:4]))),
              
              p('Indicator'),
-             uiOutput(ns('indicator_ui')),
+             shiny::uiOutput(ns('indicator_ui')),
              
              p('Date range'),
-             sliderInput(ns('date_range'),
+             shiny::sliderInput(ns('date_range'),
                          label = NULL,
                          min = 1982,
                          max = 2021,
                          value = c(1982, 2021),
                          step = 1,
                          sep = ''),
-             downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
+             shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             shiny::downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
       )
     ))
 }
@@ -59,9 +59,9 @@ mod_recent_radar_ui <- function(id){
 # SERVER FOR MOST RECENT VALUE MAP
 mod_recent_radar_server <- function(input, output, session){
   # ---- OBSERVE EVENT FOR PLOT INFO BUTTON ---- #
-  observeEvent(input$plot_info, {
+  shiny::observeEvent(input$plot_info, {
     # Show a modal when the button is pressed
-    shinyalert(title = "Most recent value - National mean", 
+    shinyalert::shinyalert(title = "Most recent value - National mean", 
                text = "Radar or spiderweb charts allow the displaying of achievement for multiple indicators at the same time and hence are a method to display the different dimensions of Universal Health Coverage in a single chart. Moreover, when data from multiple countries is included, radar charts allow multi-indicators cross-country comparisons. By default, radar charts use the latest available HEFPI data point for each selected indicator, but users can choose the time period from which this latest data point is chosen.",
                type = "info", 
                closeOnClickOutside = TRUE, 
@@ -70,7 +70,7 @@ mod_recent_radar_server <- function(input, output, session){
   })
   
   # ui output for indicator
-  output$indicator_ui <- renderUI({
+  output$indicator_ui <- shiny::renderUI({
     
     plot_years <- c(1982, 2021)
     country_names <- hefpi::country_list[1:4]
@@ -79,15 +79,19 @@ mod_recent_radar_server <- function(input, output, session){
     
     # HERE need to figure out a way to make the selection more smooth - that the plot data doesnt have NAs.
     pd <- hefpi::df %>%
-      filter(year >= min(plot_years),
+      dplyr::filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
-      filter(country %in% country_names) %>%
-      filter(indicator_short_name %in% percentage_inds$indicator_short_name)%>%
-      group_by(country, indicator_short_name) %>%
-      filter(year == max(year)) %>% 
-      drop_na() 
+      dplyr::filter(country %in% country_names) %>%
+      dplyr::filter(indicator_short_name %in% percentage_inds$indicator_short_name)%>%
+      dplyr::group_by(country, indicator_short_name) %>%
+      dplyr::filter(year == max(year)) %>% 
+      tidyr::drop_na() 
     
-    indicator_names <-pd  %>% group_by(indicator_short_name) %>% summarise(counts = n()) %>% filter(counts == length(unique(pd$country))) %>% .$indicator_short_name
+    indicator_names <- pd  %>% 
+                        dplyr::group_by(indicator_short_name) %>% 
+                        dplyr::summarise(counts = n()) %>% 
+                        filter(counts == length(unique(pd$country))) %>% 
+                        .$indicator_short_name
     
     
     
@@ -95,7 +99,7 @@ mod_recent_radar_server <- function(input, output, session){
                                  label = 'Select indicators', 
                                  status = "danger",
                                  div(style='max-height: 30vh; overflow-y: auto;',
-                                     checkboxGroupInput(inputId = session$ns("indicator"),
+                                     shiny::checkboxGroupInput(inputId = session$ns("indicator"),
                                                         label = '', 
                                                         choices = as.character(indicator_names),
                                                         selected = as.character(indicator_names)[1:3]))) 
@@ -105,8 +109,8 @@ mod_recent_radar_server <- function(input, output, session){
   })
   
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
-  chart_data <- reactiveValues(plot_data = 'new') 
-  observeEvent(input$generate_chart, {
+  chart_data <- shiny::reactiveValues(plot_data = 'new') 
+  shiny::observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
     # get inputs 
     plot_years <- input$date_range
@@ -123,22 +127,22 @@ mod_recent_radar_server <- function(input, output, session){
     
     # Get the variable from indicator input
     ind_info <- hefpi::indicators %>%
-      filter(indicator_short_name %in% indicator) %>%
-      select(variable_name, good_or_bad, unit_of_measure)
+      dplyr::filter(indicator_short_name %in% indicator) %>%
+      dplyr::select(variable_name, good_or_bad, unit_of_measure)
     variable_name = ind_info$variable_name
     good_or_bad = ind_info$good_or_bad
     unit_of_measure = ind_info$unit_of_measure
     
     # Get the data, subsetted by inputs
     pd <- hefpi::df %>%
-      filter(year >= min(plot_years),
+      dplyr::filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
-      filter(indic %in% variable_name) %>%
-      filter(country %in% country_names) %>%
-      group_by(country, indicator_short_name) %>%
-      filter(year == max(year, na.rm = TRUE)) %>%
-      filter(referenceid_list == first(referenceid_list)) %>%
-      summarise(value = first(pop),
+      dplyr::filter(indic %in% variable_name) %>%
+      dplyr::filter(country %in% country_names) %>%
+      dplyr::group_by(country, indicator_short_name) %>%
+      dplyr::filter(year == max(year, na.rm = TRUE)) %>%
+      dplyr::filter(referenceid_list == first(referenceid_list)) %>%
+      dplyr::summarise(value = first(pop),
                 indic = indic,
                 year = year,
                 region_name = region_name,
@@ -147,8 +151,8 @@ mod_recent_radar_server <- function(input, output, session){
                 indicator_short_name = indicator_short_name,
                 indicator_description = indicator_description,
                 unit_of_measure = unit_of_measure) %>%
-      select(country, indicator_short_name, value) %>% 
-      spread(key = 'indicator_short_name', value= 'value') 
+      dplyr::select(country, indicator_short_name, value) %>% 
+      tidyr::spread(key = 'indicator_short_name', value= 'value') 
     
     # if the indicator (column name) is part of the financial protection group, then subtract the value from 1. 
     for(i in 2:ncol(pd)){
@@ -177,7 +181,7 @@ mod_recent_radar_server <- function(input, output, session){
       # CUSTOM radar plot
 
       # clear plots in workspace
-      plot.new()
+      graphics::plot.new()
       
       
       par(
@@ -197,13 +201,13 @@ mod_recent_radar_server <- function(input, output, session){
                       mfrow = c(1, 1)
       )
       # Add an horizontal legend
-      legend(
+      graphics::legend(
         x = "bottom", legend = rownames(pd), horiz = TRUE,
         bty = "n", pch = 20 , col = rcartocolor::carto_pal(ncol(pd), "Vivid"),
         text.col = "black", cex = 1, pt.cex = 1.5
       )
       
-      pop_radar <- recordPlot()
+      pop_radar <- grDevices::recordPlot()
       
       # pop_radar <- ggradar::ggradar(pd,
       #                               # axis.label.size = 3,
@@ -325,7 +329,7 @@ mod_recent_radar_server <- function(input, output, session){
   # })
   
   # ---- RENDER MAP TITLE ---- #
-  output$radar_title_ui <- renderUI({
+  output$radar_title_ui <- shiny::renderUI({
     pop_radar <- chart_data$plot_data
     if(length(pop_radar)==1){
       pop_radar <- hefpi::pop_radar_list
@@ -333,7 +337,7 @@ mod_recent_radar_server <- function(input, output, session){
     if(is.null(pop_radar)){
       NULL
     } else {
-      if(is.na(pop_radar)){
+      if(any(is.na(pop_radar))){
         
         h4('')
       } else {
@@ -341,10 +345,10 @@ mod_recent_radar_server <- function(input, output, session){
         year_title <- pop_radar[[3]]
         # HTML(paste(h4(paste0('Most recent value - National mean - ', indicator_name)), '\n',
         #            h5(year_title)))
-        fluidPage(
-          fluidRow(
+        shiny::fluidPage(
+          shiny::fluidRow(
             # h4(paste0('Most recent value - National mean - ', indicator_name)),
-            HTML(str_glue('
+            HTML(stringr::str_glue('
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Most recent value </div> 
                           </div>
@@ -359,7 +363,7 @@ mod_recent_radar_server <- function(input, output, session){
   })
   
   # ---- RENDER RADAR PLOT ---- #
-  output$recent_radar_plot <- renderPlot({
+  output$recent_radar_plot <- shiny::renderPlot({
     pop_radar <- chart_data$plot_data
     if(length(pop_radar) == 1){
       pop_radar <- hefpi::pop_radar_list
@@ -367,8 +371,8 @@ mod_recent_radar_server <- function(input, output, session){
     if(is.null(pop_radar)){
       NULL
     } else {
-      if(is.na(pop_radar)){
-        p <- ggplot() + labs(title = "No data available for the selected inputs")
+      if(any(is.na(pop_radar))){
+        p <- ggplot2::ggplot() + ggplot2::labs(title = "No data available for the selected inputs")
         p
       } else {
         p <- pop_radar[[1]]
@@ -380,7 +384,7 @@ mod_recent_radar_server <- function(input, output, session){
   
   
   # ---- DOWNLOAD DATA FROM MAP ---- #
-  output$dl_data <- downloadHandler(
+  output$dl_data <- shiny::downloadHandler(
     filename = function() {
       paste0("most_recent_value_mean_", Sys.Date(), ".csv")
     },
@@ -393,7 +397,7 @@ mod_recent_radar_server <- function(input, output, session){
       if(is.null(pop_radar)){
         NULL
       } else {
-        if(is.na(pop_radar)){
+        if(any(is.na(pop_radar))){
           temp <- data_frame()
           write.csv(temp, file)
         } else {
@@ -416,7 +420,7 @@ mod_recent_radar_server <- function(input, output, session){
   
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".jpg"),
+  output$dl_plot <- shiny::downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".jpg"),
                                     content = function(file) {
                                       pop_radar <- chart_data$plot_data
                                       if(length(pop_radar) == 1){
@@ -425,13 +429,13 @@ mod_recent_radar_server <- function(input, output, session){
                                       if(is.null(pop_radar)){
                                         NULL
                                       } else {
-                                        if(is.na(pop_radar)){
+                                        if(any(is.na(pop_radar))){
                                           empty_plot <- function(title = NULL){
-                                            p <- plotly_empty(type = "scatter", mode = "markers") %>%
-                                              config(
+                                            p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
+                                              plotly::config(
                                                 displayModeBar = FALSE
                                               ) %>%
-                                              layout(
+                                              plotly::layout(
                                                 title = list(
                                                   text = title,
                                                   yref = "paper",
@@ -440,11 +444,11 @@ mod_recent_radar_server <- function(input, output, session){
                                               )
                                           }
                                           p <- empty_plot("No data available for the selected inputs")
-                                          ggsave(file, width = 8, height = 8)
+                                          ggplot2::ggsave(file, width = 8, height = 8)
                                           
                                         } else {
                                           pop_radar
-                                          ggsave(file, width = 8, height = 8)
+                                          ggplot2::ggsave(file, width = 8, height = 8)
                                         }
                                       }
                                     })

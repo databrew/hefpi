@@ -18,22 +18,22 @@
 #' @import reshape2
 #' @importFrom shiny NS tagList 
 mod_dat_ind_alt_ui <- function(id){
-  ns <- NS(id)
+  ns <- shiny::NS(id)
   tagList(
     
-    fluidPage(
-      column(8,
-             plotlyOutput(
+    shiny::fluidPage(
+      shiny::column(8,
+             plotly::plotlyOutput(
                ns('dat_ind'), height = '900px'
              )),
-      column(4,
-             selectInput(ns('indicator'), 'Indicator',
+      shiny::column(4,
+                    shiny::selectInput(ns('indicator'), 'Indicator',
                          choices = indicators_list),
-             selectInput(ns('region'), 'Region',
+                    shiny::selectInput(ns('region'), 'Region',
                          choices = as.character(region_list$region),
                          selected = 'Europe & Central Asia'),
-             uiOutput(ns('country_ui')),
-             sliderInput(ns('date_range'),
+                    shiny::uiOutput(ns('country_ui')),
+                    shiny::sliderInput(ns('date_range'),
                          'Date range',
                          min = 1982,
                          max = 2021,
@@ -41,7 +41,7 @@ mod_dat_ind_alt_ui <- function(id){
                          step = 1,
                          sep = ''),
              #useShinyalert(),  # Set up shinyalert
-             actionButton(ns("plot_info"), "Plot Info"))
+             shiny::actionButton(ns("plot_info"), "Plot Info"))
     )
   )
 }
@@ -63,11 +63,11 @@ mod_dat_ind_alt_server <- function(input, output, session){
   
 
   
-  output$country_ui <- renderUI({
+  output$country_ui <- shiny::renderUI({
     # Observe changes to inputs in order to generate changes to the map
-    observeEvent(input$plot_info, {
+    shiny::observeEvent(input$plot_info, {
       # Show a modal when the button is pressed
-      shinyalert(title = "Data availability by Indicator", 
+      shinyalert::shinyalert(title = "Data availability by Indicator", 
                  text = "charts allow user to compare data availability for an indicator across countries, regions, and over time. The units on the chart’s vertical axis represent countries (sorted by regions), and the chart’s horizontal axis represents time. Years for which data are available for a country are marked by colored squares in the chart area. Hence, larger colored chart areas represent better data availability for the user’s indicator of interest.", 
                  type = "info", 
                  closeOnClickOutside = TRUE, 
@@ -84,13 +84,13 @@ mod_dat_ind_alt_server <- function(input, output, session){
     # subset data by variable and region code - HERE need to get level_2 for plot
     df<- hefpi::df %>%
       # filter(indic == variable) %>%
-      filter(regioncode %in% region_code) %>%
+      dplyr::filter(regioncode %in% region_code) %>%
       # filter(country %in% country_name) %>%
-      select(year,country, indic, regioncode, referenceid_list) 
+      dplyr::select(year,country, indic, regioncode, referenceid_list) 
     
     country_names <- sort(unique(df$country))
   
-    selectInput(inputId = session$ns("country"), 
+    shiny::selectInput(inputId = session$ns("country"), 
                 label = 'Countries', 
                 choices = country_names, 
                 selected = country_names[1:3],
@@ -99,7 +99,7 @@ mod_dat_ind_alt_server <- function(input, output, session){
   })
   
   
-  output$dat_ind <- renderPlotly({
+  output$dat_ind <- plotly::renderPlotly({
     # region <- 'Europe & Central Asia'
     # indicator <- 'Catastrophic health spending, 10%'
     # country_names <- country_names[1:3]
@@ -120,15 +120,15 @@ mod_dat_ind_alt_server <- function(input, output, session){
       
       # Get the variable
       variable <- indicators %>%
-        filter(indicator_short_name == indicator) %>%
+        dplyr::filter(indicator_short_name == indicator) %>%
         .$variable_name
       
       # subset data by variable and region code - HERE need to get level_2 for plot
       df<- hefpi::df %>%
-        filter(indic == variable) %>%
-        filter(regioncode %in% region_code) %>%
-        filter(country %in% country) %>%
-        select(year,country, indic, regioncode, referenceid_list) 
+        dplyr::filter(indic == variable) %>%
+        dplyr::filter(regioncode %in% region_code) %>%
+        dplyr::filter(country %in% country) %>%
+        dplyr::select(year,country, indic, regioncode, referenceid_list) 
       
       names(df)[names(df) == 'regioncode'] <- 'region'
       
@@ -136,21 +136,21 @@ mod_dat_ind_alt_server <- function(input, output, session){
       # create a region year country data
       country_data <- hefpi::df %>% 
         # filter(indic == variable) %>%
-        filter(regioncode == region_code) %>% # consider removing this, to show all years, not just the years where a region has any data
-        select(year, country,regioncode, indic) 
+        dplyr::filter(regioncode == region_code) %>% # consider removing this, to show all years, not just the years where a region has any data
+        dplyr::select(year, country,regioncode, indic) 
       all_years <- sort(unique(country_data$year))
       all_countries <- sort(unique(country_data$country))
       
       
       temp_data <- expand_grid(year = all_years, country = all_countries) %>%
-        left_join(df)
+        dplyr::left_join(df)
       
       # subset by country_names
-      temp_data <- temp_data %>% filter(country %in% country_names)
+      temp_data <- temp_data %>% dplyr::filter(country %in% country_names)
       
       # subset by year 
-      temp_data <- temp_data %>%filter(year >= min(date_range),
-                                       year <= max(date_range)) 
+      temp_data <- temp_data %>% dplyr::filter(year >= min(date_range),
+                                               year <= max(date_range)) 
       
       # temp_data$country <- ifelse(is.na(temp_data$country), 'No data', temp_data$country)
       temp_data$indic <- ifelse(is.na(temp_data$indic), 'No data', indicator)
@@ -176,17 +176,17 @@ mod_dat_ind_alt_server <- function(input, output, session){
           sep="") %>%
           lapply(htmltools::HTML)
         
-        print(ggplotly(ggplot(temp_data, aes(country, as.character(year), fill =indic, text =mytext)) + 
-          geom_tile(size = 2.5, alpha = 0.8) +
-          scale_fill_manual(name = 'Country',
+        print(plotly::ggplotly(ggplot2::ggplot(temp_data, ggplot2::aes(country, as.character(year), fill =indic, text =mytext)) + 
+                                 ggplot2::geom_tile(size = 2.5, alpha = 0.8) +
+                                 ggplot2::scale_fill_manual(name = 'Country',
                             values = col_vec) +
-          labs(x = 'Year',
+                              ggplot2::labs(x = 'Year',
                y = '',
                title = plot_title) +
           hefpi::theme_gdocs() +
-          theme(legend.position = 'none',
-                axis.text.y = element_text(face = "plain", size = rel(10/12)),
-                axis.text.x = element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1)), tooltip = 'text'))
+            ggplot2::theme(legend.position = 'none',
+                axis.text.y = ggplot2::element_text(face = "plain", size = rel(10/12)),
+                axis.text.x = ggplot2::element_text(face = "plain", size = rel(8/12), angle = 45, hjust = 1)), tooltip = 'text'))
         
 
       }
