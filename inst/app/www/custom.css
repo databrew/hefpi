@@ -1,5 +1,7 @@
 /*! * AdminLTE v2.3.11 * Author: Almsaeed Studio * Website: Almsaeed Studio <http: //almsaeedstudio.com> * License: Open source - MIT * Please visit http: //opensource.org/licenses/MIT for more information!*/
 
+@import url('http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,300,400,700');
+
 body,html {
     height: 100%
 }
@@ -7,8 +9,8 @@ body,html {
     height: 100%
 }
 body {
-    font-family: 'MuseoSans-300', 'Helvetica', sans-serif;
-    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 400;
     font-size: 16px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -94,7 +96,7 @@ body.hold-transition .content-wrapper,body.hold-transition .left-side,body.hold-
     padding-left: 20px;
     padding-right: 20px}
 .h1,.h2,.h3,.h4,.h5,.h6,h1,h2,h3,h4,h5,h6 {
-    font-family:'MuseoSans-300', 'Helvetica', sans-serif;
+    font-family:'Open Sans', sans-serif;
     color: #494A4B;/* color very dark grayish blue */
 }
 
@@ -124,7 +126,7 @@ body.hold-transition .content-wrapper,body.hold-transition .left-side,body.hold-
     line-height: 30px;
     font-size: 15pt;
     color:#757575;/* color dark grey */
-    font-family:'MuseoSans-300', 'Helvetica', serif;
+    font-family:'Open Sans', sans-serif;
     padding-bottom: 0;
     padding-top: 0;
     margin-bottom: 0;
@@ -140,7 +142,7 @@ body.hold-transition .content-wrapper,body.hold-transition .left-side,body.hold-
     line-height: 30px;
     font-size: 9pt;
     color:#757575;/* color dark grey */
-    font-family:'MuseoSans-300', 'Helvetica', sans-serif;
+    font-family:'Open Sans', sans-serif;
     padding-bottom: 0;
     padding-top: 0;
     margin-bottom: 0;
@@ -236,13 +238,12 @@ a:active,a:focus,a:hover {
     float: right;
     background-color: transparent;
     background-image: none;
+    color: #fff;
     padding: 40px 20px;
-    font-family: fontAwesome
+    font-family: fontAwesome 
 }
 .main-header .sidebar-toggle:before {
     content: "\f0c9"}
-.main-header .sidebar-toggle:hover {
-    color: #fff}
 .main-header .sidebar-toggle:active,.main-header .sidebar-toggle:focus {
     background: 0 0}
 .main-header .sidebar-toggle .icon-bar {
@@ -265,20 +266,21 @@ a:active,a:focus,a:hover {
     float: left;
     height: 102px;
     font-size: 24px;
-    line-height: 102px;
+    line-height: 110px;
     text-align: left;
     width: 400px;
-    font-family: 'MuseoSans-300', 'Helvetica', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     padding: 0 15px;
     font-weight: 400;
-    overflow: visible;
+    overflow: hidden;
 }
 
 .main-header .logo img {
-    height: 90px;
+    height: 102px;
     width: 200px;
 
 }
+
 .main-header .logo .logo-lg {
     display: block}
 .main-header .logo .logo-mini {
@@ -328,7 +330,7 @@ a:active,a:focus,a:hover {
     color: #97a0b3}
 }
 .navbar-toggle {
-    color: #fff;
+    color: #5A5A5A;
     border: 0;
     margin: 0;
     position: absolute;
@@ -361,7 +363,7 @@ a:active,a:focus,a:hover {
     margin: 5px;
     height: 40px}
 .main-header .sidebar-toggle {
-    color: #fff;
+    color: #5A5A5A;
     float: left;
     position: fixed;
     padding: 10px 15px}     
@@ -453,7 +455,7 @@ a:active,a:focus,a:hover {
 /* Sidebar */
 .sidebar-menu {
     font-size: 1em;
-    font-family: 'MuseoSans-300', 'Helvetica', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     text-transform: uppercase;
     font-weight: 500;
     list-style: none;
@@ -466,24 +468,23 @@ a:active,a:focus,a:hover {
     padding: 0;
     border-bottom: 1px solid #fff;
 }
+/*
 .sidebar-menu>li:hover {
-    /* margin-left: 5px; */
     margin-left: 5px;
-}
+} */
 
 .sidebar-menu>li.active:hover{
-    margin-left: 0px;
+    margin-left: 0px !important;
 }
 
 .sidebar-menu>li:nth-child(2):hover {
     /* margin-left: 5px; */
-    margin-left: 0px;
+    margin-left: 0px !important;
 }
-
+/*
 .sidebar-menu>li:nth-child(2)>ul>li:hover {
-    /* margin-left: 5px; */
     margin-left: 5px;
-}
+} */
 
 .sidebar-menu>li:nth-child(2)>ul>li.active:hover {
     /* margin-left: 5px; */
@@ -586,7 +587,7 @@ a:active,a:focus,a:hover {
     display: none!important;
     -webkit-transform: translateZ(0)}
 .sidebar-mini.sidebar-collapse .main-header .logo {
-    font-family: 'MuseoSans-300', 'Helvetica', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     width: 50px}
 .sidebar-mini.sidebar-collapse .main-header .logo>.logo-mini {
     display: block;
@@ -751,7 +752,7 @@ a:active,a:focus,a:hover {
 .control-sidebar-light .control-sidebar-heading,.control-sidebar-light .control-sidebar-subheading {
     color: #111}
 .control-sidebar-light .control-sidebar-menu {
-    margin-left: -14px}
+    margin-left: 0px}
 .control-sidebar-light .control-sidebar-menu>li>a:hover {
     background: #f4f4f5}
 .control-sidebar-light .control-sidebar-menu>li>a .menu-info>p {
@@ -2378,7 +2379,7 @@ table.text-center,table.text-center td,table.text-center th {
 
 /* logo */
 .skin-blue .main-header .logo {
-                      background-color: #002244;
+                      background-color: #FFF;
                       padding-top:0px;
                       padding-right:0px;
                       padding-left:20px;
@@ -2388,15 +2389,15 @@ table.text-center,table.text-center td,table.text-center th {
 
 /* logo when hovered */
 .skin-blue .main-header .logo:hover {
-                      background-color: #002244;
+                      background-color: #FFF !important;
                       padding-top:0px;
                       padding-right:0px;
-                      padding-left:20px;
+                      padding-left:0px;
                       padding-bottom:0px                      }
 
 /* navbar (rest of the header) */
 .skin-blue .main-header .navbar {
-                      background-color: #002244; /*here for top of page dark blue*/
+                      background-color: #FFF !important; /*here for top of page dark blue*/
                       }
 
 /* main sidebar */
@@ -2592,9 +2593,12 @@ footer .btn {
     margin-bottom: 15px;
 }
 
-
+/* This is the toggle button to hide and show the left side menu */
 .main-header .sidebar-toggle:before {
-    content:'\2630' !important; 
+    content:'Hide/Show Menu' !important; 
+    font-size: 11px;
+    font-family: 'Open Sans', Sans-Serif;
+    color: #D3D3D3;
 }
 
 
