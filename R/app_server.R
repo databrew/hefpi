@@ -15,7 +15,7 @@
 
 app_server <- function(input, output,session) {
   
-  w <- waiter::Waiter$new(color = "#002244")
+  w <- waiter::Waiter$new(html = spin_loader(), color = "#FFF")
   
   # Capture URL parameters
   # shinyURL.server()
@@ -93,6 +93,7 @@ app_server <- function(input, output,session) {
                                             background-size: cover !important;
                                             margin: 0px;
                                             height: 102px !important;
+                                            background-color: #FFF !important;
                                         }
                                             
                                         #sidebarCollapsed {
@@ -134,7 +135,7 @@ app_server <- function(input, output,session) {
         tags$script(HTML('
           $(document).ready(function() {
             $(".headerTitleCust").remove()
-            $("header").find("nav").append(\'<div class="headerTitleCust headerTitleAboutDocPosition"> Health Equity and Financial Protection Indicators (HEFPI)</div>\');
+            $("header").find("nav").append(\'<div class="headerTitleCust headerTitleAboutDocPosition"></div>\');
           })
          '))
         )
@@ -146,7 +147,7 @@ app_server <- function(input, output,session) {
           tags$script(HTML('
             $(document).ready(function() {
               $(".headerTitleCust").remove()
-              $("header").find("nav").append(\'<div class="headerTitleCust"> Health Equity and Financial Protection Indicators (HEFPI)</div>\');
+              $("header").find("nav").append(\'<div class="headerTitleCust"></div>\');
             })
            '))
         )

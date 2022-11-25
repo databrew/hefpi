@@ -29,10 +29,10 @@ app_ui <- function() {
     shinydashboard::sidebarMenu(
       id = 'sidebar',
       width = 230,
-      shinydashboard::menuItem(
-        text = 'About HEFPI',
-        tabName = 'about'
-      ),
+      # shinydashboard::menuItem(
+      #   text = 'About HEFPI',
+      #   tabName = 'about'
+      # ),
       shinydashboard::menuItem(
         id = "vizualizationIDbar",
         text = 'HEFPI Visualizations',
@@ -63,15 +63,15 @@ app_ui <- function() {
           tabName="data",
           icon = shiny::icon("angle-right")
         )
-      ),
-      shinydashboard::menuItem(
-        text = 'Documentation', 
-        tabName = 'docu'
-        ),
-      shinydashboard::menuItem(
-        text = 'Download full data', 
-        href = 'https://datacatalog.worldbank.org/dataset/hefpi'
       )
+      # shinydashboard::menuItem(
+      #   text = 'Documentation', 
+      #   tabName = 'docu'
+      #   ),
+      # shinydashboard::menuItem(
+      #   text = 'Download full data', 
+      #   href = 'https://datacatalog.worldbank.org/dataset/hefpi'
+      # )
       
     )
   )
@@ -79,22 +79,21 @@ app_ui <- function() {
   # BODY
   body <- shinydashboard::dashboardBody(
     waiter::use_waiter(),
-    waiter::waiter_show_on_load(color = "#002244"),
+    waiter::waiter_show_on_load(html = spin_loader(), color = "#fff"),
     # waiter_show_on_load(spinner), # will show on load
     # waiter_show_on_load(html = spin_1(), color = "#333e48"),
     
     tags$head(tags$style(HTML(
       ' .headerTitleCust {
-          font-size: 30px;
+          font-size: 20px;
           line-height: 100px;
           text-align: center;
-          font-family: "Open Sans";
+          font-family: "Open Sans", sans-serif;
           padding: 0px 0px 0px 0px;
           overflow: hidden;
           color: white;
           margin-right: 20%;
-                                            
-        }
+      }
     '))),
     shiny::uiOutput('style_tag'),
     shiny::uiOutput('script_tag'),
