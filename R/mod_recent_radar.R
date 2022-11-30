@@ -41,8 +41,10 @@ mod_recent_radar_ui <- function(id){
                                               shiny::checkboxGroupInput(
                                                                  inputId = ns("country"),
                                                                  label = '', 
-                                                                 choices = as.character(country_list),
-                                                                 selected = as.character(country_list)[1:4]
+                                                                 choices = hefpi::country_radar_plot,
+                                                                 selected = hefpi::country_radar_plot[1:3]
+                                                                 # choices = as.character(country_list),
+                                                                 # selected = as.character(country_list)[1:4]
                                                      )
                                               )),
              
@@ -81,7 +83,9 @@ mod_recent_radar_server <- function(input, output, session){
   output$indicator_ui <- shiny::renderUI({
     
     plot_years <- c(1982, 2021)
-    country_names <- hefpi::country_list[1:4]
+    # country_names <- c("Afghanistan","Albania","Algeria", 'Bahrain')
+    # country_names <- hefpi::country_list[2:6]
+    # country_names <- sort(unique(hefpi::df$country))[1:4]
     country_names <- input$country
     plot_years <- input$date_range
     
@@ -95,10 +99,26 @@ mod_recent_radar_server <- function(input, output, session){
       dplyr::filter(year == max(year)) %>% 
       tidyr::drop_na() 
     
+    # country_radar_plot <- hefpi::df %>%
+    #     dplyr::filter(year >= min(plot_years),
+    #                   year <= max(plot_years)) %>%
+    #     # dplyr::filter(country %in% country_names) %>%
+    #     dplyr::filter(indicator_short_name %in% percentage_inds$indicator_short_name) %>%
+    #     dplyr::group_by(country, indicator_short_name) %>%
+    #     dplyr::filter(year == max(year)) %>% 
+    #     tidyr::drop_na() %>%
+    #     ungroup() %>%
+    #     select(country) %>% distinct() %>% pull() %>% sort()
+    
+    # Check the diff
+    # country_names[!(country_names %in% country_radar_plot)]
+    # save(country_radar_plot, file = 'data/country_radar_plot.rda')
+    
+    
     indicator_names <- pd  %>% 
                         dplyr::group_by(indicator_short_name) %>% 
-                        dplyr::summarise(counts = n()) %>% 
-                        filter(counts == length(unique(pd$country))) %>% 
+                        dplyr::summarise(counts = dplyr::n()) %>% 
+                        dplyr::filter(counts == length(unique(pd$country))) %>% 
                         .$indicator_short_name
     
     
@@ -146,6 +166,7 @@ mod_recent_radar_server <- function(input, output, session){
     message('indicator is ', indicator)
     
     
+    
     # create list to store results from reactive object
     pop_radar_list <- list()
     
@@ -177,6 +198,8 @@ mod_recent_radar_server <- function(input, output, session){
                 unit_of_measure = unit_of_measure) %>%
       dplyr::select(country, indicator_short_name, value) %>% 
       tidyr::spread(key = 'indicator_short_name', value= 'value') 
+    
+    if(nrow(pd) > 0) {
     
     # if the indicator (column name) is part of the financial protection group, then subtract the value from 1. 
     for(i in 2:ncol(pd)){
@@ -255,6 +278,8 @@ mod_recent_radar_server <- function(input, output, session){
     }
     
     chart_data$plot_data <- pop_radar_list
+    
+    }
   },
   
   ignoreNULL = FALSE,
