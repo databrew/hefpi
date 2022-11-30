@@ -24,6 +24,7 @@ mod_recent_radar_ui <- function(id){
                       class='helpText',
                       'Chart will only display available data. Please select at least two countries and a minimum of three indicators to compare.'
                     ),
+                    shiny::uiOutput(ns('warningMsg')),
                     shiny::plotOutput(
                ns('recent_radar_plot'), height = 700 ),
       ),
@@ -79,6 +80,8 @@ mod_recent_radar_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
+
+  
   # ui output for indicator
   output$indicator_ui <- shiny::renderUI({
     
@@ -133,6 +136,21 @@ mod_recent_radar_server <- function(input, output, session){
                                                         selected = as.character(indicator_names)[1:3]))) 
     
     
+    
+  })
+  
+  shiny::observeEvent(c(input$country, input$indicator),{
+    
+    ind_len <- length(input$indicator)
+    country_len <- length(input$country)
+    
+    if(ind_len < 3 | country_len < 3) {
+      output$warningMsg <- renderUI({
+        p(class="warningMsg", "Check the number of indicators and countries you have selected!")
+      })
+    } else {
+      output$warningMsg <- renderUI({NULL})
+    }
     
   })
   
