@@ -20,6 +20,10 @@ mod_recent_radar_ui <- function(id){
       
       shiny::column(8,
                     shiny::uiOutput(ns('radar_title_ui')),
+                    p(
+                      class='helpText',
+                      'Chart will only display available data. Please select at least two countries and a minimum of three indicators to compare.'
+                    ),
                     shiny::plotOutput(
                ns('recent_radar_plot'), height = 700 ),
       ),
@@ -34,10 +38,13 @@ mod_recent_radar_ui <- function(id){
                                           label = 'Select the countries', 
                                           status = "danger",
                                           div(style='max-height: 30vh; overflow-y: auto;',
-                                              shiny::checkboxGroupInput(inputId = ns("country"),
+                                              shiny::checkboxGroupInput(
+                                                                 inputId = ns("country"),
                                                                  label = '', 
                                                                  choices = as.character(country_list),
-                                                                 selected = as.character(country_list)[1:4]))),
+                                                                 selected = as.character(country_list)[1:4]
+                                                     )
+                                              )),
              
              p('Indicator'),
              shiny::uiOutput(ns('indicator_ui')),
@@ -83,7 +90,7 @@ mod_recent_radar_server <- function(input, output, session){
       dplyr::filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       dplyr::filter(country %in% country_names) %>%
-      dplyr::filter(indicator_short_name %in% percentage_inds$indicator_short_name)%>%
+      dplyr::filter(indicator_short_name %in% percentage_inds$indicator_short_name) %>%
       dplyr::group_by(country, indicator_short_name) %>%
       dplyr::filter(year == max(year)) %>% 
       tidyr::drop_na() 
@@ -108,6 +115,22 @@ mod_recent_radar_server <- function(input, output, session){
     
     
   })
+  
+  # observeEvent(input$indicator, {
+  #   
+  #   country_vector <- hefpi::df %>%
+  #     dplyr::filter(indicator_short_name %in% input$indicator) %>%
+  #     select(country) %>%
+  #     pull()
+  #   
+  #   updateCheckboxGroupInput(
+  #     session = session,
+  #     inputId = 'country',
+  #     label = '', 
+  #     choices = as.character(country_vector)
+  #   )
+  # })
+  
   
   # ---- GENERATE REACTIVE LIST OF MAP ATTRIBUTES ---- #
   chart_data <- shiny::reactiveValues(plot_data = 'new') 

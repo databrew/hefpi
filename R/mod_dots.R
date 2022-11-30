@@ -972,8 +972,12 @@ mod_dots_ind_server <- function(input, output, session){
         message("Result value_range: ")
         print(value_range)
         
-        if(value_range[2] == 10000) {
+        if(value_range[2] > 10000) {
            value_range[2] <- 100 
+        }
+        
+        if(value_range[2] == 1000) {
+          value_range[2] <- 100 
         }
         # get color graident 
         # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
