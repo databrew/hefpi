@@ -26,7 +26,7 @@ mod_recent_radar_ui <- function(id){
                     ),
                     shiny::uiOutput(ns('warningMsg')),
                     shiny::plotOutput(
-               ns('recent_radar_plot'), height = 700 ),
+               ns('recent_radar_plot'), height = 750),
       ),
       shiny::column(4,
                     shinyalert::useShinyalert(),
@@ -260,17 +260,17 @@ mod_recent_radar_server <- function(input, output, session){
                         # Customize the axis
                         axislabcol = "grey", 
                         # Variable labels
-                        vlcex = 0.7, vlabels = colnames(pd),
+                        vlcex = .8, vlabels = colnames(pd),
                         maxmin = FALSE,
-                        caxislabels = NULL, title = NULL
+                        caxislabels = NULL, title = NULL,
                       ),
                       mfrow = c(1, 1)
       )
       # Add an horizontal legend
       graphics::legend(
-        x = "bottom", legend = rownames(pd), horiz = FALSE,
+        x = 0.8, y = 1, legend = rownames(pd), horiz = FALSE,
         bty = "n", pch = 20 , col = rcartocolor::carto_pal(ncol(pd), "Vivid"),
-        text.col = "black", cex = 1, pt.cex = 1.5
+        text.col = "black", cex = 1, pt.cex = 3
       )
       
       pop_radar <- grDevices::recordPlot()
