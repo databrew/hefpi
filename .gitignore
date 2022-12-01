@@ -8,3 +8,4 @@ README.html
 .Rdata
 .httr-oauth
 .DS_Store
+data-raw

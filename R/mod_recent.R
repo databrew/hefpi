@@ -89,6 +89,8 @@ mod_recent_mean_server <- function(input, output, session){
     # get inputs
     plot_years <- input$date_range
     indicator <- input$indicator
+    # plot_years <- c(2000, 2021)
+    # indicator <- '4+ antenatal care visits (%)'
     
     # save(plot_years, indicator, file = 'temp_inputs.rda')
     # Get the variable from indicator input
@@ -147,6 +149,7 @@ mod_recent_mean_server <- function(input, output, session){
         'Value: ', paste0(round(shp@data$value, digits = 2), ' (',unit_of_measure,')'),  "<br/>",
         "Year: ", as.character(shp@data$year),"<br/>",
         "Data source :", as.character(shp@data$data_source), "<br/>",
+        # "Data source :", as.character(shp@data$NAME), "<br/>",
         sep="") %>%
         lapply(htmltools::HTML)
       year_title = paste0('From ', plot_years[1], ' to ', plot_years[2])
@@ -189,6 +192,7 @@ mod_recent_mean_server <- function(input, output, session){
                    )
       # store palette, text, map object, and data in list
       pop_map_list<- list(pop_map, shp, unit_of_measure, good_or_bad, year_title)
+      # save(pop_map_list, file = 'change_map.rda')
     }
     return(pop_map_list)
   })
