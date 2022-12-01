@@ -293,7 +293,7 @@ mod_dots_country_server <- function(input, output, session){
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
-          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2022'
           temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid<- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
@@ -330,7 +330,7 @@ mod_dots_country_server <- function(input, output, session){
                                         plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
                                         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
                                         y_axis_text = paste0(indicator)
-                                        caption_text = 'HEFPI database, The World Bank, 2021'
+                                        caption_text = 'HEFPI database, The World Bank, 2022'
                                         
                                         mytext <- paste(
                                           "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
@@ -355,8 +355,8 @@ mod_dots_country_server <- function(input, output, session){
                                                              expand = c(0,0)) +
                                           ggplot2::labs(title='',
                                                subtitle = '', 
-                                               x = y_axis_text, 
-                                               y = 'Country', 
+                                               x = 'Country', 
+                                               y = 'Value', 
                                                caption=caption_text) +
                                           ggplot2::coord_flip() 
                                         
@@ -377,8 +377,8 @@ mod_dots_country_server <- function(input, output, session){
                                                           ) +
                                                           ggplot2::labs(title = '',
                                                                subtitle = '',
-                                                               x = y_axis_text, 
-                                                               y = 'Country'
+                                                               x = 'Country', 
+                                                               y = 'Value'
                                                                ) 
                                         p
                                         ggplot2::ggsave(file, width = 8, height = 8)
@@ -810,7 +810,7 @@ mod_dots_ind_server <- function(input, output, session){
                            'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
-          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2022'
           temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
@@ -848,7 +848,7 @@ mod_dots_ind_server <- function(input, output, session){
                                         plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
                                         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
                                         y_axis_text = paste0(indicator)
-                                        caption_text = 'HEFPI database, The World Bank, 2021'
+                                        caption_text = 'HEFPI database, The World Bank, 2022'
                                         
                                         
                                         # number of countries
@@ -867,8 +867,8 @@ mod_dots_ind_server <- function(input, output, session){
                                                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                                                              expand = c(0,0)) +
                                           ggplot2::labs(title='',
-                                               x = y_axis_text, 
-                                               y = '',
+                                               x = 'Value', 
+                                               y = 'Indicator',
                                                subtitle = '',
                                                caption = caption_text) +
                                           ggplot2::coord_flip()
@@ -889,8 +889,8 @@ mod_dots_ind_server <- function(input, output, session){
                                           ) +
                                           ggplot2::labs(title = '',
                                                subtitle ='',
-                                               x = y_axis_text, 
-                                               y = '')
+                                               x = 'Indicator', 
+                                               y = 'Value')
                                         p
                                         ggplot2::ggsave(file, width = 8, height = 8)
                                       }

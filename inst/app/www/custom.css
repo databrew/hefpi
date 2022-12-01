@@ -2637,3 +2637,19 @@ footer .btn {
     font-size: 10px;
     text-decoration: underline;
 }
+
+
+.legend_item {
+    vertical-align: middle;
+}
+
+.labelmark {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.label_text {
+    display: inline-block;
+}

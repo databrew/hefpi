@@ -25,6 +25,7 @@ mod_recent_mean_ui <- function(id){
       ),
       shiny::column(4,
              #useShinyalert(),
+             shiny::actionButton(ns("plot_info"), label = "Plot Info"),
              # actionButton(ns("plot_info"), label = "Plot Info"),
              # actionButton(ns('share_chart'), 'Share chart'),
              # br(), br(),
@@ -42,9 +43,10 @@ mod_recent_mean_ui <- function(id){
                          step = 1,
                          sep = ''),
              shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
-             shiny::downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
-             br(), br(),
-             shiny::actionButton(ns("plot_info"), label = "Plot Info")
+             shiny::downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
+             # ,
+             # br(), br(),
+             # shiny::actionButton(ns("plot_info"), label = "Plot Info")
              # ,
              # actionButton(ns('share_chart'), 'Share chart')
       )
@@ -289,7 +291,7 @@ mod_recent_mean_server <- function(input, output, session){
                            'Value', 'Unit_of_measurement')
           # add stampe 
           temp_stamp <- temp[1,]
-          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2022'
           temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
           write.csv(temp, file)
@@ -336,7 +338,7 @@ mod_recent_mean_server <- function(input, output, session){
                                             leaflet::addProviderTiles('CartoDB.PositronOnlyLabels',
                                                              options = pathOptions(pane = "country_labels"),
                                                              layerId = 'country_labs') %>%
-                                            leaflet::addTiles(urlTemplate = "", attribution = 'HEFPI database, The World Bank, 2021') 
+                                            leaflet::addTiles(urlTemplate = "", attribution = 'HEFPI database, The World Bank, 2022') 
                                       
                                           mapview::mapshot( x = this_map,
                                                             file = file,
@@ -677,7 +679,7 @@ mod_recent_con_server <- function(input, output, session){
                            'Value', 'Unit_of_measurement')
           # add stampe 
           temp_stamp <- temp[1,]
-          temp_stamp$Region <- 'HEFPI database, The World Bank, 2021'
+          temp_stamp$Region <- 'HEFPI database, The World Bank, 2022'
           temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Survey_name <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
           write.csv(temp, file)
@@ -743,7 +745,7 @@ mod_recent_con_server <- function(input, output, session){
                                             leaflet::addProviderTiles('CartoDB.PositronOnlyLabels',
                                                              options = pathOptions(pane = "country_labels"),
                                                              layerId = 'country_labs') %>%
-                                            leaflet::addTiles(urlTemplate = "", attribution = 'HEFPI database, The World Bank, 2021') 
+                                            leaflet::addTiles(urlTemplate = "", attribution = 'HEFPI database, The World Bank, 2022') 
                                           mapview::mapshot( x = this_map,
                                                             file = file,
                                                             cliprect = "viewport",

@@ -158,7 +158,7 @@ mod_dat_country_server <- function(input, output, session){
                                         col_vec <-dat_list[[3]]
                                         # make plot title 
                                         plot_title = paste0('Data availability', ' - By country')
-                                        caption_text = 'HEFPI database, The World Bank, 2021'
+                                        caption_text = 'HEFPI database, The World Bank, 2022'
                                         
                                         # plot
                                         p <-  ggplot2::ggplot(df, ggplot2::aes(as.numeric(year), indicator_short_name, fill = level2)) + 
@@ -558,7 +558,7 @@ mod_dat_ind_server <- function(input, output, session){
                                         
                                         # make plot title 
                                         plot_title = paste0('Data availability',' - By indicator')
-                                        caption_text = 'HEFPI database, The World Bank, 2021'
+                                        caption_text = 'HEFPI database, The World Bank, 2022'
                                         
                                         mytext <- paste(
                                           "Economy: ", as.character(temp_data$country), "\n",
