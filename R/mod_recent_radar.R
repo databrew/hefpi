@@ -26,7 +26,7 @@ mod_recent_radar_ui <- function(id){
                     ),
                     shiny::uiOutput(ns('warningMsg')),
                     shiny::plotOutput(
-               ns('recent_radar_plot'), height = 750 ),
+               ns('recent_radar_plot'), height = 750),
       ),
       shiny::column(4,
                     shinyalert::useShinyalert(),
@@ -263,7 +263,6 @@ mod_recent_radar_server <- function(input, output, session){
                         vlcex = .8, vlabels = colnames(pd),
                         maxmin = FALSE,
                         caxislabels = NULL, title = NULL,
-                        xpd = TRUE, mar = c(-10, -10, -10, -10),
                       ),
                       mfrow = c(1, 1)
       )
