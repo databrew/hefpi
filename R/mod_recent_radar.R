@@ -25,8 +25,8 @@ mod_recent_radar_ui <- function(id){
                       'Chart will only display available data. Please select at least two countries and a minimum of three indicators to compare.'
                     ),
                     shiny::uiOutput(ns('warningMsg')),
-                    shiny::plotOutput(ns('recent_radar_plot'), height = 700 ),
-                    shiny::htmlOutput(ns('custom_plot_label'))
+                    shiny::plotOutput(
+               ns('recent_radar_plot'), height = 700 ),
       ),
       shiny::column(4,
                     shinyalert::useShinyalert(),
@@ -267,11 +267,11 @@ mod_recent_radar_server <- function(input, output, session){
                       mfrow = c(1, 1)
       )
       # Add an horizontal legend
-      # graphics::legend(
-      #   x = "bottom", legend = rownames(pd), horiz = TRUE,
-      #   bty = "n", pch = 20 , col = rcartocolor::carto_pal(ncol(pd), "Vivid"),
-      #   text.col = "black", cex = 1, pt.cex = 1.5
-      # )
+      graphics::legend(
+        x = "bottom", legend = rownames(pd), horiz = FALSE,
+        bty = "n", pch = 20 , col = rcartocolor::carto_pal(ncol(pd), "Vivid"),
+        text.col = "black", cex = 1, pt.cex = 1.5
+      )
       
       pop_radar <- grDevices::recordPlot()
       
@@ -292,33 +292,6 @@ mod_recent_radar_server <- function(input, output, session){
       
       # store palette, text, map object, and data in list
       pop_radar_list <- list(pop_radar, pd, year_title)
-      
-      
-      
-      output$custom_plot_label <- renderUI({
-        color_vector_pal <- rep(rcartocolor::carto_pal(12, "Vivid"), 5)
-        countries <- country_names
-        
-        create_legend_item <- function(country, color) {
-          str_ <- stringr::str_glue('
-                                    <div class="legend_item">
-                                        <div class="labelmark" style="background: {color}"></div>
-                                        <div class="label_text">{country}</div>
-                                    </div>
-                                    ')
-          
-          return(as.character(str_))
-        }
-        
-        legend_items_vector <- purrr::map(1:length(countries), function(x) {
-          create_legend_item(countries[x], color_vector_pal[x])
-        })
-        
-        html_string <- paste(unlist(legend_items_vector), collapse=" ")
-        
-        HTML(html_string)
-        
-      })
       # save(pop_radar_list, file = 'data/pop_radar_list.rda')
       # save(pop_radar_list, file = 'data/pop_radar_list.rda')
     }
