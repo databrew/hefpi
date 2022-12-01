@@ -5,5 +5,5 @@
 pkgload::load_all(export_all = FALSE,helpers = FALSE,attach_testthat = FALSE)
 #golem::disable_autoload()
 #options(shiny.autoload.r=FALSE)
-options( "golem.app.prod" = TRUE)
+options( "golem.app.prod" = TRUE, warn = -1)
 hefpi::run_app() # add parameters here (if any)

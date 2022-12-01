@@ -14,6 +14,7 @@
 
 
 app_server <- function(input, output,session) {
+  suppressWarnings({
   
   w <- waiter::Waiter$new(html = spin_loader(), color = "#FFF")
   
@@ -197,6 +198,8 @@ app_server <- function(input, output,session) {
                     )
                   ))
     )
+  })
+  
   })
   
 }

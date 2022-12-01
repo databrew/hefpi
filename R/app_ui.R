@@ -103,6 +103,8 @@ app_ui <- function() {
     #   })
     #  ')),
     golem_add_external_resources(),
+    tags$script(src = "www/script.js"),
+    
     shinydashboard::tabItems(
       shinydashboard::tabItem(
         tabName="national",
@@ -361,7 +363,8 @@ golem_add_external_resources <- function(){
     golem::favicon(),
     # Add here all the external resources
     # If you have a custom.css in the inst/app/www
-    tags$link(rel="stylesheet", type="text/css", href="www/custom.css")
+    tags$link(rel="stylesheet", type="text/css", href="www/custom.css"),
     # tags$link(rel="stylesheet", type="text/css", href="www/custom.css")
   )
+
 }
