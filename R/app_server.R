@@ -1,8 +1,8 @@
-#' @import shiny
+#' @rawNamespace import(shiny, except = runExample)
 #' @import shinydashboard
-#' @import shinyWidgets
-#' @import shinyjs
-#' @import ggplot2
+#' @rawNamespace import(shinyWidgets, except = alert)
+#' @rawNamespace import(shinyjs, except = show)
+#' @rawNamespace import(ggplot2, except = last_plot)
 #' @import tidyr
 #' @import htmltools
 #' @import RColorBrewer
