@@ -1,7 +1,7 @@
 #' Theme based on goolge docs
 #'
 #' Theme similar to the default look of charts in Google Docs.
-#' @import ggthemes
+#' @rawNamespace import(ggthemes, except = last_plot)
 #' @inheritParams ggplot2::theme_grey
 #' @export
 

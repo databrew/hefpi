@@ -14,7 +14,7 @@
 #' @keywords internal
 #' @export 
 #' @import tidyverse
-#' @import ggplot2
+#' @rawNamespace import(ggplot2, except = last_plot) 
 #' @import reshape2
 #' @importFrom shiny NS tagList 
 mod_dat_ind_alt_ui <- function(id){
@@ -51,8 +51,8 @@ mod_dat_ind_alt_ui <- function(id){
 #' @export
 #' @import tidyverse
 #' @import RColorBrewer
-#' @import ggplot2
-#' @import ggthemes
+#' @rawNamespace import(ggplot2, except = last_plot)
+#' @rawNamespace import(ggthemes, except = last_plot)
 #' @import scales
 #' @import reshape2
 #' @import htmltools

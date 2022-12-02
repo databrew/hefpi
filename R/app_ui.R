@@ -1,8 +1,8 @@
-#' @import shiny
+#' @rawNamespace import(shiny, except = runExample)
 #' @import shinydashboard
-#' @import shinyWidgets
-#' @import shinyjs
-#' @import ggplot2
+#' @rawNamespace import(shinyWidgets, except = alert)
+#' @rawNamespace import(shinyjs, except = show)
+#' @rawNamespace import(ggplot2, except = last_plot)
 #' @import tidyr
 #' @import htmltools
 #' @import RColorBrewer
@@ -13,14 +13,12 @@
 #' @import forcats
 #' @import stringr
 #' @import waiter
-#' @import shinyalert
+#' @rawNamespace import(shinyalert, except = runExample)
 #' @importFrom shiny NS tagList 
 
 
 app_ui <- function() {
   
-
-  # HEADER
   header <- shinydashboard::dashboardHeader(title  = '')
   
   # SIDEBAR
@@ -82,7 +80,8 @@ app_ui <- function() {
     waiter::waiter_show_on_load(html = spin_loader(), color = "#fff"),
     # waiter_show_on_load(spinner), # will show on load
     # waiter_show_on_load(html = spin_1(), color = "#333e48"),
-    
+   
+  # HEADER
     tags$head(tags$style(HTML(
       ' .headerTitleCust {
           font-size: 20px;
@@ -352,7 +351,7 @@ app_ui <- function() {
   )
 }
 
-#' @import shiny
+#' @rawNamespace import(shiny, except = runExample)
 golem_add_external_resources <- function(){
   
   addResourcePath(
@@ -366,5 +365,6 @@ golem_add_external_resources <- function(){
     tags$link(rel="stylesheet", type="text/css", href="www/custom.css"),
     # tags$link(rel="stylesheet", type="text/css", href="www/custom.css")
   )
-
 }
+
+
