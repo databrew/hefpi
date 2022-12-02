@@ -96,13 +96,16 @@ app_ui <- function() {
     '))),
     shiny::uiOutput('style_tag'),
     shiny::uiOutput('script_tag'),
-    # tags$script(HTML('
-    #   $(document).ready(function() {
-    #     $("header").find("nav").append(\'<span class="myClass"> Health Equity and Financial Protection Indicators (HEFPI)</span>\');
-    #   })
-    #  ')),
+    tags$script(HTML('
+      $(document).ready(function() {
+        $("#recent_radar-generate_chart").click(function(){
+          $("#sidebarCollapsed").attr( "data-collapsed", true);
+                             $("body").addClass("sidebar-collapse")
+        });
+      })
+     ')),
     golem_add_external_resources(),
-    tags$script(src = "www/script.js"),
+    # tags$script(src = "www/script.js"),
     
     shinydashboard::tabItems(
       shinydashboard::tabItem(

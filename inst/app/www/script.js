@@ -17,7 +17,7 @@ $("#recent_radar-generate_chart").click(function(){
   $('body').addClass('sidebar-collapse')
 });
 
-console.log(111)
+// console.log(111)
 
 
 });
