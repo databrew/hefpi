@@ -315,7 +315,8 @@ mod_recent_mean_server <- function(input, output, session){
   }) 
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- shiny::downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".jpg"),
+  output$dl_plot <- shiny::downloadHandler(
+                                    filename = "most_recent_value_mean_map.png",
                                     content = function(file) {
                                       pop_map <- user_zoom()
                                       if(is.null(pop_map)){
@@ -327,7 +328,7 @@ mod_recent_mean_server <- function(input, output, session){
                                                                                        maxZoom = 10)) %>% 
                                             leaflet::addProviderTiles('OpenStreetMap.DE') %>%
                                             leaflet::setView(lat=0, lng=0 , zoom=1.7) 
-                                            mapview::mapshot(x = this_map,
+                                            mapview::mapshot(x = å,
                                                             file = file,
                                                             cliprect = "viewport",
                                                             selfcontained = FALSE)

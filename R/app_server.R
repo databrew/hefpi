@@ -17,7 +17,7 @@ app_server <- function(input, output,session) {
   suppressWarnings({
   
   w <- waiter::Waiter$new(html = spin_loader(), color = "#FFF")
-  
+  webshot::install_phantomjs()
   # Capture URL parameters
   # shinyURL.server()
 

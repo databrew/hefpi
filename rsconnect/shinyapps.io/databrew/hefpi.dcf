@@ -1,0 +1,13 @@
+name: hefpi
+title: hefpi
+username:
+account: databrew
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7795953
+bundleId: 6598973
+url: https://databrew.shinyapps.io/hefpi/
+when: 1670333277.84516
+lastSyncTime: 1670333277.84517
+asMultiple: FALSE
+asStatic: FALSE
