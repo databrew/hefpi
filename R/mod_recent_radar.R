@@ -25,7 +25,7 @@ mod_recent_radar_ui <- function(id){
                       'Chart will only display available data. Please select at least two countries and a minimum of three indicators to compare.'
                     ),
                     shiny::uiOutput(ns('warningMsg')),
-                    shiny::plotOutput(
+                    plotly::plotlyOutput(
                ns('recent_radar_plot'), height = 750),
       ),
       shiny::column(4,
@@ -242,38 +242,67 @@ mod_recent_radar_server <- function(input, output, session){
       # use this as guide https://github.com/ricardo-bion/ggradar/blob/master/R/ggradar.R
       pd <- as.data.frame(pd)
       pd <- pd %>% tibble::column_to_rownames(var="country")
+      
+      pd <- pd %>% 
+        tibble::rownames_to_column("country") %>%
+        pivot_longer(cols=c(2:ncol(.))) %>%
+        group_by(country) %>%
+        # nest() %>%
+        group_split()
+      
+      ncoutries <- length(pd)
+      
+      
+      #radar 
+      fig <- plot_ly(
+        type = 'scatterpolar',
+        fill = 'toself'
+      ) 
+      
+      purrr::map(1:ncoutries, function(x) {
+        fig <<- fig %>%
+          add_trace(
+            r     = pd[[x]]$value,
+            theta = pd[[x]]$name,
+            name  = unique(pd[[x]]$country)
+          ) 
+      })
+      
+      pop_radar <- fig
+      
+      
       save(pd, file = 'temp_pd.rda')
       # names(pd) <- stringr::str_replace_all(names(pd),pattern = ' ', replacement = '\n' )
       # CUSTOM radar plot
 
       # clear plots in workspace
-      graphics::plot.new()
-      
-      
-      par(
-                      fmsb::radarchart(
-                        pd, axistype = 1,
-                        # Customize the polygon
-                        pcol = rcartocolor::carto_pal(ncol(pd), "Vivid"), pfcol = scales::alpha(rcartocolor::carto_pal(ncol(pd), "Vivid"), 0.35), plwd = 2, plty = 1,
-                        # Customize the grid
-                        cglcol = "grey", cglty = 1, cglwd = 0.8,
-                        # Customize the axis
-                        axislabcol = "grey", 
-                        # Variable labels
-                        vlcex = .8, vlabels = colnames(pd),
-                        maxmin = FALSE,
-                        caxislabels = NULL, title = NULL,
-                      ),
-                      mfrow = c(1, 1)
-      )
-      # Add an horizontal legend
-      graphics::legend(
-        x = 0.8, y = 1, legend = rownames(pd), horiz = FALSE,
-        bty = "n", pch = 20 , col = rcartocolor::carto_pal(ncol(pd), "Vivid"),
-        text.col = "black", cex = 1, pt.cex = 3
-      )
-      
-      pop_radar <- grDevices::recordPlot()
+      # graphics::plot.new()
+      # 
+      # 
+      # par(
+      #                 fmsb::radarchart(
+      #                   pd, axistype = 1,
+      #                   # Customize the polygon
+      #                   pcol = rcartocolor::carto_pal(ncol(pd), "Vivid"), pfcol = scales::alpha(rcartocolor::carto_pal(ncol(pd), "Vivid"), 0.35), plwd = 2, plty = 1,
+      #                   # Customize the grid
+      #                   cglcol = "grey", cglty = 1, cglwd = 0.8,
+      #                   # Customize the axis
+      #                   axislabcol = "grey", 
+      #                   # Variable labels
+      #                   vlcex = .8, vlabels = colnames(pd),
+      #                   maxmin = FALSE,
+      #                   caxislabels = NULL, title = NULL,
+      #                 ),
+      #                 mfrow = c(1, 1)
+      # )
+      # # Add an horizontal legend
+      # graphics::legend(
+      #   x = 0.8, y = 1, legend = rownames(pd), horiz = FALSE,
+      #   bty = "n", pch = 20 , col = rcartocolor::carto_pal(ncol(pd), "Vivid"),
+      #   text.col = "black", cex = 1, pt.cex = 3
+      # )
+      # 
+      # pop_radar <- grDevices::recordPlot()
       
       # pop_radar <- ggradar::ggradar(pd,
       #                               # axis.label.size = 3,
@@ -339,7 +368,7 @@ mod_recent_radar_server <- function(input, output, session){
   })
   
   # ---- RENDER RADAR PLOT ---- #
-  output$recent_radar_plot <- shiny::renderPlot({
+  output$recent_radar_plot <- plotly::renderPlotly({
     pop_radar <- chart_data$plot_data
     if(length(pop_radar) == 1){
       pop_radar <- hefpi::pop_radar_list
@@ -348,12 +377,12 @@ mod_recent_radar_server <- function(input, output, session){
       NULL
     } else {
       if(any(is.na(pop_radar))){
-        p <- ggplot2::ggplot() + ggplot2::labs(title = "No data available for the selected inputs")
+        p <- plotly::ggplotly(ggplot2::ggplot() + ggplot2::labs(title = "No data available for the selected inputs"))
         p
       } else {
         p <- pop_radar[[1]]
         p
-        
+
       }
     }
   })
