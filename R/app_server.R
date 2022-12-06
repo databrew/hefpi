@@ -93,12 +93,12 @@ app_server <- function(input, output,session) {
                                             background-image: none !important;
                                             background-size: cover !important;
                                             margin: 0px;
-                                            height: 102px !important;
+                                            height: 40px !important;
                                             background-color: #FFF !important;
                                         }
                                             
                                         #sidebarCollapsed {
-                                            padding-top: 102px !important;
+                                            padding-top: 40px !important;
                                         }
                                         
                                         .content {
