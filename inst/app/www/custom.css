@@ -239,7 +239,7 @@ a:active,a:focus,a:hover {
     background-color: transparent;
     background-image: none;
     color: #fff;
-    padding: 40px 20px;
+    padding: 20px 20px;
     font-family: fontAwesome 
 }
 .main-header .sidebar-toggle:before {
@@ -264,7 +264,7 @@ a:active,a:focus,a:hover {
     transition: width .3s ease-in-out;
     display: block;
     float: left;
-    height: 102px;
+    height: 30px !important;
     font-size: 24px;
     line-height: 110px;
     text-align: left;
@@ -276,7 +276,7 @@ a:active,a:focus,a:hover {
 }
 
 .main-header .logo img {
-    height: 102px;
+    height: 30px !important;
     width: 200px;
 
 }
@@ -384,7 +384,7 @@ a:active,a:focus,a:hover {
     position: absolute;
     top: 0;
     left: 0;
-    padding-top: 102px;
+    padding-top: 30px !important;
     min-height: 100%;
     z-index: 810;
     -webkit-transition: -webkit-transform .3s ease-in-out,width .3s ease-in-out;
@@ -459,7 +459,7 @@ a:active,a:focus,a:hover {
     text-transform: uppercase;
     font-weight: 500;
     list-style: none;
-    margin: 0;
+    margin-top: 30px;
     padding: 0;
 }
 .sidebar-menu>li {
@@ -2379,25 +2379,18 @@ table.text-center,table.text-center td,table.text-center th {
 
 /* logo */
 .skin-blue .main-header .logo {
-                      background-color: #FFF;
-                      padding-top:0px;
-                      padding-right:0px;
-                      padding-left:20px;
-                      padding-bottom:0px
+                      visibility: hidden;
 
                       }
 
 /* logo when hovered */
 .skin-blue .main-header .logo:hover {
-                      background-color: #FFF !important;
-                      padding-top:0px;
-                      padding-right:0px;
-                      padding-left:0px;
-                      padding-bottom:0px                      }
+                      visibility: hidden;                  }
 
 /* navbar (rest of the header) */
 .skin-blue .main-header .navbar {
                       background-color: #FFF !important; /*here for top of page dark blue*/
+                      height: 60px !important;
                       }
 
 /* main sidebar */
