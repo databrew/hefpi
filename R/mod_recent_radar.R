@@ -20,10 +20,10 @@ mod_recent_radar_ui <- function(id){
       
       shiny::column(8,
                     shiny::uiOutput(ns('radar_title_ui')),
-                    p(
-                      class='helpText',
-                      'Chart will only display available data. Please select at least two countries and a minimum of three indicators to compare.'
-                    ),
+                    # p(
+                    #   class='helpText',
+                    #   'Chart will only display available data. Please select at least two countries and a minimum of three indicators to compare.'
+                    # ),
                     shiny::uiOutput(ns('warningMsg')),
                     plotly::plotlyOutput(
                ns('recent_radar_plot'), height = 750),
@@ -60,7 +60,7 @@ mod_recent_radar_ui <- function(id){
                          value = c(1982, 2021),
                          step = 1,
                          sep = ''),
-             shiny::actionButton(ns('dl_plot'), 'Download image'),
+             # shiny::actionButton(ns('dl_plot'), 'Download image'),
              # shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              shiny::downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
       )
@@ -437,9 +437,9 @@ mod_recent_radar_server <- function(input, output, session){
   
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  observeEvent(input$dl_plot, {
-    shinyscreenshot::screenshot(id = "recent_radar_plot", filename = paste0("recent_radar_", Sys.Date()))
-  })
+  # observeEvent(input$dl_plot, {
+  #   shinyscreenshot::screenshot(id = "recent_radar_plot", filename = paste0("recent_radar_", Sys.Date()))
+  # })
   
   # output$dl_plot <- shiny::downloadHandler(filename = paste0("most_recent_value_mean_", Sys.Date(), ".jpg"),
   #                                   content = function(file) {
