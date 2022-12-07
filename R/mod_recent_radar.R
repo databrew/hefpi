@@ -268,10 +268,22 @@ mod_recent_radar_server <- function(input, output, session){
           ) 
       })
       
-      pop_radar <- fig
+      pop_radar <- fig %>% layout(
+        autosize = F, 
+        # width = 500,
+        # height = 500,
+        margin = list(
+                      l = 150,
+                      r = 150,
+                      b = 100,
+                      t = 100,
+                      pad = 100
+                 )
+      )
+
       
       
-      save(pd, file = 'temp_pd.rda')
+      # save(pd, file = 'temp_pd.rda')
       # names(pd) <- stringr::str_replace_all(names(pd),pattern = ' ', replacement = '\n' )
       # CUSTOM radar plot
 
