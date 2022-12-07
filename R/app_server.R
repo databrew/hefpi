@@ -16,8 +16,8 @@
 app_server <- function(input, output,session) {
   suppressWarnings({
   
-  w <- waiter::Waiter$new(html = spin_loader(), color = "#FFF")
-  webshot::install_phantomjs()
+  # w <- waiter::Waiter$new(html = spin_loader(), color = "#FFF")
+  # webshot::install_phantomjs()
   # Capture URL parameters
   # shinyURL.server()
 
@@ -124,8 +124,8 @@ app_server <- function(input, output,session) {
     }
     
     # give time for wait screen to show
-    Sys.sleep(3) 
-    hide_waiter()
+    # Sys.sleep(3) 
+    # hide_waiter()
     
   })
   
@@ -156,18 +156,18 @@ app_server <- function(input, output,session) {
     }
     
     # give time for wait screen to show
-    Sys.sleep(3) 
-    hide_waiter()
+    # Sys.sleep(3) 
+    # hide_waiter()
     
   })
   
-  shiny::observeEvent(input$sidebar, {
-    w$show()
-    Sys.sleep(3) # give time for wait screen to show
-    w$hide()
-    waiter_hide() # will hide *on_load waiter
-  })
-  
+  # shiny::observeEvent(input$sidebar, {
+  #   w$show()
+  #   Sys.sleep(3) # give time for wait screen to show
+  #   w$hide()
+  #   waiter_hide() # will hide *on_load waiter
+  # })
+  # 
 
   output$plot1 <- shiny::renderPlot({
     barplot(1:10, col = grey(seq(0, 1, length = 10)),
@@ -175,7 +175,7 @@ app_server <- function(input, output,session) {
             sub = "You can't modify it from html/css, it's an image file")
   })
   
-  library(leaflet)
+
   output$l1 <- leaflet::renderLeaflet({
     leaflet::leaflet() %>%
       leaflet::addProviderTiles('Esri.WorldImagery') %>%
