@@ -17,7 +17,7 @@ app_server <- function(input, output,session) {
   shinyOptions(cache = cachem::cache_disk("./bind-cache"))
   suppressWarnings({
   
-  w <- waiter::Waiter$new(html = spin_loader(), color = "#FFF")
+  # w <- waiter::Waiter$new(html = spin_loader(), color = "#FFF")
   webshot::install_phantomjs()
   # Capture URL parameters
   # shinyURL.server()
@@ -53,6 +53,5 @@ app_server <- function(input, output,session) {
   })
   
   waiter_hide()
-  
   
 }

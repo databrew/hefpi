@@ -789,7 +789,22 @@ mod_recent_con_server <- function(input, output, session){
         shp <- con_map[[2]]
         unit_of_measure <- con_map[[3]]
         temp <- shp@data
-        temp <- temp %>% filter(!is.na(value))
+        
+        # save(temp, file = 'data-raw/map_plot_error.rda')
+        # load('data-raw/map_plot_error.rda')
+        
+        temp <- temp %>%
+          # as_tibble() %>% 
+          filter(!is.na(value)) %>% 
+          distinct() %>%
+          # optional depends on
+          drop_na(WB_A2)
+        
+        # temp %>% View()
+        # temp <- temp[temp$NAME == 'Netherlands',]
+        # temp %>%
+        #   group_by(NAME) %>%
+        #   summarise(n = n()) %>% arrange(desc(n))
         
         # generate map
         plot_text <- paste(

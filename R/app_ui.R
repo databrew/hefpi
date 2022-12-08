@@ -76,8 +76,8 @@ app_ui <- function() {
   
   # BODY
   body <- shinydashboard::dashboardBody(
-    waiter::use_waiter(),
-    waiter::waiter_show_on_load(html = spin_loader(), color = "#fff"),
+    # waiter::use_waiter(),
+    # waiter::waiter_show_on_load(html = spin_loader(), color = "#fff"),
     # waiter_show_on_load(spinner), # will show on load
     # waiter_show_on_load(html = spin_1(), color = "#333e48"),
    
