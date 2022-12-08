@@ -50,83 +50,9 @@ app_server <- function(input, output,session) {
   # data availability alternate tab
   callModule(mod_dat_ind_alt_server, 'dat_ind_alt1')
   
-  
-  
-  output$style_tag <- shiny::renderUI({
-
-    
-    if(input$sidebar=='about' || input$sidebar=='docu'){
-      
-      return( (tags$head(tags$style(HTML('
-                                       .skin-blue .main-header .navbar {
-                                            background-image: url(www/hefpi_banner.png) !important;
-                                            background-size: cover !important;
-                                            margin: 0px;
-                                            height: 450px !important;
-                                            background-position-x: center;
-                                        }
-                                            
-                                        #sidebarCollapsed {
-                                            padding-top: 451px !important;
-                                        }
-                                      
-                                        .content {
-                                          margin-top: 345px !important;
-                                        }
-                                        
-                                       ')))
-     #         tags$script(HTML('
-     #              $(document).ready(function() {
-     #                  $( ".myClass" ).remove();
-     #                  $("header").find("nav").append(\'<span class="myClass"></span>\');
-     #        
-     #              })
-     # '))
-      )
-             )
-      
-    } else {
-      return(
-      (
-        tags$head(tags$style(HTML('
-                                       .skin-blue .main-header .navbar {
-                                            background-image: none !important;
-                                            background-size: cover !important;
-                                            margin: 0px;
-                                            height: 40px !important;
-                                            background-color: #FFF !important;
-                                        }
-                                            
-                                        #sidebarCollapsed {
-                                            padding-top: 40px !important;
-                                        }
-                                        
-                                        .content {
-                                          margin-top: 0px !important;
-                                        }
-                                        
-                                        
-                                       ')))
-      
-     #  tags$script(HTML('
-     #  
-     #  $(document).ready(function() {
-     #  
-     #      $( ".myClass" ).remove();
-     #      $("header").find("nav").append(\'<span class="myClass"> Health Equity and Financial Protection Indicators (HEFPI)</span>\');
-     # 
-     # 
-     #  })
-     #  
-     # '))
-      )
-      )
-    }
-    
-    # give time for wait screen to show
   })
   
-  })
   waiter_hide()
+  
   
 }
