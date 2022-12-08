@@ -198,8 +198,8 @@ a:active,a:focus,a:hover {
     -o-transition: margin-left .3s ease-in-out;
     transition: margin-left .3s ease-in-out;
     margin-bottom: 0;
-    margin-left: 230px;
-    min-height: 50px;
+    margin-left: 0px;
+    min-height: 30px;
     border-radius: 0}
 .layout-top-nav .main-header .navbar {
     margin-left: 0}
@@ -459,7 +459,7 @@ a:active,a:focus,a:hover {
     text-transform: uppercase;
     font-weight: 500;
     list-style: none;
-    margin-top: 30px;
+    margin-top: 15px;
     padding: 0;
 }
 .sidebar-menu>li {
@@ -2390,7 +2390,7 @@ table.text-center,table.text-center td,table.text-center th {
 /* navbar (rest of the header) */
 .skin-blue .main-header .navbar {
                       background-color: #FFF !important; /*here for top of page dark blue*/
-                      height: 60px !important;
+                      height: 30px !important;
                       }
 
 /* main sidebar */

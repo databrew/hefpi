@@ -303,87 +303,87 @@ mod_dots_country_server <- function(input, output, session){
   )
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- shiny::downloadHandler(filename = paste0("quintile_country_", Sys.Date(),".png"),
-                                    content = function(file) {
-                                      
-                                      dot_list <- chart_data$plot_data
-                                      if(length(dot_list)==1){
-                                        dot_list <- hefpi::dots_country_default
-                                      }
-                                     
-                                      if(is.null(dot_list)){
-                                        NULL
-                                      } else {
-                                        df <- dot_list[[1]]
-                                        unit_of_measure <- dot_list[[2]]
-                                        indicator <- dot_list[[3]]
-                                        value_range <- dot_list[[4]]
-                                        date_range <- dot_list[[5]]
-                                        
-                                        
-                                        # get color graident 
-                                        # col_vec <- brewer.pal(name = 'PRGn', n = length(unique(df$variable)) + 1)
-                                        # col_vec <- col_vec[-1]
-                                        col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
-                                        
-                                        # make plot title 
-                                        plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
-                                        sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
-                                        y_axis_text = paste0(indicator)
-                                        caption_text = 'HEFPI database, The World Bank, 2022'
-                                        
-                                        mytext <- paste(
-                                          "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
-                                          "Year: ", as.character(df$year),"\n",
-                                          "Indicator: ", as.character(indicator),"\n",
-                                          "Data source: ", as.character(df$referenceid_list),
-                                          sep="") %>%
-                                          lapply(htmltools::HTML)
-                                        # number of countries
-                                        plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
-                                        if(plot_height < 250){
-                                          plot_height <- 250
-                                        }
-                                        p <- ggplot2::ggplot(df, ggplot2::aes(x=country,
-                                                            y=value)) +
-                                          ggplot2::geom_point(size=rel(2), alpha = 0.7, ggplot2::aes(color = variable)) +
-                                          ggplot2::geom_line(ggplot2::aes(group = country), color = 'black', size = 0.25) +
-                                          ggplot2::scale_color_manual(name = '',
-                                                             values = col_vec) +
-                                          ggplot2::scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
-                                                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
-                                                             expand = c(0,0)) +
-                                          ggplot2::labs(title='',
-                                               subtitle = '', 
-                                               x = 'Country', 
-                                               y = 'Value', 
-                                               caption=caption_text) +
-                                          ggplot2::coord_flip() 
-                                        
-                                        p <- p +
-                                          hefpi::theme_hefpi(grid_major_x = NA,
-                                                                    y_axis_size = rel(2/3),
-                                                                    x_axis_size = rel(1),
-                                                                    x_axis_hjust = 0.5,
-                                                                    y_axis_hjust = 1,
-                                                                    y_axis_vjust = 0.5) +
-                                                          ggplot2::theme(
-                                                            panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
-                                                            panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
-                                                            panel.grid.major.x = element_blank(),
-                                                            panel.grid.minor.x = element_blank(),
-                                                            axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
-                                                            axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
-                                                          ) +
-                                                          ggplot2::labs(title = '',
-                                                               subtitle = '',
-                                                               x = 'Country', 
-                                                               y = 'Value'
-                                                               ) 
-                                        p
-                                        ggplot2::ggsave(file, width = 8, height = 8)
-                                      }
-                                    })
+  # output$dl_plot <- shiny::downloadHandler(filename = paste0("quintile_country_", Sys.Date(),".png"),
+  #                                   content = function(file) {
+  #                                     
+  #                                     dot_list <- chart_data$plot_data
+  #                                     if(length(dot_list)==1){
+  #                                       dot_list <- hefpi::dots_country_default
+  #                                     }
+  #                                    
+  #                                     if(is.null(dot_list)){
+  #                                       NULL
+  #                                     } else {
+  #                                       df <- dot_list[[1]]
+  #                                       unit_of_measure <- dot_list[[2]]
+  #                                       indicator <- dot_list[[3]]
+  #                                       value_range <- dot_list[[4]]
+  #                                       date_range <- dot_list[[5]]
+  #                                       
+  #                                       
+  #                                       # get color graident 
+  #                                       # col_vec <- brewer.pal(name = 'PRGn', n = length(unique(df$variable)) + 1)
+  #                                       # col_vec <- col_vec[-1]
+  #                                       col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
+  #                                       
+  #                                       # make plot title 
+  #                                       plot_title = paste0('Quintiles - Most recent value by country', ' - ', indicator)
+  #                                       sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
+  #                                       y_axis_text = paste0(indicator)
+  #                                       caption_text = 'HEFPI database, The World Bank, 2022'
+  #                                       
+  #                                       mytext <- paste(
+  #                                         "Value: ", paste0(round(df$value, digits = 2), ' (', unit_of_measure, ')'), "\n",
+  #                                         "Year: ", as.character(df$year),"\n",
+  #                                         "Indicator: ", as.character(indicator),"\n",
+  #                                         "Data source: ", as.character(df$referenceid_list),
+  #                                         sep="") %>%
+  #                                         lapply(htmltools::HTML)
+  #                                       # number of countries
+  #                                       plot_height <- ceiling(((length(unique(df$country))* 100) + 100)/3)
+  #                                       if(plot_height < 250){
+  #                                         plot_height <- 250
+  #                                       }
+  #                                       p <- ggplot2::ggplot(df, ggplot2::aes(x=country,
+  #                                                           y=value)) +
+  #                                         ggplot2::geom_point(size=rel(2), alpha = 0.7, ggplot2::aes(color = variable)) +
+  #                                         ggplot2::geom_line(ggplot2::aes(group = country), color = 'black', size = 0.25) +
+  #                                         ggplot2::scale_color_manual(name = '',
+  #                                                            values = col_vec) +
+  #                                         ggplot2::scale_y_continuous(limits = c((value_range[1]), (value_range[2] + 5)), 
+  #                                                            breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+  #                                                            expand = c(0,0)) +
+  #                                         ggplot2::labs(title='',
+  #                                              subtitle = '', 
+  #                                              x = 'Country', 
+  #                                              y = 'Value', 
+  #                                              caption=caption_text) +
+  #                                         ggplot2::coord_flip() 
+  #                                       
+  #                                       p <- p +
+  #                                         hefpi::theme_hefpi(grid_major_x = NA,
+  #                                                                   y_axis_size = rel(2/3),
+  #                                                                   x_axis_size = rel(1),
+  #                                                                   x_axis_hjust = 0.5,
+  #                                                                   y_axis_hjust = 1,
+  #                                                                   y_axis_vjust = 0.5) +
+  #                                                         ggplot2::theme(
+  #                                                           panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+  #                                                           panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+  #                                                           panel.grid.major.x = element_blank(),
+  #                                                           panel.grid.minor.x = element_blank(),
+  #                                                           axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+  #                                                           axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
+  #                                                         ) +
+  #                                                         ggplot2::labs(title = '',
+  #                                                              subtitle = '',
+  #                                                              x = 'Country', 
+  #                                                              y = 'Value'
+  #                                                              ) 
+  #                                       p
+  #                                       ggplot2::ggsave(file, width = 8, height = 8)
+  #                                     }
+  #                                   })
 
   
   # ---- PLOT TITLE dots_country ---- #

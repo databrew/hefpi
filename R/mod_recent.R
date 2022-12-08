@@ -42,7 +42,7 @@ mod_recent_mean_ui <- function(id){
                          value = c(1982, 2021),
                          step = 1,
                          sep = ''),
-             shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             # shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              shiny::downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
              # ,
              # br(), br(),
@@ -315,39 +315,39 @@ mod_recent_mean_server <- function(input, output, session){
   }) 
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- shiny::downloadHandler(
-                                    filename = "most_recent_value_mean_map.png",
-                                    content = function(file) {
-                                      pop_map <- user_zoom()
-                                      if(is.null(pop_map)){
-                                        NULL
-                                      } else {
-                                        if(any(is.na(pop_map))){
-                                          
-                                          this_map <- leaflet::leaflet(options = leafletOptions(minZoom = 1, 
-                                                                                       maxZoom = 10)) %>% 
-                                            leaflet::addProviderTiles('OpenStreetMap.DE') %>%
-                                            leaflet::setView(lat=0, lng=0 , zoom=1.7) 
-                                            mapview::mapshot(x = å,
-                                                            file = file,
-                                                            cliprect = "viewport",
-                                                            selfcontained = FALSE)
-                                        } else {
-                                          this_map <- pop_map
-                                          this_map <- this_map %>%
-                                            leaflet::addMapPane("country_labels", zIndex = 410) %>%
-                                            leaflet::addProviderTiles('CartoDB.PositronOnlyLabels',
-                                                             options = pathOptions(pane = "country_labels"),
-                                                             layerId = 'country_labs') %>%
-                                            leaflet::addTiles(urlTemplate = "", attribution = 'HEFPI database, The World Bank, 2022') 
-                                      
-                                          mapview::mapshot( x = this_map,
-                                                            file = file,
-                                                            cliprect = "viewport",
-                                                            selfcontained = FALSE)
-                                        }
-                                      }
-                                    })
+  # output$dl_plot <- shiny::downloadHandler(
+  #                                   filename = "most_recent_value_mean_map.png",
+  #                                   content = function(file) {
+  #                                     pop_map <- user_zoom()
+  #                                     if(is.null(pop_map)){
+  #                                       NULL
+  #                                     } else {
+  #                                       if(any(is.na(pop_map))){
+  #                                         
+  #                                         this_map <- leaflet::leaflet(options = leafletOptions(minZoom = 1, 
+  #                                                                                      maxZoom = 10)) %>% 
+  #                                           leaflet::addProviderTiles('OpenStreetMap.DE') %>%
+  #                                           leaflet::setView(lat=0, lng=0 , zoom=1.7) 
+  #                                           mapview::mapshot(x = å,
+  #                                                           file = file,
+  #                                                           cliprect = "viewport",
+  #                                                           selfcontained = FALSE)
+  #                                       } else {
+  #                                         this_map <- pop_map
+  #                                         this_map <- this_map %>%
+  #                                           leaflet::addMapPane("country_labels", zIndex = 410) %>%
+  #                                           leaflet::addProviderTiles('CartoDB.PositronOnlyLabels',
+  #                                                            options = pathOptions(pane = "country_labels"),
+  #                                                            layerId = 'country_labs') %>%
+  #                                           leaflet::addTiles(urlTemplate = "", attribution = 'HEFPI database, The World Bank, 2022') 
+  #                                     
+  #                                         mapview::mapshot( x = this_map,
+  #                                                           file = file,
+  #                                                           cliprect = "viewport",
+  #                                                           selfcontained = FALSE)
+  #                                       }
+  #                                     }
+  #                                   })
   
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_mean_plot <- plotly::renderPlotly({
@@ -471,7 +471,7 @@ mod_recent_con_ui <- function(id){
                          value = c(1982, 2021),
                          step = 1,
                          sep = ''),
-             shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+             # shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
              shiny::downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary'),
              br(),br()
       )
@@ -721,39 +721,39 @@ mod_recent_con_server <- function(input, output, session){
   
   
   # ---- DOWNLOAD MAP IMAGE ---- #
-  output$dl_plot <- shiny::downloadHandler(filename = paste0("most_recent_value_ci_", Sys.Date(), ".png"),
-                                    content = function(file) {
-                                      con_map <- user_zoom_ci()
-                                      if(is.null(con_map)){
-                                        NULL
-                                      } else {
-                                        if(any(is.na(con_map))){
-                                          this_map <- leaflet::leaflet(options = leaflet::leafletOptions(minZoom = 1,
-                                                                                       maxZoom = 10)) %>%
-                                            leaflet::addProviderTiles('OpenStreetMap.DE') %>%
-                                            leaflet::setView(lat=0, lng=0 , zoom=1.7)
-                                          mapview::mapshot( x = this_map,
-                                                            file = file,
-                                                            cliprect = "viewport",
-                                                            selfcontained = FALSE)
-                                        } else {
-                                          this_map <- con_map
-                                          # save(this_map, file = 'this_map.rda')
-                                          # HERE need ot add image (inst/app/www/wb_stamp.png) over map
-
-                                          this_map <- this_map %>%
-                                            leaflet::addMapPane("country_labels", zIndex = 410) %>%
-                                            leaflet::addProviderTiles('CartoDB.PositronOnlyLabels',
-                                                             options = pathOptions(pane = "country_labels"),
-                                                             layerId = 'country_labs') %>%
-                                            leaflet::addTiles(urlTemplate = "", attribution = 'HEFPI database, The World Bank, 2022') 
-                                          mapview::mapshot( x = this_map,
-                                                            file = file,
-                                                            cliprect = "viewport",
-                                                            selfcontained = FALSE)
-                                        }
-                                      }
-                                    })
+  # output$dl_plot <- shiny::downloadHandler(filename = paste0("most_recent_value_ci_", Sys.Date(), ".png"),
+  #                                   content = function(file) {
+  #                                     con_map <- user_zoom_ci()
+  #                                     if(is.null(con_map)){
+  #                                       NULL
+  #                                     } else {
+  #                                       if(any(is.na(con_map))){
+  #                                         this_map <- leaflet::leaflet(options = leaflet::leafletOptions(minZoom = 1,
+  #                                                                                      maxZoom = 10)) %>%
+  #                                           leaflet::addProviderTiles('OpenStreetMap.DE') %>%
+  #                                           leaflet::setView(lat=0, lng=0 , zoom=1.7)
+  #                                         mapview::mapshot( x = this_map,
+  #                                                           file = file,
+  #                                                           cliprect = "viewport",
+  #                                                           selfcontained = FALSE)
+  #                                       } else {
+  #                                         this_map <- con_map
+  #                                         # save(this_map, file = 'this_map.rda')
+  #                                         # HERE need ot add image (inst/app/www/wb_stamp.png) over map
+  # 
+  #                                         this_map <- this_map %>%
+  #                                           leaflet::addMapPane("country_labels", zIndex = 410) %>%
+  #                                           leaflet::addProviderTiles('CartoDB.PositronOnlyLabels',
+  #                                                            options = pathOptions(pane = "country_labels"),
+  #                                                            layerId = 'country_labs') %>%
+  #                                           leaflet::addTiles(urlTemplate = "", attribution = 'HEFPI database, The World Bank, 2022') 
+  #                                         mapview::mapshot( x = this_map,
+  #                                                           file = file,
+  #                                                           cliprect = "viewport",
+  #                                                           selfcontained = FALSE)
+  #                                       }
+  #                                     }
+  #                                   })
   
   # ---- RENDER PLOT FROM REACTIVE DATA ---- #
   output$recent_con_plot <- plotly::renderPlotly({

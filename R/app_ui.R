@@ -90,7 +90,7 @@ app_ui <- function() {
           font-family: "Open Sans", sans-serif;
           padding: 0px 0px 0px 0px;
           overflow: hidden;
-          color: white;
+          color: #FFF;
           margin-right: 20%;
       }
     '))),
