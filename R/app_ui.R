@@ -135,6 +135,7 @@ app_ui <- function() {
                    )
         ),
       shinydashboard::tabItem(
+        autoWaiter(),
         tabName="subnational_region",
         # navbarPage(title = '',
            mod_recent_mean_sub_ui("recent_mean_sub_leaf")
