@@ -2626,9 +2626,8 @@ footer .btn {
 }
 
 .warningMsg {
-    color: crimson;
-    font-size: 10px;
-    text-decoration: underline;
+    color: darkgrey;
+    font-size: 11px;
 }
 
 
