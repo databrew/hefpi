@@ -21,7 +21,7 @@ mod_recent_mean_ui <- function(id){
       shiny::column(8,
                     shiny::uiOutput(ns('map_title_ui')),
                     leaflet::leafletOutput(
-               ns('recent_mean_leaf'), height = 700 ),
+               ns('recent_mean_leaf'), height = 700) %>% shinycssloaders::withSpinner(),
       ),
       shiny::column(4,
              #useShinyalert(),
@@ -452,7 +452,7 @@ mod_recent_con_ui <- function(id){
       shiny::column(8,
                     shiny::uiOutput(ns('map_title_ui')),
              leaflet::leafletOutput(
-               ns('recent_con_leaf'), height = 700),
+               ns('recent_con_leaf'), height = 700) %>% shinycssloaders::withSpinner(),
       ),
       shiny::column(4,
              #useShinyalert(),

@@ -144,9 +144,9 @@ mod_recent_radar_server <- function(input, output, session){
     ind_len <- length(input$indicator)
     country_len <- length(input$country)
     
-    if(ind_len < 3 | country_len < 3) {
+    if(ind_len < 1 | country_len < 1) {
       output$warningMsg <- renderUI({
-        p(class="warningMsg", "Check the number of indicators and countries you have selected!")
+        p(class="warningMsg", "Please select more than one country and indicator to generate optimal visualization.")
       })
     } else {
       output$warningMsg <- renderUI({NULL})
@@ -260,7 +260,7 @@ mod_recent_radar_server <- function(input, output, session){
       ) 
       
       purrr::map(1:ncoutries, function(x) {
-        fig <<- fig %>%
+        fig <- fig %>%
           add_trace(
             r     = pd[[x]]$value,
             theta = pd[[x]]$name,

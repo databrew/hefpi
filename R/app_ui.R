@@ -15,6 +15,7 @@
 #' @import waiter
 #' @rawNamespace import(shinyalert, except = runExample)
 #' @importFrom shiny NS tagList 
+#' @import shinycssloaders
 
 
 app_ui <- function() {
