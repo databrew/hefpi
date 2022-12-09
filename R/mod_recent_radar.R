@@ -256,7 +256,7 @@ mod_recent_radar_server <- function(input, output, session){
       #radar 
       fig <- plot_ly(
         type = 'scatterpolar',
-        fill = 'toself',
+        fill = 'toself'
       ) 
       
       purrr::map(1:ncoutries, function(x) {
