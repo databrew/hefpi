@@ -260,7 +260,7 @@ mod_recent_radar_server <- function(input, output, session){
       ) 
       
       purrr::map(1:ncoutries, function(x) {
-        fig <- fig %>%
+        fig <<- fig %>%
           add_trace(
             r     = pd[[x]]$value,
             theta = pd[[x]]$name,
@@ -278,7 +278,12 @@ mod_recent_radar_server <- function(input, output, session){
                       b = 100,
                       t = 100,
                       pad = 100
-                 )
+                 ),
+        polar = list(radialaxis = list(
+          tickmode = "array",
+          tickvals = seq(0, 1, by = 0.2),
+          ticktext = paste0(seq(0, 100, by = 20), "%")
+        ))
       )
 
       
