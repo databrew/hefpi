@@ -256,14 +256,15 @@ mod_recent_radar_server <- function(input, output, session){
       #radar 
       fig <- plot_ly(
         type = 'scatterpolar',
-        fill = 'toself'
+        # fill = 'toself'
+        mode = "lines+markers"
       ) 
       
       purrr::map(1:ncoutries, function(x) {
         fig <<- fig %>%
           add_trace(
-            r     = pd[[x]]$value,
-            theta = pd[[x]]$name,
+            r     = c(pd[[x]]$value, pd[[x]]$value[1]),
+            theta = c(pd[[x]]$name, pd[[x]]$name[1]),
             name  = unique(pd[[x]]$country)
           ) 
       })
