@@ -100,7 +100,7 @@ mod_recent_mean_server <- function(input, output, session){
     unit_of_measure = ind_info$unit_of_measure
     
     # Get the data, subsetted by inputs
-    pd <- hefpi::hefpi_df %>%
+    pd <- hefpi::hefpi_df %>% 
       dplyr::filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       dplyr::filter(indic == variable_name) %>%
@@ -137,7 +137,7 @@ mod_recent_mean_server <- function(input, output, session){
         map_palette <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="#CECECE")
         map_palette_rev <- colorNumeric(palette = brewer.pal(9, "Greens"), domain=shp@data$value, na.color="#CECECE", reverse = TRUE)
       } else {
-        map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE", reverse = TRUE)
+        map_palette <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE")
         map_palette_rev <- colorNumeric(palette = brewer.pal(9, "Reds"), domain=shp@data$value, na.color="#CECECE", reverse = TRUE)
       }
       # text for map
