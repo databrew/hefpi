@@ -524,7 +524,7 @@ mod_dots_ind_ui <- function(id) {
                     shiny::uiOutput(ns('dots_ind_title')),
              p(class='note_class', 'Chart only displays indicators for which data are available'),
              tags$div(style='overflow-y: scroll; position: relative; min-height: 2000px', 
-                      plotly::plotlyOutput(ns('dots_ind'), height = '600px', width = '1500px') )),
+                      plotly::plotlyOutput(ns('dots_ind'), height = '600px', width = '2500px') )),
       shiny::column(3,
              class="selectizeWidth",
              #useShinyalert(),
