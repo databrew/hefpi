@@ -431,6 +431,7 @@ mod_recent_mean_server <- function(input, output, session){
         p <- p %>% 
           plotly::config(displayModeBar = T) %>%
           plotly::highlight(on='plotly_hover',
+                    off = 'plotly_doubleclick',        
                     persistent = FALSE,
                     color = 'white',
                     opacityDim = 0.6) %>%
@@ -844,6 +845,7 @@ mod_recent_con_server <- function(input, output, session){
         p <- p %>% 
           plotly::config(displayModeBar = F) %>%
           plotly::highlight(on='plotly_hover',
+                             off = 'plotly_doubleclick',   
                     persistent = FALSE,
                     color = 'white',
                     opacityDim = 0.6) %>%

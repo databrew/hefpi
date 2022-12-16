@@ -29,7 +29,7 @@ mod_recent_radar_ui <- function(id){
                ns('recent_radar_plot'), height = 750),
       ),
       shiny::column(4,
-                    shinyalert::useShinyalert(),
+                    # shinyalert::useShinyalert(),
                     shiny::actionButton(ns("plot_info"), label = "Plot Info"),
              # actionButton(ns('share_chart'), 'Share chart'),
                     shiny::actionButton(ns('generate_chart'),label = 'Generate chart'),

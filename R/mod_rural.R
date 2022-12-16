@@ -236,7 +236,7 @@ mod_rural_server <- function(input, output, session){
     cn <- input$country
     # rn <- input$region_name
     # while map (generate from reactive object) is null, plot is null
-    if(is.null(indicator)){
+    if(any(is.null(indicator))){
       return(NULL)
     } else {
       df <- hefpi::hefpi_df %>% 
@@ -416,6 +416,7 @@ mod_rural_server <- function(input, output, session){
               ) %>% 
                plotly::config(displayModeBar = T) %>%
                 plotly::highlight(on='plotly_hover',
+                                 off = 'plotly_doubleclick',   
                          persistent = FALSE,
                          color = 'black',
                          opacityDim = 0.6) %>%

@@ -431,6 +431,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
               ) %>%
                plotly::config(displayModeBar = T) %>%
                 plotly::highlight(on='plotly_hover',
+                                  off = 'plotly_doubleclick',   
                          persistent = FALSE,
                          color = 'black',
                          opacityDim = 0.6) %>%

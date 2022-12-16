@@ -72,7 +72,7 @@ mod_dat_country_server <- function(input, output, session){
   shiny::observe({
     all_inds <- input$all_inds
     message(all_inds)
-    if(is.null(all_inds)){
+    if(any(is.null(all_inds))){
       NULL
     } else {
       if (all_inds > 0) {
@@ -150,7 +150,7 @@ mod_dat_country_server <- function(input, output, session){
                                       if(length(dat_list)==1){
                                         dat_list <- hefpi::dat_country_default
                                       }
-                                      if(is.null(dat_list)){
+                                      if(any(is.null(dat_list))){
                                         NULL
                                       } else {
                                         df <- dat_list[[1]]
@@ -200,7 +200,7 @@ mod_dat_country_server <- function(input, output, session){
     if(length(dat_list)==1){
       dat_list <- hefpi::dat_country_default
     }
-    if(is.null(dat_list)){
+    if(any(is.null(dat_list))){
       NULL
     } else {
       df= dat_list[[1]]
@@ -230,7 +230,7 @@ mod_dat_country_server <- function(input, output, session){
     if(length(dat_list)==1){
       dat_list <- hefpi::dat_country_default
     }
-    if(is.null(dat_list)){
+    if(any(is.null(dat_list))){
       NULL
     } else {
       df= dat_list[[1]]
@@ -412,7 +412,7 @@ mod_dat_ind_server <- function(input, output, session){
   shiny::observe({
     all_regions <- input$all_regions
     message(all_regions)
-    if(is.null(all_regions)){
+    if(any(is.null(all_regions))){
       NULL
     } else {
       if (all_regions > 0) {
@@ -440,7 +440,7 @@ mod_dat_ind_server <- function(input, output, session){
   shiny::observe({
     all_countries <- input$all_countries
     message(all_countries)
-    if(is.null(all_countries)){
+    if(any(is.null(all_countries))){
       NULL
     } else {
       if (all_countries > 0) {
@@ -484,7 +484,7 @@ mod_dat_ind_server <- function(input, output, session){
     region <- input$region
     country_names <- input$country
     date_range <- input$date_range
-    if(is.null(date_range)){
+    if(any(is.null(date_range))){
       NULL
     } else {
       dat_list <- list()
@@ -547,7 +547,7 @@ mod_dat_ind_server <- function(input, output, session){
                                       if(length(dat_list)==1){
                                         dat_list <- hefpi::dat_indicator_default
                                       }
-                                      if(is.null(dat_list)){
+                                      if(any(is.null(dat_list))){
                                         NULL
                                       } else {
                                         temp_data <- dat_list[[1]]
@@ -615,7 +615,7 @@ mod_dat_ind_server <- function(input, output, session){
     if(length(dat_list)==1){
       dat_list <- hefpi::dat_indicator_default
     }
-    if(is.null(dat_list)){
+    if(any(is.null(dat_list))){
       NULL
     } else {
       pd <- dat_list[[1]]
@@ -646,7 +646,7 @@ mod_dat_ind_server <- function(input, output, session){
     if(length(dat_list)==1){
       dat_list <- hefpi::dat_indicator_default
     }
-    if(is.null(dat_list)){
+    if(any(is.null(dat_list))){
       NULL
     } else {
       pd <- dat_list[[1]]

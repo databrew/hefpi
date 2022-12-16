@@ -532,7 +532,7 @@ mod_trends_mean_sub_ui <- function(id){
              )),
       
       shiny::column(3,
-             shinyalert::useShinyalert(),
+             # shinyalert::useShinyalert(),
              shiny::actionButton(ns("plot_info"), label = "Plot Info"),
              shiny::actionButton(ns('generate_chart'), label = 'Generate chart'),
              # actionButton(ns('share_chart'), 'Share chart'),
@@ -1065,7 +1065,7 @@ mod_trends_con_ui <- function(id){
                ns('trends_con'), height = '600px'
              )),
       shiny::column(3,
-             shinyalert::useShinyalert(),
+             # shinyalert::useShinyalert(),
              shiny::actionButton(ns("plot_info"), label = "Plot Info"),
              shiny::actionButton(ns('generate_chart'),label = 'Generate chart'),
              # actionButton(ns('share_chart'), 'Share chart'),
@@ -1616,7 +1616,7 @@ mod_trends_quin_ui <- function(id){
                ns('trends_quin'),  height = '600px'
              )),
       shiny::column(3,
-             shinyalert::useShinyalert(),
+             # shinyalert::useShinyalert(),
              shiny::actionButton(ns("plot_info"), label = "Plot Info"),
              shiny::actionButton(ns('generate_chart'), 'Generate chart'),
              # actionButton(ns('share_chart'), 'Share chart'),

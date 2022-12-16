@@ -130,7 +130,7 @@ mod_dots_country_server <- function(input, output, session){
   shiny::observe({
     all_regions <- input$all_regions
     message(all_regions)
-    if(is.null(all_regions)){
+    if(any(is.null(all_regions))){
       NULL
     } else {
       if (all_regions > 0) {
@@ -158,7 +158,7 @@ mod_dots_country_server <- function(input, output, session){
   shiny::observe({
     all_countries <- input$all_countries
     message(all_countries)
-    if(is.null(all_countries)){
+    if(any(is.null(all_countries))){
       NULL
     } else {
       if (all_countries > 0) {
@@ -210,7 +210,7 @@ mod_dots_country_server <- function(input, output, session){
     value_range <- input$value_range
     date_range <- input$date_range
     # condition for ui being temorarily null
-    if(is.null(value_range)){
+    if(any(is.null(value_range))){
       NULL
     } else {
       dot_list <- list()
@@ -274,7 +274,7 @@ mod_dots_country_server <- function(input, output, session){
       if(length(dot_list)==1){
         dot_list <- hefpi::dots_country_default
       }
-      if(is.null(dot_list)){
+      if(any(is.null(dot_list))){
         NULL
       } else {
         df <- dot_list[[1]]
@@ -392,7 +392,7 @@ mod_dots_country_server <- function(input, output, session){
     if(length(dot_list)==1){
       dot_list <- hefpi::dots_country_default
     }
-    if(is.null(dot_list)){
+    if(any(is.null(dot_list))){
       NULL
     } else {
       df <- dot_list[[1]]
@@ -424,7 +424,7 @@ mod_dots_country_server <- function(input, output, session){
     if(length(dot_list)==1){
       dot_list <- hefpi::dots_country_default
     }
-    if(is.null(dot_list)){
+    if(any(is.null(dot_list))){
       NULL
     } else {
       df <- dot_list[[1]]
@@ -524,7 +524,7 @@ mod_dots_ind_ui <- function(id) {
                     shiny::uiOutput(ns('dots_ind_title')),
              p(class='note_class', 'Chart only displays indicators for which data are available'),
              tags$div(style='overflow-y: scroll; position: relative; min-height: 2000px', 
-                      plotly::plotlyOutput(ns('dots_ind'), height = '600px', width = '2500px') )),
+                      plotly::plotlyOutput(ns('dots_ind'), height = '600px', width = '1500px') )),
       shiny::column(3,
              class="selectizeWidth",
              #useShinyalert(),
@@ -677,7 +677,7 @@ mod_dots_ind_server <- function(input, output, session){
   shiny::observe({
     all_inds <- input$all_inds
     message(all_inds)
-    if(is.null(all_inds)){
+    if(any(is.null(all_inds))){
       NULL
     } else {
       if (all_inds > 0) {
@@ -707,7 +707,7 @@ mod_dots_ind_server <- function(input, output, session){
     country_names <- input$country
     value_range <- input$value_range
     # condition for temporarily null objects from render UI
-    if(is.null(value_range)){
+    if(any(is.null(value_range))){
       NULL
     } else {
       dot_list <- list()
@@ -790,7 +790,7 @@ mod_dots_ind_server <- function(input, output, session){
         dot_list[[1]] <- dot_list[[1]] %>%
           filter(str_detect(unit_of_measure, '%'))
       }
-      if(is.null(dot_list)){
+      if(any(is.null(dot_list))){
         NULL
       } else {
         df <- dot_list[[1]]
@@ -829,7 +829,7 @@ mod_dots_ind_server <- function(input, output, session){
                                         dot_list[[1]] <- dot_list[[1]] %>%
                                           filter(str_detect(unit_of_measure, '%'))
                                       }
-                                      if(is.null(dot_list)){
+                                      if(any(is.null(dot_list))){
                                         NULL
                                       } else {
                                         df <- dot_list[[1]]
@@ -906,7 +906,7 @@ mod_dots_ind_server <- function(input, output, session){
       dot_list[[1]] <- dot_list[[1]] %>%
         dplyr::filter(str_detect(unit_of_measure, '%'))
     }
-    if(is.null(dot_list)){
+    if(any(is.null(dot_list))){
       NULL
     } else {
 
@@ -941,7 +941,7 @@ mod_dots_ind_server <- function(input, output, session){
         dplyr::filter(str_detect(unit_of_measure, '%'))
       
     }
-    if(is.null(dot_list)){
+    if(any(is.null(dot_list))){
       NULL
     } else {
       df <- dot_list[[1]]
