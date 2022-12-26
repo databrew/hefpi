@@ -93,7 +93,7 @@ mod_trends_mean_server <- function(input, output, session){
     df <- df[df$indic == variable,]
     max_value <- round(max(df$pop), 2)
     min_value <- round(min(df$pop), 2)
-    if(max_value < 1){
+    if(max_value <= 1){
       min_value = 0
       max_value = 100
     } else {
@@ -417,6 +417,8 @@ mod_trends_mean_server <- function(input, output, session){
   
   # ---- RENDER PLOT ---- 
   output$trends_mean <- plotly::renderPlotly({
+    
+    # print(chart_data$plot_data)
     
     pop_list <- chart_data$plot_data
     if(length(pop_list)==1){
@@ -1466,6 +1468,8 @@ mod_trends_con_server <- function(input, output, session){
   
   # ---- GENERATE PLOT ---- #
   output$trends_con <- plotly::renderPlotly({
+    
+    
     con_list <- chart_data$plot_data
     if(length(con_list)==1){
       con_list <- hefpi::trends_national_ci_default
