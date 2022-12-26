@@ -18,7 +18,7 @@ mod_dat_country_ui <- function(id){
       shiny::column(9,
              shiny::uiOutput(ns('dat_country_title')),
              div(style = 'margin-left:-100px',plotlyOutput(
-               ns('dat_country'), height = '800px', width = '100%', 
+               ns('dat_country'), height = '1200px', width = '100%', 
              ))
              ),
       column(3,
@@ -67,6 +67,7 @@ mod_dat_country_server <- function(input, output, session){
                showCancelButton = FALSE, 
                showConfirmButton = FALSE)
   })
+  
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
   # INDICATORS
   shiny::observe({
@@ -136,6 +137,11 @@ mod_dat_country_server <- function(input, output, session){
     df$level2 <- factor(df$level2, levels =level2_levels )
     df$indicator_short_name <- factor(df$indicator_short_name, levels = rev(all_ind))
     dat_list <- list(df, date_range, col_vec)
+    # dat_country_default <- list(df, date_range, col_vec)
+    # usethis::use_data(dat_country_default, overwrite = TRUE)
+    # save(dat_list, file = 'data/dat_country_default.rda')
+    # save(dat_list, file = 'data/dat_country_default.rda')
+    
     chart_data$plot_data <- dat_list
   },
   
@@ -262,7 +268,8 @@ mod_dat_country_server <- function(input, output, session){
         # print(levels(df$indicator_short_name))
         # print(levels(df$level2))
         
-        # saveRDS(df, 'data/df_test.rda')
+        # dat_country_default <- list(df, date_range, col_vec)
+        # save(dat_country_default, file = 'data/dat_country_default.rda')
         
         df$level2 <- factor(df$level2,
                               levels = c(
