@@ -31,6 +31,7 @@ app_server <- function(input, output,session) {
   # 
   # # TRENDS TAB
   shiny::callModule(mod_trends_mean_server, 'trends_mean')
+  shiny::callModule(mod_trends_mean_by_country_server, 'trends_mean_country')
   shiny::callModule(mod_rural_server, 'rural')
   # 
   shiny::callModule(mod_trends_quin_server, 'trends_quin')

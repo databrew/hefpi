@@ -119,12 +119,16 @@ app_ui <- function() {
                      shiny::tabPanel("Radar plot",
                                      mod_recent_radar_ui("recent_radar")
                      )),
-                     shiny::tabPanel("Trends",
-                                     mod_trends_mean_ui("trends_mean")
-                     ) 
-                   
-                   
-                   
+                     
+                     shiny::navbarMenu("Trends",
+                                       shiny::tabPanel("Trends by indicator",
+                                                       mod_trends_mean_ui("trends_mean")
+                                                       ),
+                                       shiny::tabPanel("Trends by country",
+                                                       mod_trends_mean_by_country_ui('trends_mean_country')
+                                                       ),
+                                       )
+                     
                    
                    # navbarMenu("Most recent value",
                    #            tabPanel("National mean",
