@@ -624,9 +624,10 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
   p <- ggplot2::ggplot(data = filtered_data_reactive(), ggplot2::aes(year, pop, color = indicator_short_name, text=mytext)) +
         ggplot2::geom_point() +
         ggplot2::geom_line(ggplot2::aes(group = indicator_short_name)) +
-        facet_wrap(~percentage_indicator, ncol = 1, scales='free_y') +
+        ggplot2::facet_wrap(~percentage_indicator, ncol = 1, scales='free_y') +
         ggplot2::scale_color_manual(name = '', values = trend_palette) +
-        ggplot2::labs(x = 'Year', y = input$country)
+        ggplot2::scale_x_continuous(breaks = c(min(filtered_data_reactive()$year):max(filtered_data_reactive()$year))) +
+        ggplot2::labs(x = 'Year', y = input$country) 
     
   p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                               x_axis_angle = 90,

@@ -122,7 +122,7 @@ mod_dat_country_server <- function(input, output, session){
     df$country[is.na(df$country)] <- country_name
     df$level2[is.na(df$level2)] <- 'Missing Data'
     df$year <- as.character(df$year)
-    col_data <- data_frame(level_2 = c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
+    col_data <- data_frame(level_2 = c('OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
                            color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'white'))
     # recode level2
     df$level2 <- ifelse(df$level2 == 'h_cov', 'Service Coverage',
