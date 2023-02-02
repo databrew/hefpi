@@ -602,7 +602,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       filter(country == input$country) %>%
       mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
       mutate(pop = ifelse(percentage_indicator, pop*100, pop)) %>%
-      mutate(percentage_indicator = ifelse(percentage_indicator, 'Relative Indicators', 'Ordinal Indicators'))
+      mutate(percentage_indicator = ifelse(percentage_indicator, 'Indicator-Specific Value', 'Percent (%)'))
   })
   
   plot_reactive <- shiny::reactive({
