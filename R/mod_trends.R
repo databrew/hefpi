@@ -521,6 +521,164 @@ mod_trends_mean_server <- function(input, output, session){
   })
 }
 
+
+
+
+# UI FOR TRENDS (NATIONAL MEAN BY COUNTRY)
+mod_trends_mean_by_country_ui <- function(id) {
+  ns <- shiny::NS(id)
+  tagList(
+    shiny::fluidPage(
+      shiny::column(9,
+                    shiny::uiOutput(ns('trends_mean_title_a')),
+                    plotly::plotlyOutput(
+                      ns('trends_mean'), height = '600px'
+                    )),
+      shiny::column(3,
+                    shiny::actionButton(ns("plot_info"), label = "Plot Info"),
+                    # shiny::actionButton(ns('generate_chart'), 'Generate chart'),
+                    # actionButton(ns('share_chart'), 'Share chart'),
+                    br(), br(),
+                    p('Country'),
+                    # HERE (try 3px or without 1px just solid #aaa)
+                    div(style='border: 1px #FF0000; color:black;', shiny::selectInput(ns('country'),
+                                                                                      label = NULL,
+                                                                                      choices = sort(unique(hefpi::df$country)),
+                                                                                      selected = sort(unique(hefpi::df$country))[2]
+                                                                                      )
+                        ),
+                    # uiOutput(ns('ui_outputs')),
+                    # p('Date range'),
+                    # shinyWidgets::chooseSliderSkin("Modern", color = "#002244"),
+                    # shiny::sliderInput(ns('date_range'),
+                    #                    label =  NULL,
+                    #                    min = 1982,
+                    #                    max = 2021,
+                    #                    value = c(1982, 2021),
+                    #                    step = 1,
+                    #                    sep = ''),
+                    # shiny::checkboxInput(ns('interpolate'), 'Interpolate missing values',
+                    #                      value = TRUE),
+                    shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
+                    shiny::downloadButton(ns("dl_data"), label = 'Download data', class = 'btn-primary')
+                    )
+    )
+  )
+}
+
+# SERVER FOR TRENDS (NATIONAL MEAN)
+mod_trends_mean_by_country_server <- function(input, output, session) {
+  
+  # Observe changes to inputs in order to generate changes to the map
+  shiny::observeEvent(input$plot_info, {
+    # Show a modal when the button is pressed
+    shinyalert::shinyalert(title               = "Trends - National mean", 
+                           text                = "This chart allows tracking of the over-time dynamics of HEFPI indicators at the population level. Both single and multiple country trend charts are available, and users can choose whether to only show data points for years with survey data, or if trend lines should linearly interpolate over years where data are missing.", 
+                           type                = "info", 
+                           closeOnClickOutside = TRUE, 
+                           showCancelButton    = FALSE, 
+                           showConfirmButton   = FALSE)
+  })
+  
+  # ---- RENDER PLOT TITLE ---- 
+  output$trends_mean_title_a <- shiny::renderUI({
+    
+    plot_title <- HTML(stringr::str_glue('
+                                          <div class="chart-header-labels-row">
+                                             <div class="chart-label"> Trends </div> 
+                                             <div class="chart-label"> {input$country} </div>
+                                          </div>
+                                         ')
+                       )
+    plot_title
+      
+  })
+  
+  filtered_data_reactive <- shiny::reactive({
+    req(input$country)
+    
+    hefpi::df %>%
+      select(country, pop, year, indicator_short_name, referenceid_list, unit_of_measure) %>%
+      filter(country == input$country) %>%
+      mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
+      mutate(pop = ifelse(percentage_indicator, pop*100, pop)) %>%
+      mutate(percentage_indicator = ifelse(percentage_indicator, 'Indicator-Specific Value', 'Percent (%)'))
+  })
+  
+  plot_reactive <- shiny::reactive({
+    req(filtered_data_reactive())
+    
+    # text for plot
+    mytext <- paste(
+      "Country: ", as.character(filtered_data_reactive()$country), "<br>", 
+      "Indicator: ", filtered_data_reactive()$indicator_short_name, "<br>", 
+      "Value: ", paste0(round(filtered_data_reactive()$pop, digits = 2), ' (', filtered_data_reactive()$unit_of_measure, ')'), "<br>",
+      "Year: ", as.character(filtered_data_reactive()$year),"<br>",
+      "Data source: ", as.character(filtered_data_reactive()$referenceid_list), "<br>",
+      sep="") %>%
+      lapply(htmltools::HTML)
+    temp <- ggthemes::tableau_color_pal(palette = "Tableau 20")
+    trend_palette <- rep(temp(n = 20), 10)
+    
+
+  p <- ggplot2::ggplot(data = filtered_data_reactive(), ggplot2::aes(year, pop, color = indicator_short_name, text=mytext)) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line(ggplot2::aes(group = indicator_short_name)) +
+        ggplot2::facet_wrap(~percentage_indicator, ncol = 1, scales='free_y') +
+        ggplot2::scale_color_manual(name = '', values = trend_palette) +
+        ggplot2::scale_x_continuous(breaks = c(min(filtered_data_reactive()$year):max(filtered_data_reactive()$year))) +
+        ggplot2::labs(x = 'Year', y = input$country) 
+    
+  p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                              x_axis_angle = 90,
+                              x_axis_vjust = 0.5,
+                              y_axis_vjust = 0.5,
+                              y_axis_hjust = 1,
+                              x_axis_size = 12,
+                              legend_text_size = 0.8)
+    
+    
+  })
+  
+  output$trends_mean <- renderPlotly({
+    
+    fig <- plotly::ggplotly(plot_reactive(), tooltip = 'text') %>%
+           plotly::config(displayModeBar = F)
+    fig
+    
+  })
+  
+  
+  # ---- DOWNLOAD MAP IMAGE ---- #
+  output$dl_plot <- downloadHandler(
+    filename = function() {
+      paste0("trends_mean_country_", Sys.Date(), ".png")
+    },
+    content = function(file){
+      ggplot2::ggsave(file, plot_reactive(), width = 24, height = 8, type = "cairo")
+      # ggplot2::ggsave(file, plot_output(), device = input$extension)
+      
+    }
+  )
+  
+  # ---- DOWNLOAD DATA ---- #
+  output$dl_data <- downloadHandler(
+    filename = function() {
+      paste("data-trends_mean_country", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(filtered_data_reactive(), file)
+    }
+  )
+  
+  
+  
+  
+  
+  
+}
+
+
 # ---------------------------------------------------------------------------------
 # UI FOR TRENDS (SUBNATIONAL MEAN)
 mod_trends_mean_sub_ui <- function(id){

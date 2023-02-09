@@ -119,20 +119,28 @@ mod_dat_country_server <- function(input, output, session){
       dplyr::left_join(country_data) %>%
       dplyr::select(country, year, indicator_short_name, level2) 
     # fill country NAs with United States and levle_2 NAs with "Missing Data"
+    
+    # saveRDS(df, 'data-raw/SwedenData_raw.rds')
+    
     df$country[is.na(df$country)] <- country_name
     df$level2[is.na(df$level2)] <- 'Missing Data'
     df$year <- as.character(df$year)
-    col_data <- data_frame(level_2 = c( 'OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
-                           color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', 'white'))
+    col_data <- data_frame(level_2 = c('OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
+                           color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', '#FFFFFF'))
     # recode level2
     df$level2 <- ifelse(df$level2 == 'h_cov', 'Service Coverage',
                         ifelse(df$level2 == 'h_out', 'Health Outcomes',
                                ifelse(df$level2 == 'f_cata', 'Catastrophic OOP spending',
                                       ifelse(df$level2 == 'f_impov', 'Impoverishing OOP spending',
                                              ifelse(df$level2 == 'f_oop', 'OOP spending', 'Missing Data')))))
+    
+    # saveRDS(df, 'data-raw/SwedenData_processed.rds')
+    # print(col_data)
     # subset col data by data selected
     level2_levels = col_data$level_2[col_data$level_2 %in% unique(df$level2)]
+    # print(level2_levels)
     col_vec = col_data$color[col_data$level_2 %in% unique(df$level2)]
+    # print(col_vec)
     # order level2
     df$level2 <- factor(df$level2, levels =level2_levels )
     df$indicator_short_name <- factor(df$indicator_short_name, levels = rev(all_ind))
@@ -271,16 +279,16 @@ mod_dat_country_server <- function(input, output, session){
         # dat_country_default <- list(df, date_range, col_vec)
         # save(dat_country_default, file = 'data/dat_country_default.rda')
         
-        df$level2 <- factor(df$level2,
-                              levels = c(
-                                levels(df$level2)[2],
-                                levels(df$level2)[3],
-                                levels(df$level2)[1],
-                                levels(df$level2)[4],
-                                levels(df$level2)[5],
-                                levels(df$level2)[6]
-                              )
-                             )
+        # df$level2 <- factor(df$level2,
+        #                       levels = c(
+        #                         levels(df$level2)[2],
+        #                         levels(df$level2)[3],
+        #                         levels(df$level2)[1],
+        #                         levels(df$level2)[4],
+        #                         levels(df$level2)[5],
+        #                         levels(df$level2)[6]
+        #                       )
+        #                      )
       
         df <- df %>%
           # arrange(indicator_short_name, level2) %>%
