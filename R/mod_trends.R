@@ -88,7 +88,7 @@ mod_trends_mean_server <- function(input, output, session){
       .$variable_name
     
     # subset data by variable and region code
-    df <- hefpi::df
+    df <- hefpi::hefpi_df
     df <- df[df$regioncode %in% region_code,]
     df <- df[df$indic == variable,]
     max_value <- round(max(df$pop), 2)
@@ -171,7 +171,7 @@ mod_trends_mean_server <- function(input, output, session){
           .$variable_name
         
         # subset data by variable and region code
-        df <- hefpi::df
+        df <- hefpi::hefpi_df
         df <- df[df$regioncode %in% region_code,]
         df <- df[df$indic == variable,]
         
@@ -219,7 +219,7 @@ mod_trends_mean_server <- function(input, output, session){
       # subet by variable, region code and a list of countries
       region_list <- hefpi::region_list
       region_code <- as.character(region_list$region_code[region_list$region %in% region])
-      df <- hefpi::df
+      df <- hefpi::hefpi_df
       df <- df[df$indic == variable_name,]
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
@@ -543,8 +543,8 @@ mod_trends_mean_by_country_ui <- function(id) {
                     # HERE (try 3px or without 1px just solid #aaa)
                     div(style='border: 1px #FF0000; color:black;', shiny::selectInput(ns('country'),
                                                                                       label = NULL,
-                                                                                      choices = sort(unique(hefpi::df$country)),
-                                                                                      selected = sort(unique(hefpi::df$country))[2]
+                                                                                      choices = sort(unique(hefpi::hefpi_df$country)),
+                                                                                      selected = sort(unique(hefpi::hefpi_df$country))[2]
                                                                                       )
                         ),
                     # uiOutput(ns('ui_outputs')),
@@ -597,7 +597,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
   filtered_data_reactive <- shiny::reactive({
     req(input$country)
     
-    hefpi::df %>%
+    hefpi::hefpi_df %>%
       select(country, pop, year, indicator_short_name, referenceid_list, unit_of_measure) %>%
       filter(country == input$country) %>%
       mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
@@ -1289,7 +1289,7 @@ mod_trends_con_server <- function(input, output, session){
       dplyr::filter(indicator_short_name == indicator) %>%
       .$variable_name
     # subset data by variable and region code
-    df <- hefpi::df
+    df <- hefpi::hefpi_df
     df <- df[df$indic == variable,]
     df <- df[df$regioncode %in% region_code,]
     countries <- unique(df$country)
@@ -1363,7 +1363,7 @@ mod_trends_con_server <- function(input, output, session){
           dplyr::filter(indicator_short_name == indicator) %>%
           .$variable_name
         # subset data by variable and region code
-        df <- hefpi::df
+        df <- hefpi::hefpi_df
         df <- df[df$indic == variable,]
         df <- df[df$regioncode %in% region_code,]
         countries <- unique(df$country)
@@ -1409,7 +1409,7 @@ mod_trends_con_server <- function(input, output, session){
       unit_of_measure = ind_info$unit_of_measure
       variable_name = ind_info$variable_name
       # subet by variable, region code and a list of countries
-      df <- hefpi::df
+      df <- hefpi::hefpi_df
       df <- df[df$indic == variable_name,]
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
@@ -1826,7 +1826,7 @@ mod_trends_quin_server <- function(input, output, session){
     variable_name = ind_info$variable_name
     unit_of_measure = ind_info$unit_of_measure
     # subset by country and variable
-    df <- hefpi::df %>%
+    df <- hefpi::hefpi_df %>%
       dplyr::filter(country == country_names) %>%
       dplyr::filter(indic == variable_name) %>%
       dplyr::select(year, Q1:Q5) 
@@ -1885,7 +1885,7 @@ mod_trends_quin_server <- function(input, output, session){
       variable_name = ind_info$variable_name
       unit_of_measure = ind_info$unit_of_measure
       # subset by country and variable
-      df <- hefpi::df %>%
+      df <- hefpi::hefpi_df %>%
         dplyr::filter(country == country_names) %>%
         dplyr::filter(indic == variable_name) %>%
         dplyr::filter(year >= min(date_range),
