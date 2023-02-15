@@ -1,3 +1,19 @@
+# custom function to split long axis text
+split_label <- function(label_text) {
+  
+  words_num <- stringr::str_count(label_text, '\\w+')
+  
+  if(words_num > 6 & words_num != 7) {
+    first_part  <- stringr::word(label_text, start = 1, end = 6)
+    second_part <- stringr::word(label_text, start = 7, end = words_num)
+    res_ <- as.character(stringr::str_glue('{first_part}\n{second_part}'))  
+    return(res_)
+  } else {
+    return(label_text)
+  }
+  
+}
+
 # Module Trends 
 #' @title mod_trends.R
 #' @description  A shiny Module.
@@ -9,7 +25,6 @@
 #'
 #' @keywords internal
 #' @export 
-
 # UI FOR TRENDS (NATIONAL MEAN)
 mod_trends_mean_ui <- function(id){
   ns <- shiny::NS(id)
@@ -29,8 +44,13 @@ mod_trends_mean_ui <- function(id){
              # HERE (try 3px or without 1px just solid #aaa)
              div(style='border: 1px #FF0000; color:black;', shiny::selectInput(ns('indicator'),
                                                                        label = NULL,
-                                                                       choices = indicators_list,
-                                                                       selected = '4+ antenatal care visits (%)')),
+                                                                       # choices = indicators_list,
+                                                                       choices = sort(unique(hefpi::hefpi_df$indicator_short_name)),
+                                                                       # selected = '4+ antenatal care visits (%)'
+                                                                       selected = sort(unique(hefpi::hefpi_df$indicator_short_name))[1]
+                                                                       ),
+                                                                  
+                 ),
              # here need to create custom css for this to make size right
              p('Region'),
              shinyWidgets::dropdownButton(circle = FALSE,  
@@ -84,11 +104,35 @@ mod_trends_mean_server <- function(input, output, session){
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
     # Get the variable
     variable <- indicators %>%
+      mutate(indicator_short_name = ifelse(indicator_short_name == 'Blood pressure measured (%)', 
+                                           'Blood pressure measured adults (%)', 
+                                           indicator_short_name)
+      ) %>%
+      mutate(indicator_short_name = ifelse(indicator_short_name == 'Blood sugar measured (%)', 
+                                           'Blood sugar measured, adults (%)', 
+                                           indicator_short_name)
+      ) %>%
+      mutate(indicator_short_name = ifelse(indicator_short_name == 'Formal provider visit for acute respiratory infection, fever, or diarreha, under-5 (%)', 
+                                           'Formal provider visit for acute respiratory infection, fever, or diarrhea, under-5 (%)', 
+                                           indicator_short_name)
+      ) %>%
+      mutate(indicator_short_name = ifelse(indicator_short_name == 'Full vaccination (%)', 
+                                           'Full vaccination, 15-23 months (%)', 
+                                           indicator_short_name)
+      ) %>%
+      mutate(indicator_short_name = ifelse(indicator_short_name == 'Measles vaccination (%)', 
+                                           'Measles vaccination, 15-23 months (%)', 
+                                           indicator_short_name)
+      ) %>%
+      mutate(indicator_short_name = ifelse(indicator_short_name == 'Zero childhood vaccination (%)', 
+                                           'Zero vaccinations, 15-23 months (%)', 
+                                           indicator_short_name)
+      ) %>%
       dplyr::filter(indicator_short_name == indicator) %>%
       .$variable_name
     
     # subset data by variable and region code
-    df <- hefpi::df
+    df <- hefpi::hefpi_df
     df <- df[df$regioncode %in% region_code,]
     df <- df[df$indic == variable,]
     max_value <- round(max(df$pop), 2)
@@ -167,11 +211,35 @@ mod_trends_mean_server <- function(input, output, session){
         region_code <- as.character(region_list$region_code[region_list$region %in% region])
         # Get the variable
         variable <- indicators %>%
+          mutate(indicator_short_name = ifelse(indicator_short_name == 'Blood pressure measured (%)', 
+                                               'Blood pressure measured adults (%)', 
+                                               indicator_short_name)
+          ) %>%
+          mutate(indicator_short_name = ifelse(indicator_short_name == 'Blood sugar measured (%)', 
+                                               'Blood sugar measured, adults (%)', 
+                                               indicator_short_name)
+          ) %>%
+          mutate(indicator_short_name = ifelse(indicator_short_name == 'Formal provider visit for acute respiratory infection, fever, or diarreha, under-5 (%)', 
+                                               'Formal provider visit for acute respiratory infection, fever, or diarrhea, under-5 (%)', 
+                                               indicator_short_name)
+          ) %>%
+          mutate(indicator_short_name = ifelse(indicator_short_name == 'Full vaccination (%)', 
+                                               'Full vaccination, 15-23 months (%)', 
+                                               indicator_short_name)
+          ) %>%
+          mutate(indicator_short_name = ifelse(indicator_short_name == 'Measles vaccination (%)', 
+                                               'Measles vaccination, 15-23 months (%)', 
+                                               indicator_short_name)
+          ) %>%
+          mutate(indicator_short_name = ifelse(indicator_short_name == 'Zero childhood vaccination (%)', 
+                                               'Zero vaccinations, 15-23 months (%)', 
+                                               indicator_short_name)
+          ) %>%
           dplyr::filter(indicator_short_name == indicator) %>%
           .$variable_name
         
         # subset data by variable and region code
-        df <- hefpi::df
+        df <- hefpi::hefpi_df
         df <- df[df$regioncode %in% region_code,]
         df <- df[df$indic == variable,]
         
@@ -209,7 +277,31 @@ mod_trends_mean_server <- function(input, output, session){
     if(is.null(value_range)){
       NULL
     } else {
-      indicators <- hefpi::indicators
+      indicators <- hefpi::indicators %>%
+        mutate(indicator_short_name = ifelse(indicator_short_name == 'Blood pressure measured (%)', 
+                                             'Blood pressure measured adults (%)', 
+                                             indicator_short_name)
+        ) %>%
+        mutate(indicator_short_name = ifelse(indicator_short_name == 'Blood sugar measured (%)', 
+                                             'Blood sugar measured, adults (%)', 
+                                             indicator_short_name)
+        ) %>%
+        mutate(indicator_short_name = ifelse(indicator_short_name == 'Formal provider visit for acute respiratory infection, fever, or diarreha, under-5 (%)', 
+                                             'Formal provider visit for acute respiratory infection, fever, or diarrhea, under-5 (%)', 
+                                             indicator_short_name)
+        ) %>%
+        mutate(indicator_short_name = ifelse(indicator_short_name == 'Full vaccination (%)', 
+                                             'Full vaccination, 15-23 months (%)', 
+                                             indicator_short_name)
+        ) %>%
+        mutate(indicator_short_name = ifelse(indicator_short_name == 'Measles vaccination (%)', 
+                                             'Measles vaccination, 15-23 months (%)', 
+                                             indicator_short_name)
+        ) %>%
+        mutate(indicator_short_name = ifelse(indicator_short_name == 'Zero childhood vaccination (%)', 
+                                             'Zero vaccinations, 15-23 months (%)', 
+                                             indicator_short_name)
+        )
       # get variable
       ind_info <- indicators %>%
         dplyr::filter(indicator_short_name == indicator) %>%
@@ -219,7 +311,7 @@ mod_trends_mean_server <- function(input, output, session){
       # subet by variable, region code and a list of countries
       region_list <- hefpi::region_list
       region_code <- as.character(region_list$region_code[region_list$region %in% region])
-      df <- hefpi::df
+      df <- hefpi::hefpi_df
       df <- df[df$indic == variable_name,]
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
@@ -487,7 +579,7 @@ mod_trends_mean_server <- function(input, output, session){
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
             ggplot2::labs(x=x_axis_text,
-                 y = y_axis_text
+                 y = split_label(y_axis_text)
                  # ,
                  # title = plot_title
             )
@@ -503,7 +595,7 @@ mod_trends_mean_server <- function(input, output, session){
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1),
                                expand = c(0,0)) +
             ggplot2::labs(x='Year',
-                 y = y_axis_text,
+                 y = split_label(y_axis_text),
                  title = plot_title) 
         }
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
