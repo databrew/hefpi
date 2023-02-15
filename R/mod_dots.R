@@ -85,9 +85,9 @@ mod_dots_country_server <- function(input, output, session){
     df <- melt(df, id.vars = c('year', 'country', 'referenceid_list', 'indic'))
     max_value <- round(max(df$value), 2)
     min_value <- round(min(df$value), 2)
-    if(max_value<1){
-      min_value=0
-      max_value = 1
+    if(max_value <= 1){
+      min_value = 0
+      max_value = 100
     } else {
       min_value = 0
       max_value = ceiling(max_value)
@@ -248,8 +248,10 @@ mod_dots_country_server <- function(input, output, session){
                           value <= value_range[2])
       if(unit_of_measure == '%'){
         df$value <- df$value*100
-        value_range[2] <- value_range[2]*100
-        value_range[1] <- value_range[1]*100
+        # value_range[2] <- value_range[2]*100
+        # value_range[1] <- value_range[1]*100
+        value_range[2] <- value_range[2]
+        value_range[1] <- value_range[1]
       }
 
       # just save data, not implement 

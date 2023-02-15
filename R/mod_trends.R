@@ -1926,8 +1926,8 @@ mod_trends_quin_server <- function(input, output, session){
     max_value <- round(max(temp$value, na.rm = TRUE), 2)
     min_value <- round(min(temp$value, na.rm = TRUE), 2)
     if(max_value<1){
-      min_value=0
-      max_value = 1
+      min_value = 0
+      max_value = 100
     } else {
       min_value = floor(min_value)
       max_value = ceiling(max_value)
@@ -1997,9 +1997,12 @@ mod_trends_quin_server <- function(input, output, session){
                                           ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
       # condition on unit of measure
       if(unit_of_measure == '%'){
-        df$value <- df$value*100
-        value_range[2] <- value_range[2]*100
-        value_range[1] <- value_range[1]*100
+        # df$value <- df$value*100
+        # value_range[2] <- value_range[2]*100
+        # value_range[1] <- value_range[1]*100
+        df$value <- df$value * 100
+        value_range[2] <- value_range[2]
+        value_range[1] <- value_range[1]
       }
       
       df <- df %>% 
