@@ -1018,6 +1018,10 @@ mod_dots_ind_server <- function(input, output, session){
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
           # coord_flip() +
+          ######################
+          # this is the bug source, if you remove this, everything will run perfectly
+          # @anastasiia - leave it up to you on implementation
+          #######################
           ggplot2::labs(
                # title=plot_title, 
                x = y_axis_text, 
