@@ -1017,17 +1017,23 @@ mod_dots_ind_server <- function(input, output, session){
                              limits = c((value_range[1]), (value_range[2] +5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
+          ggplot2::labs(x = '',
+                        y = '',
+                        subtitle = sub_title)
           # coord_flip() +
           ######################
           # this is the bug source, if you remove this, everything will run perfectly
           # @anastasiia - leave it up to you on implementation
           #######################
-          ggplot2::labs(
-               # title=plot_title, 
-               x = y_axis_text, 
-               y = '',
-               subtitle = sub_title
-               ) 
+          # ggplot2::labs(
+          #      # title=plot_title, 
+          #      x = y_axis_text, 
+          #      y = '',
+          #      subtitle = sub_title
+          #      ) 
+        ######################
+        # clean version
+        #######################
         
         
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
