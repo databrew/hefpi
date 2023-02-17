@@ -796,7 +796,11 @@ mod_dots_ind_server <- function(input, output, session){
 
 
       dot_list <- list(df, unit_of_measure, indicator, date_range, value_range)
+      # dots_indicator_default <- dot_list
+      # save(dots_indicator_default, file = 'data/dots_indicator_default.rda')
+      
     }
+    
     chart_data$plot_data <- dot_list
   },
 
@@ -841,7 +845,7 @@ mod_dots_ind_server <- function(input, output, session){
           temp <- rbind(temp, temp_stamp)
         }
 
-        write.csv(temp, file)
+        # write.csv(temp, file)
       }
     }
   )
@@ -967,7 +971,7 @@ mod_dots_ind_server <- function(input, output, session){
         dplyr::filter(str_detect(unit_of_measure, '%'))
 
     }
-    if(any(is.null(dot_list))){
+    if(is.null(dot_list)){
       NULL
     } else {
       df <- dot_list[[1]]
@@ -1045,6 +1049,7 @@ mod_dots_ind_server <- function(input, output, session){
           # coord_flip() +
           ggplot2::labs(
                # title=plot_title,
+               title = '',
                x = y_axis_text,
                y = '',
                subtitle = sub_title
