@@ -1260,7 +1260,7 @@ mod_trends_mean_sub_server <- function(input, output, session){
             ggplot2::scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                                breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                expand = c(0,0)) +
-            lggplot2::abs(x=x_axis_text,
+            ggplot2::abs(x=x_axis_text,
                  y = y_axis_text
                  # ,
                  # title = plot_title

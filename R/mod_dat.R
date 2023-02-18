@@ -34,8 +34,11 @@ mod_dat_country_ui <- function(id){
                                           shiny::actionButton(ns("all_inds"), label="Select/Deselect all"),
              div(style='max-height: 30vh; overflow-y: auto;',checkboxGroupInput(inputId = ns("indicator"),
                          label = NULL, 
-                         choices = indicators$indicator_short_name,
-                         selected = indicators$indicator_short_name))),
+                         choices = sort(unique(hefpi::hefpi_df$indicator_short_name)),
+                         selected = sort(unique(hefpi::hefpi_df$indicator_short_name))
+                         )
+                 )
+             ),
              p('Country'),
              div(style='border-color: grey; color:grey', shiny::selectInput(ns('country'), 
                          label = NULL,
@@ -80,13 +83,14 @@ mod_dat_country_server <- function(input, output, session){
         if (all_inds %% 2 == 0){
           shiny::updateCheckboxGroupInput(session=session,
                                    inputId ="indicator",
-                                   choices = indicators$indicator_short_name,
-                                   selected = indicators$indicator_short_name)
+                                   choices = sort(unique(hefpi::hefpi_df$indicator_short_name)),
+                                   selected = sort(unique(hefpi::hefpi_df$indicator_short_name))
+                                   )
           
         } else {
           shiny::updateCheckboxGroupInput(session=session,  
                                    inputId ="indicator",
-                                   choices = indicators$indicator_short_name,
+                                   choices = sort(unique(hefpi::hefpi_df$indicator_short_name)),
                                    selected = c())
           
         }}
@@ -96,58 +100,76 @@ mod_dat_country_server <- function(input, output, session){
   chart_data <- shiny::reactiveValues(plot_data = 'new') 
   shiny::observeEvent(input$generate_chart, {
     message('The "generate chart" button has been clicked on the Population Mean - Trends - National Mean tab.')
-    country_name = 'United States'
-    indicator = indicators$indicator_short_name
-    date_range = c(1982, 2021)
-    country_name <- input$country
-    indicator = input$indicator
-    date_range = input$date_range
+    # country_name = 'United States'
+    # indicator = unique(hefpi::hefpi_df$indicator_short_name)
+    # date_range = c(1982, 2021)
+    country_name       <- input$country
+    indicator_selected <- input$indicator
+    date_range         <- input$date_range
+    # Declare output list container
     dat_list <- list()
     # get all unique years and indicators
-    temp <- hefpi::hefpi_df
-    all_years <- sort(unique(temp$year))
-    all_ind <- unname(unlist(indicators_list))
-    all_ind <- all_ind[all_ind %in% indicator]
-    # subset data by country and join to get indicator short name 
-    country_data<- hefpi::hefpi_df %>%
+    all_years <- sort(unique(hefpi::hefpi_df$year))
+    all_ind   <- unique(hefpi::hefpi_df$indicator_short_name)
+    
+    # Filter hefpi_df based on the selected inputs
+    country_data <- hefpi::hefpi_df %>%
+      dplyr::as_tibble() %>%
       dplyr::filter(country == country_name) %>%
-      dplyr::filter(indicator_short_name %in% indicator) %>%
+      dplyr::filter(indicator_short_name %in% indicator_selected) %>%
       dplyr::filter(year >= date_range[1],
-             year <= date_range[2]) 
-    # create data frame with year and indicator combinations
+                    year <= date_range[2]) %>%
+      dplyr::select(year, country, indicator_short_name, pop)
+    
+    # create data frame with all years and indicators combinations
     df <- tidyr::expand_grid(year = all_years, indicator_short_name = all_ind) %>%
-      dplyr::left_join(country_data) %>%
+      # Join with filtered data above
+      dplyr::left_join(country_data, by = c('year' = 'year', 'indicator_short_name' = 'indicator_short_name')) %>% 
+      # Join with the general indicators info dataset by selecting `level_2`, `indicator_short_name` variables
+      dplyr::left_join(hefpi::indicators_dat_country %>% select(level_2, indicator_short_name), 
+                       by = c('indicator_short_name' = 'indicator_short_name')) %>% 
+      # Replace `level_2` with the missing data value in a case if `pop` is NA
+      dplyr::mutate(level_2 = ifelse(is.na(pop), 'Missing Data', level_2)) %>%
+      # Assign selected country_name to the selected country
+      dplyr::mutate(country = country_name) %>%
+      # Rename level_2 to level2
+      dplyr::rename(level2 = level_2) %>%
+      # Select desired variables
       dplyr::select(country, year, indicator_short_name, level2) 
-    # fill country NAs with United States and levle_2 NAs with "Missing Data"
     
-    # saveRDS(df, 'data-raw/SwedenData_raw.rds')
     
-    df$country[is.na(df$country)] <- country_name
-    df$level2[is.na(df$level2)] <- 'Missing Data'
-    df$year <- as.character(df$year)
-    col_data <- data_frame(level_2 = c('OOP spending', 'Catastrophic OOP spending', 'Impoverishing OOP spending', 'Service Coverage', 'Health Outcomes', 'Missing Data'), 
-                           color = c("#9BCFFF", "#57AEFF", '#0C88FC', '#14DA00', '#FFB80A', '#FFFFFF'))
-    # recode level2
-    df$level2 <- ifelse(df$level2 == 'h_cov', 'Service Coverage',
-                        ifelse(df$level2 == 'h_out', 'Health Outcomes',
-                               ifelse(df$level2 == 'f_cata', 'Catastrophic OOP spending',
-                                      ifelse(df$level2 == 'f_impov', 'Impoverishing OOP spending',
-                                             ifelse(df$level2 == 'f_oop', 'OOP spending', 'Missing Data')))))
+    df$year      <- as.character(df$year)
+    col_data_tbl <- tibble(level_2 = c('OOP spending', 
+                                       'Catastrophic OOP spending', 
+                                       'Impoverishing OOP spending', 
+                                       'Catastrophic and impoverishing OOP spending',
+                                       'Service Coverage', 
+                                       'Health Outcomes', 
+                                       'Missing Data'), 
+                           color = c("#9BCFFF", 
+                                     "#57AEFF", 
+                                     '#0C88FC', 
+                                     '#0D4180',
+                                     '#14DA00', 
+                                     '#FFB80A', 
+                                     '#FFFFFF')
+    )
     
-    # saveRDS(df, 'data-raw/SwedenData_processed.rds')
-    # print(col_data)
     # subset col data by data selected
-    level2_levels = col_data$level_2[col_data$level_2 %in% unique(df$level2)]
+    level2_levels <- col_data_tbl$level_2[col_data_tbl$level_2 %in% unique(df$level2)]
     # print(level2_levels)
-    col_vec = col_data$color[col_data$level_2 %in% unique(df$level2)]
+    col_vec <- col_data_tbl$color[col_data_tbl$level_2 %in% unique(df$level2)]
     # print(col_vec)
+    
     # order level2
-    df$level2 <- factor(df$level2, levels =level2_levels )
+    df$level2 <- factor(df$level2, levels = level2_levels)
     df$indicator_short_name <- factor(df$indicator_short_name, levels = rev(all_ind))
+    
     dat_list <- list(df, date_range, col_vec)
     # dat_country_default <- list(df, date_range, col_vec)
+    # dat_country_default <- dat_list
     # usethis::use_data(dat_country_default, overwrite = TRUE)
-    # save(dat_list, file = 'data/dat_country_default.rda')
+    # save(dat_country_default, file = 'data/dat_country_default.rda')
     # save(dat_list, file = 'data/dat_country_default.rda')
     
     chart_data$plot_data <- dat_list
