@@ -542,10 +542,27 @@ mod_dots_ind_ui <- function(id) {
                                          actionButton(ns("all_inds"), label="Select/Deselect all"),
              div(style='max-height: 30vh; overflow-y: auto;', shiny::checkboxGroupInput(inputId = ns("indicator"),
                          label = NULL, 
-                         choices = indicators$indicator_short_name,
-                         selected = indicators$indicator_short_name))),
+                         choices = sort(hefpi::indicators_dat_country$indicator_short_name),
+                         selected = sort(hefpi::indicators_dat_country$indicator_short_name)
+                         )
+                 )
+             ),
              shiny::checkboxInput(ns('only_percent_measure'), 'Show only % indicators', value = TRUE, width = NULL),
-             shiny::uiOutput(ns('ui_outputs')),
+             
+             p('Country'),
+             shiny::selectInput(ns('country'),
+                                label = NULL,
+                                choices = NULL,
+                                selected = NULL),
+             p('X axis range'),
+             shiny::sliderInput(ns('value_range'),
+                                label = NULL,
+                                min = 0,
+                                max = 100,
+                                value = c(0, 100),
+                                sep = ''),
+             
+             # shiny::uiOutput(ns('ui_outputs')),
              p('Date range'),
              shiny::sliderInput(ns('date_range'),
                          label = NULL,
@@ -575,103 +592,122 @@ mod_dots_ind_server <- function(input, output, session){
   })
   
   # # ---- GENERATE UI OUTPUTS---- #
-  output$ui_outputs <- shiny::renderUI({
-    shiny::req(input$indicator)
+  # ---- GENERATE UI OUTPUTS---- #
+  shiny::observe({
+    # shiny::req(input$indicator)
+    # shiny::req(input$only_percent_measure)
+    
     #date_range <- c(1982, 2018)
-    #indicator <- indicators$indicator_short_name[1:2]
-    #country_names = 'Afghanistan'
+    #indicator_selected <- unique(hefpi::indicators$indicator_short_name)[1:2]
+    #country_names = 'Albania'
     date_range <- input$date_range
-    indicator <- input$indicator
+    indicator_selected <- input$indicator
     percent_measure <- input$only_percent_measure
     #country_names <- input$country
-
+    
+    # message(input$indicator[1])
+    # message(date_range)
+    # message(indicator[2])
+    # message(percent_measure)
+    
     # Get the variable
-    variable <- indicators %>%
-      dplyr::filter(indicator_short_name %in% indicator) %>%
-      .$variable_name
+    # variable <- hefpi::indicators %>%
+    #   dplyr::filter(indicator_short_name %in% indicator_selected) %>%
+    #   .$variable_name
+    
     # subset by country and variable
-   df <- hefpi::hefpi_df %>%
+    df <- hefpi::hefpi_df %>%
       #filter(country == country_names) %>%
-     dplyr::filter(indic %in% variable) %>%
-     dplyr::filter(year >= date_range[1],
-             year <= date_range[2])
-    # get year and keep only necessary columns
-    df <- df %>%
+      # dplyr::filter(indic %in% variable) %>%
+      # Filter dataset based on the input
+      dplyr::filter(indicator_short_name %in% indicator_selected) %>%
+      dplyr::filter(dplyr::between(year, min(as.numeric(date_range)), max(as.numeric(date_range)))) %>%
+      # get year and keep only necessary columns
       dplyr::group_by(country, indicator_short_name) %>%
       dplyr::arrange(desc(year)) %>%
-      dplyr::filter(year == dplyr::first(year))
-
+      dplyr::filter(year == dplyr::first(year)) %>%
+      ungroup()
+    
+    # 
+    # # get year and keep only necessary columns
+    # df <- df %>%
+    #   dplyr::group_by(country, indicator_short_name) %>%
+    #   dplyr::arrange(desc(year)) %>%
+    #   dplyr::filter(year == dplyr::first(year)) %>%
+    #   ungroup()
+    
     # made data long form
     id_vars <- names(df)[!grepl('Q', names(df))]
-    df <- melt(df, id.vars = id_vars)
+    df <- reshape2::melt(df, id.vars = id_vars)
+    
     # recode Quintiels
-    df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
-                          ifelse(df$variable == 'Q2', 'Q2: Poor',
-                                 ifelse(df$variable == 'Q3', 'Q3: Middle',
-                                        ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
+    df <- df %>%
+      mutate(variable = ifelse(variable == 'Q1', 'Q1: Poorest', variable)) %>%
+      mutate(variable = ifelse(variable == 'Q2', 'Q2: Poor', variable)) %>%
+      mutate(variable = ifelse(variable == 'Q3', 'Q3: Middle', variable)) %>%
+      mutate(variable = ifelse(variable == 'Q4', 'Q4: Richer', variable)) %>%
+      mutate(variable = ifelse(variable == 'Q5', 'Q5: Richest', variable)) %>%
+      as_tibble() %>%
+      drop_na(value)
+    
+    
+    # df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
+    #                       ifelse(df$variable == 'Q2', 'Q2: Poor',
+    #                              ifelse(df$variable == 'Q3', 'Q3: Middle',
+    #                                     ifelse(df$variable == 'Q4', 'Q4: Richer', 'Q5: Richest'))))
+    
+    
     # only keep data with no NAs
-    df <- df[!is.na(df$value),]
+    # df <- df[!is.na(df$value),]
     country_names <- sort(unique(df$country))
     #df <- df[complete.cases(df),]
+    
     max_value <- round(max(df$value), 2)
     min_value <- round(min(df$value), 2)
-
+    
     # get min max of percent (*100)
-    df <- df %>% dplyr::filter(unit_of_measure=='%')
+    df <- df %>% dplyr::filter(unit_of_measure == '%')
     max_per <- round(max(df$value*100), 2)
     min_per <- round(min(df$value*100), 2)
-
+    
     # evaulate together
     min_value <- min(min_value, min_per)
     max_value <- max(max_value, max_per)
-
-    if(max_value<1){
-      min_value=0
-      max_value = 1
+    
+    # print(max_value)
+    
+    if(max_value <= 1){
+      min_value <- 0
+      max_value <- 1
     } else {
-      min_value = 0
-      max_value = ceiling(max_value) + 3
+      min_value <- 0
+      max_value <- ceiling(max_value) + 3
     }
+    
+    
+    # print(max_value)
+    
+    shiny::updateSelectInput(session, 'country', choices = country_names, selected = 'Albania')
     
     if(percent_measure) {
-      shiny::fluidPage(
-        shiny::fluidRow(
-          p('Country'),
-          shiny::selectInput(session$ns('country'),
-                      label = NULL,
-                      choices = country_names,
-                      selected = 'Albania'),
-          p('X axis range'),
-          shiny::sliderInput(session$ns('value_range'),
-                      label = NULL,
-                      min = 0,
-                      max = 100,
-                      value = c(0, 100),
-                      step = 1,
-                      sep = '')
-        )
-      )
+      shiny::updateSliderInput(session, 
+                               'value_range', 
+                               min = 0, 
+                               max = 100, 
+                               value = c(0, 100), 
+                               step = 1)
     } else {
-      shiny::fluidPage(
-        shiny::fluidRow(
-          p('Country'),
-          shiny::selectInput(session$ns('country'),
-                      label = NULL,
-                      choices = country_names,
-                      selected = 'Albania'),
-          p('X axis range'),
-          shiny::sliderInput(session$ns('value_range'),
-                      label = NULL,
-                      min = min_value,
-                      max = max_value,
-                      value = c(min_value, max_value),
-                      sep = '')
-        )
-      )
+      shiny::updateSliderInput(session, 
+                               'value_range', 
+                               min = min_value, 
+                               max = max_value, 
+                               value = c(min_value, max_value), 
+                               step = 1)
     }
     
-
+    
   })
+  
   
   
   # ---- SELECT/DESLECT ALL BUTTONS ---- #
@@ -686,14 +722,16 @@ mod_dots_ind_server <- function(input, output, session){
         if (all_inds %% 2 == 0){
           shiny::updateCheckboxGroupInput(session=session,
                                    inputId ="indicator",
-                                   choices = indicators$indicator_short_name,
-                                   selected = indicators$indicator_short_name)
+                                   choices = sort(hefpi::indicators_dat_country$indicator_short_name),
+                                   selected = sort(hefpi::indicators_dat_country$indicator_short_name)
+          )
 
         } else {
           shiny::updateCheckboxGroupInput(session=session,
                                    inputId ="indicator",
-                                   choices = indicators$indicator_short_name,
-                                   selected = c())
+                                   choices = sort(hefpi::indicators_dat_country$indicator_short_name),
+                                   selected = c()
+                                   )
 
         }}
     }
@@ -714,7 +752,7 @@ mod_dots_ind_server <- function(input, output, session){
     } else {
       dot_list <- list()
       # Get the variable
-      ind_info <- indicators %>%
+      ind_info <- hefpi::indicators_dat_country %>%
         dplyr::filter(indicator_short_name %in% indicator) %>%
         dplyr::select(variable_name, unit_of_measure)
       variable_name <- ind_info$variable_name
@@ -772,6 +810,8 @@ mod_dots_ind_server <- function(input, output, session){
       
       
       dot_list <- list(df, unit_of_measure, indicator, date_range, value_range)
+      # dots_indicator_default <- dot_list
+      # save(dots_indicator_default, file = 'data/dots_indicator_default.rda')
     }
     chart_data$plot_data <- dot_list
   },
@@ -798,26 +838,26 @@ mod_dots_ind_server <- function(input, output, session){
         df <- dot_list[[1]]
         if(nrow(df) == 0){
           temp <- data_frame()
-          
+
         } else {
           temp <- df
           names(temp) <- tolower(names(temp))
           names(temp)[names(temp)=='variable'] <- 'level'
-          # subset by  
+          # subset by
           temp$parameter <- 'Mean'
           # temp$level <- 'National'
           temp <- temp %>% select(region_name, country, iso3c, year,referenceid_list, indic, indicator_short_name,
                                   indicator_description, parameter, level, ci, unit_of_measure)
           names(temp) <- c('Region', 'Country_name', 'Country_iso3', 'Year', 'Referenceid',
-                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level', 
+                           'Indicator', 'Indicator_short_name', 'Indicator_long_name', 'Parameter', 'Level',
                            'Value', 'Unit_of_measurement')
           temp_stamp <- temp[1,]
           temp_stamp$Region <- 'HEFPI database, The World Bank, 2022'
           temp_stamp$Country_name <- temp_stamp$Country_iso3 <- temp_stamp$Year <- temp_stamp$Referenceid <- temp_stamp$Indicator <- temp_stamp$Indicator_short_name <- temp_stamp$Indicator_long_name <- temp_stamp$Parameter <- temp_stamp$Level <- temp_stamp$Value <- temp_stamp$Unit_of_measurement <- ''
           temp <- rbind(temp, temp_stamp)
         }
-        
-        write.csv(temp, file)
+
+        # write.csv(temp, file)
       }
     }
   )
@@ -839,20 +879,20 @@ mod_dots_ind_server <- function(input, output, session){
                                         indicator <- dot_list[[3]]
                                         date_range <- dot_list[[4]]
                                         value_range <- dot_list[[5]]
-                                        # get color graident 
+                                        # get color graident
                                         # col_vec <- brewer.pal(name = 'Blues', n = length(unique(df$variable)) + 1)
                                         # col_vec <- col_vec[-1]
                                         col_vec <- c("#006e38", "#75a56e","#a89fe1", "#6d60bb", "#312271")
-                                        
-                                        # get length of variable 
+
+                                        # get length of variable
                                         col_length <- length(unique(df$variable))
-                                        # make plot title 
+                                        # make plot title
                                         plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
                                         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
                                         y_axis_text = paste0(indicator)
                                         caption_text = 'HEFPI database, The World Bank, 2022'
-                                        
-                                        
+
+
                                         # number of countries
                                         plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
                                         if(plot_height < 250){
@@ -865,16 +905,16 @@ mod_dots_ind_server <- function(input, output, session){
                                           ggplot2::scale_color_manual(name = '',
                                                              values = col_vec) +
                                           ggplot2::geom_line(ggplot2::aes(group = indicator_short_name)) +
-                                          ggplot2::scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)), 
-                                                             breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
+                                          ggplot2::scale_y_continuous(limits = c((value_range[1]), (value_range[2] +5)),
+                                                             breaks = seq(from = value_range[1],to = value_range[2], by = 10),
                                                              expand = c(0,0)) +
                                           ggplot2::labs(title='',
-                                               x = 'Value', 
+                                               x = 'Value',
                                                y = 'Indicator',
                                                subtitle = '',
                                                caption = caption_text) +
                                           ggplot2::coord_flip()
-                                        
+
                                         p <-  p + hefpi::theme_hefpi(grid_major_x = NA,
                                                              y_axis_size = rel(2/3),
                                                              x_axis_size = rel(1),
@@ -891,7 +931,7 @@ mod_dots_ind_server <- function(input, output, session){
                                           ) +
                                           ggplot2::labs(title = '',
                                                subtitle ='',
-                                               x = 'Indicator', 
+                                               x = 'Indicator',
                                                y = 'Value')
                                         p
                                         ggplot2::ggsave(file, width = 8, height = 8)
@@ -937,6 +977,8 @@ mod_dots_ind_server <- function(input, output, session){
   # ---- GENERATE PLOT ---- #
   output$dots_ind <- plotly::renderPlotly({
     dot_list <- chart_data$plot_data
+    
+    
     if(length(dot_list)==1){
       dot_list <- hefpi::dots_indicator_default
       dot_list[[1]] <- dot_list[[1]] %>%
@@ -990,7 +1032,7 @@ mod_dots_ind_server <- function(input, output, session){
         # make plot title 
         # plot_title = paste0('Quintiles - Most recent value by indicator', ' - ', unique(df$country))
         sub_title = paste0('time period: ', date_range[1], ' - ', date_range[2])
-        y_axis_text = paste0(indicator)
+        # y_axis_text = paste0(indicator)
         
         mytext <- paste(
           "Economy: ", as.character(df$country),"\n",
@@ -1020,9 +1062,11 @@ mod_dots_ind_server <- function(input, output, session){
           # coord_flip() +
           ggplot2::labs(
                # title=plot_title, 
-               x = y_axis_text, 
-               y = '',
-               subtitle = sub_title
+               title = '',
+               x = '',
+               y = ''
+               # ,
+               # subtitle = sub_title
                ) 
         
         
