@@ -787,8 +787,8 @@ mod_dots_ind_server <- function(input, output, session){
           # make percent 
           df$value[df$unit_of_measure == '%'] <- (df$value[df$unit_of_measure == '%'])*100
           # if the dataframe is null of empty make plot null
-          value_range[2] <- value_range[2]*100
-          value_range[1] <- value_range[1]*100
+          # value_range[2] <- value_range[2]*100
+          # value_range[1] <- value_range[1]*100
           df <- df %>% filter(value >= value_range[1],
                               value <= value_range[2])
         } else {
