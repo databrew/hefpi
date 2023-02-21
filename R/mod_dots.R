@@ -1073,6 +1073,7 @@ mod_dots_ind_server <- function(input, output, session){
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
+                                    y_axis_size = 10,
                                     y_axis_vjust = 0.5) +
           ggplot2::theme(
                           panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
