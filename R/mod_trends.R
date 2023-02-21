@@ -689,12 +689,12 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
   filtered_data_reactive <- shiny::reactive({
     req(input$country)
     
-    hefpi::df %>%
+    hefpi::hefpi_df %>%
       select(country, pop, year, indicator_short_name, referenceid_list, unit_of_measure) %>%
       filter(country == input$country) %>%
       mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
       mutate(pop = ifelse(percentage_indicator, pop*100, pop)) %>%
-      mutate(percentage_indicator = ifelse(percentage_indicator, 'Indicator-Specific Value', 'Percent (%)'))
+      mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value'))
   })
   
   plot_reactive <- shiny::reactive({
@@ -727,7 +727,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
                               y_axis_vjust = 0.5,
                               y_axis_hjust = 1,
                               x_axis_size = 12,
-                              legend_text_size = 0.8)
+                              legend_text_size = 0.5)
     
     
   })
