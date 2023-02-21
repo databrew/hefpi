@@ -1325,7 +1325,7 @@ mod_trends_con_ui <- function(id){
              p('Indicator'),
              div(style='border-color: grey; color:grey',shiny::selectInput(ns('indicator'),
                                                                     label = NULL,
-                                                                    choices = indicators_list,
+                                                                    choices = hefpi::indicators_list_v2,
                                                                     selected = '4+ antenatal care visits (%)')),
              p('Region'),
              shinyWidgets::dropdownButton(circle = FALSE,  
@@ -1377,16 +1377,35 @@ mod_trends_con_server <- function(input, output, session){
     region_list <- hefpi::region_list
     region_code <- as.character(region_list$region_code[region_list$region %in% region])
     # Get the variable
-    variable <- indicators %>%
+    variable__unit_of_measure <- hefpi::indicators_dat_country %>%
       dplyr::filter(indicator_short_name == indicator) %>%
-      .$variable_name
+      dplyr::select(variable_name, unit_of_measure)
+    
+    
+    variable <- variable__unit_of_measure$variable_name
+    unit_of_measure <- variable__unit_of_measure$unit_of_measure
+    
     # subset data by variable and region code
-    df <- hefpi::df
+    df <- hefpi::hefpi_df
     df <- df[df$indic == variable,]
     df <- df[df$regioncode %in% region_code,]
     countries <- unique(df$country)
-    max_value <- 1
-    min_value <- -1
+    
+    if(stringr::str_detect(string = unit_of_measure, pattern = '%')) {
+      max_value <- 100
+      min_value <- 0
+      step_value <- 1
+    } else {
+      max_value <- ceiling(max(df$CI, na.rm = TRUE))
+      min_value <- floor(min(df$CI, na.rm = TRUE))
+      print(max_value)
+      print(min_value)
+      
+      if(is.na(min_value) | is.infinite(min_value)) min_value <- 0
+      if(is.na(max_value) | is.infinite(max_value)) max_value <- 1
+      step_value <- 0.01
+    }
+    
     shiny::fluidPage(
       shiny::fluidRow(
         p('Country'),
@@ -1403,7 +1422,7 @@ mod_trends_con_server <- function(input, output, session){
                     label = NULL,
                     min = min_value,
                     max = max_value,
-                    step = 0.1, 
+                    step = step_value, 
                     value = c(min_value, max_value),
                     sep = '')
       )
@@ -1451,11 +1470,11 @@ mod_trends_con_server <- function(input, output, session){
         region_list <- hefpi::region_list
         region_code <- as.character(region_list$region_code[region_list$region %in% region])
         # Get the variable
-        variable <- indicators %>%
+        variable <- hefpi::indicators_dat_country %>%
           dplyr::filter(indicator_short_name == indicator) %>%
           .$variable_name
         # subset data by variable and region code
-        df <- hefpi::df
+        df <- hefpi::hefpi_df
         df <- df[df$indic == variable,]
         df <- df[df$regioncode %in% region_code,]
         countries <- unique(df$country)
@@ -1487,21 +1506,27 @@ mod_trends_con_server <- function(input, output, session){
     date_range <- input$date_range
     yn <- input$interpolate
     value_range <- input$value_range
-    if(is.null(value_range)){
+    value_range <- value_range/100
+    # print(indicator)
+    # print(region)
+    # print(country_names)
+    # print(date_range)
+    
+    if(is.null(value_range) | is.null(country_names)){
       NULL
     } else {
       # get region code 
       region_list <- hefpi::region_list
       region_code <- as.character(region_list$region_code[region_list$region %in% region])
       # get variable
-      indicators <- hefpi::indicators
+      indicators <- hefpi::indicators_dat_country
       ind_info <- indicators %>%
         dplyr::filter(indicator_short_name == indicator) %>%
         dplyr::select(variable_name, unit_of_measure)
       unit_of_measure = ind_info$unit_of_measure
       variable_name = ind_info$variable_name
       # subet by variable, region code and a list of countries
-      df <- hefpi::df
+      df <- hefpi::hefpi_df
       df <- df[df$indic == variable_name,]
       df <- df[df$regioncode %in% region_code,]
       pd <- df[df$country %in% country_names,]
@@ -1687,11 +1712,12 @@ mod_trends_con_server <- function(input, output, session){
   # Plot title (trend)
   output$chartRowLabels <- shiny::renderUI({
     con_list <- chart_data$plot_data
+    # print(con_list)
     if(length(con_list)==1){
       con_list <- hefpi::trends_national_ci_default
       
     }
-    if(is.null(con_list)){
+    if(is.null(con_list) | length(con_list) < 1){
       NULL
     } else {
       
@@ -1725,7 +1751,7 @@ mod_trends_con_server <- function(input, output, session){
       con_list <- hefpi::trends_national_ci_default
       
     }
-    if(is.null(con_list)){
+    if(is.null(con_list) | length(con_list) < 1){
       NULL
     } else {
       pd <- con_list[[1]]
@@ -1765,10 +1791,13 @@ mod_trends_con_server <- function(input, output, session){
         y_axis_text <- paste0(unlist(lapply(strsplit(indicator, '(', fixed = T), function(x) x[1])), ' (CI) ')
         x_axis_text <- paste0('', '\n', 'Year')
         # text for plot
+        
+        # print(pd$CI)
+        
         mytext <- paste(
           "Indicator: ", indicator,"<br>", 
           "Economy: ", as.character(pd$country),"<br>", 
-          "Value: ", paste0(ifelse(str_detect(indicator, '%'), round(pd$CI, digits = 2) * 100, round(pd$CI, digits = 2)), ' (', pd$unit_of_measure, ')'), "<br>",
+          "Value: ", paste0(sapply(pd$CI, function(x) { ifelse(str_detect(indicator, '%'), round(x, digits = 4) * 100, round(x, digits = 4)) }), ' (', pd$unit_of_measure, ')'), "<br>",
           "Year: ", as.character(pd$year),"<br>",
           "Data source: ", as.character(pd$referenceid_list), "<br>",
           sep="") %>%
