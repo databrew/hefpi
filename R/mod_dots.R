@@ -526,7 +526,7 @@ mod_dots_ind_ui <- function(id) {
                     shiny::uiOutput(ns('dots_ind_title')),
              p(class='note_class', 'Chart only displays indicators for which data are available'),
              tags$div(style='overflow-y: scroll; position: relative; min-height: 2000px', 
-                      plotly::plotlyOutput(ns('dots_ind'), height = '600px', width = '2500px') )),
+                      plotly::plotlyOutput(ns('dots_ind'), height = '600px', width = '1800px') )),
       shiny::column(3,
              class="selectizeWidth",
              #useShinyalert(),
@@ -1074,6 +1074,7 @@ mod_dots_ind_server <- function(input, output, session){
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
                                     y_axis_size = 10,
+                                    x_axis_size = 10,
                                     y_axis_vjust = 0.5) +
           ggplot2::theme(
                           panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),

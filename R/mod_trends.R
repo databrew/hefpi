@@ -1753,6 +1753,20 @@ mod_trends_con_server <- function(input, output, session){
     }
     if(is.null(con_list) | length(con_list) < 1){
       NULL
+      empty_plot <- function(title = NULL){
+        p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
+          plotly::config(
+            displayModeBar = FALSE
+          ) %>%
+          plotly::layout(
+            title = list(
+              text = title,
+              yref = "paper",
+              y = 0.5
+            )
+          )
+      } 
+      fig <- empty_plot("No data available for the selected inputs")
     } else {
       pd <- con_list[[1]]
       if(nrow(pd)==0){
