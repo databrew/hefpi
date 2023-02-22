@@ -115,18 +115,20 @@ app_ui <- function() {
                           shiny::navbarMenu('Most recent value',
                                             shiny::tabPanel("Map",
                                               mod_recent_mean_ui("recent_mean_leaf")
+                     )
+                     # ,
+                     # shiny::tabPanel("Radar plot",
+                     #                 mod_recent_radar_ui("recent_radar")
+                     # )
                      ),
-                     shiny::tabPanel("Radar plot",
-                                     mod_recent_radar_ui("recent_radar")
-                     )),
                      
                      shiny::navbarMenu("Trends",
                                        shiny::tabPanel("Trends by indicator",
                                                        mod_trends_mean_ui("trends_mean")
                                                        ),
-                                       shiny::tabPanel("Trends by country",
-                                                       mod_trends_mean_by_country_ui('trends_mean_country')
-                                                       ),
+                                       # shiny::tabPanel("Trends by country",
+                                       #                 mod_trends_mean_by_country_ui('trends_mean_country')
+                                       #                 ),
                                        )
                      
                    
