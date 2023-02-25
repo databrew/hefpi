@@ -18,7 +18,7 @@ mod_dots_country_ui <- function(id){
     shiny::fluidPage(
       shiny::column(8,
                     shiny::uiOutput(ns('dots_country_title')),
-                 tags$div(style='overflow-y: scroll; position: relative', plotly::plotlyOutput(ns('dots_country'), height = '600px', width = '1000px') )
+                 tags$div(style='overflow-y: scroll; position: relative', plotly::plotlyOutput(ns('dots_country'), height = '600px', width = '100%') )
       ),
       shiny::column(3,
              class="selectizeWidth",
@@ -493,7 +493,10 @@ mod_dots_country_server <- function(input, output, session){
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
-                                    y_axis_vjust = 0.5)+
+                                    y_axis_vjust = 0.5,
+                                    # legend_position = "top",
+                                    # legend_direction = "horizontal"
+                                    )+
           ggplot2::theme(plot.title = element_text(margin = margin(0,0,30,0))) +
           ggplot2::theme(
             panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
@@ -501,7 +504,9 @@ mod_dots_country_server <- function(input, output, session){
             panel.grid.major.x = element_blank(),
             panel.grid.minor.x = element_blank(),
             axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
-            axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
+            axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+            # legend.position = "top",
+            # legend.direction = "horizontal"
           )
         
         fig <- plotly::ggplotly(p, 
@@ -516,6 +521,23 @@ mod_dots_country_server <- function(input, output, session){
 }
 
 # -----------------------------------------------------------------------------------------------------------------------------
+add_break_custom <- function(ind_name) {
+  # if(nchar(ind_name) > 35 & nchar(ind_name) < 62) {
+  #   ind_name_split <- ind_name
+  #   ind_name <- as.character(str_glue('{substr(ind_name_split, 1, 35)}\n - {substr(ind_name_split, 36, nchar(ind_name_split))}'));
+  #   return(ind_name)
+  # } else {
+  #   if(nchar(ind_name) >= 62) {
+  #     ind_name_split <- ind_name
+  #     ind_name <- as.character(str_glue('{substr(ind_name_split, 1, 35)}\n - {substr(ind_name_split, 36, 50)}\n - {substr(ind_name_split, 51, nchar(ind_name_split))}'));
+  #     return(ind_name)
+  #   } else {
+  #     return(ind_name) 
+  #   }
+  # }
+  ind_name <- paste(strwrap(ind_name, 40), collapse="\n")
+  return(ind_name)
+}
 
 # UI QUINTILES INDICATOR
 mod_dots_ind_ui <- function(id) {
@@ -526,7 +548,7 @@ mod_dots_ind_ui <- function(id) {
                     shiny::uiOutput(ns('dots_ind_title')),
              p(class='note_class', 'Chart only displays indicators for which data are available'),
              tags$div(style='overflow-y: scroll; position: relative; min-height: 2000px', 
-                      plotly::plotlyOutput(ns('dots_ind'), height = '600px', width = '1800px') )),
+                      plotly::plotlyOutput(ns('dots_ind'), height = '600px', width = '100%') )),
       shiny::column(3,
              class="selectizeWidth",
              #useShinyalert(),
@@ -542,12 +564,12 @@ mod_dots_ind_ui <- function(id) {
                                          actionButton(ns("all_inds"), label="Select/Deselect all"),
              div(style='max-height: 30vh; overflow-y: auto;', shiny::checkboxGroupInput(inputId = ns("indicator"),
                          label = NULL, 
-                         choices = sort(hefpi::indicators_dat_country$indicator_short_name),
-                         selected = sort(hefpi::indicators_dat_country$indicator_short_name)
+                         choices = sort(hefpi::indicators__v2_tbl$indicator_short_name),
+                         selected = sort(hefpi::indicators__v2_tbl$indicator_short_name)
                          )
                  )
              ),
-             shiny::checkboxInput(ns('only_percent_measure'), 'Show only % indicators', value = TRUE, width = NULL),
+             # shiny::checkboxInput(ns('only_percent_measure'), 'Show only % indicators', value = TRUE, width = NULL),
              
              p('Country'),
              shiny::selectInput(ns('country'),
@@ -602,7 +624,7 @@ mod_dots_ind_server <- function(input, output, session){
     #country_names = 'Albania'
     date_range <- input$date_range
     indicator_selected <- input$indicator
-    percent_measure <- input$only_percent_measure
+    # percent_measure <- input$only_percent_measure
     #country_names <- input$country
     
     # message(input$indicator[1])
@@ -617,7 +639,7 @@ mod_dots_ind_server <- function(input, output, session){
     
     # subset by country and variable
     df <- hefpi::hefpi_df %>%
-      #filter(country == country_names) %>%
+      # dplyr::filter(country == country_names) %>%
       # dplyr::filter(indic %in% variable) %>%
       # Filter dataset based on the input
       dplyr::filter(indicator_short_name %in% indicator_selected) %>%
@@ -626,9 +648,9 @@ mod_dots_ind_server <- function(input, output, session){
       dplyr::group_by(country, indicator_short_name) %>%
       dplyr::arrange(desc(year)) %>%
       dplyr::filter(year == dplyr::first(year)) %>%
-      ungroup()
+      dplyr::ungroup()
     
-    # 
+    
     # # get year and keep only necessary columns
     # df <- df %>%
     #   dplyr::group_by(country, indicator_short_name) %>%
@@ -642,13 +664,13 @@ mod_dots_ind_server <- function(input, output, session){
     
     # recode Quintiels
     df <- df %>%
-      mutate(variable = ifelse(variable == 'Q1', 'Q1: Poorest', variable)) %>%
-      mutate(variable = ifelse(variable == 'Q2', 'Q2: Poor', variable)) %>%
-      mutate(variable = ifelse(variable == 'Q3', 'Q3: Middle', variable)) %>%
-      mutate(variable = ifelse(variable == 'Q4', 'Q4: Richer', variable)) %>%
-      mutate(variable = ifelse(variable == 'Q5', 'Q5: Richest', variable)) %>%
-      as_tibble() %>%
-      drop_na(value)
+      dplyr::mutate(variable = ifelse(variable == 'Q1', 'Q1: Poorest', variable)) %>%
+      dplyr::mutate(variable = ifelse(variable == 'Q2', 'Q2: Poor', variable)) %>%
+      dplyr::mutate(variable = ifelse(variable == 'Q3', 'Q3: Middle', variable)) %>%
+      dplyr::mutate(variable = ifelse(variable == 'Q4', 'Q4: Richer', variable)) %>%
+      dplyr::mutate(variable = ifelse(variable == 'Q5', 'Q5: Richest', variable)) %>%
+      tidyr::as_tibble() %>%
+      tidyr::drop_na(value)
     
     
     # df$variable <- ifelse(df$variable == 'Q1', 'Q1: Poorest',
@@ -662,48 +684,50 @@ mod_dots_ind_server <- function(input, output, session){
     country_names <- sort(unique(df$country))
     #df <- df[complete.cases(df),]
     
-    max_value <- round(max(df$value), 2)
-    min_value <- round(min(df$value), 2)
+    # max_value <- round(max(df$value), 2)
+    # min_value <- round(min(df$value), 2)
     
     # get min max of percent (*100)
     df <- df %>% dplyr::filter(unit_of_measure == '%')
-    max_per <- round(max(df$value*100), 2)
-    min_per <- round(min(df$value*100), 2)
+    # max_per <- round(max(df$value*100), 2)
+    # min_per <- round(min(df$value*100), 2)
     
     # evaulate together
-    min_value <- min(min_value, min_per)
-    max_value <- max(max_value, max_per)
+    # min_value <- min(min_value, min_per)
+    # max_value <- max(max_value, max_per)
+    # min_value <- 0
+    # max_value <- 100
     
     # print(max_value)
     
-    if(max_value <= 1){
-      min_value <- 0
-      max_value <- 1
-    } else {
-      min_value <- 0
-      max_value <- ceiling(max_value) + 3
-    }
+    # if(max_value <= 1){
+    #   min_value <- 0
+    #   max_value <- 1
+    # } else {
+    #   min_value <- 0
+    #   max_value <- ceiling(max_value) + 3
+    # }
     
     
     # print(max_value)
     
     shiny::updateSelectInput(session, 'country', choices = country_names, selected = 'Albania')
     
-    if(percent_measure) {
+    # if(percent_measure) {
       shiny::updateSliderInput(session, 
                                'value_range', 
                                min = 0, 
                                max = 100, 
                                value = c(0, 100), 
                                step = 1)
-    } else {
-      shiny::updateSliderInput(session, 
-                               'value_range', 
-                               min = min_value, 
-                               max = max_value, 
-                               value = c(min_value, max_value), 
-                               step = 1)
-    }
+    # } else {
+    #   shiny::updateSliderInput(session, 
+    #                            'value_range', 
+    #                            min = min_value, 
+    #                            max = max_value, 
+    #                            value = c(min_value, max_value), 
+    #                            step = 1)
+    # }
     
     
   })
@@ -720,16 +744,16 @@ mod_dots_ind_server <- function(input, output, session){
     } else {
       if (all_inds > 0) {
         if (all_inds %% 2 == 0){
-          shiny::updateCheckboxGroupInput(session=session,
+          shiny::updateCheckboxGroupInput(session = session,
                                    inputId ="indicator",
-                                   choices = sort(hefpi::indicators_dat_country$indicator_short_name),
-                                   selected = sort(hefpi::indicators_dat_country$indicator_short_name)
+                                   choices = sort(hefpi::indicators__v2_tbl$indicator_short_name),
+                                   selected = sort(hefpi::indicators__v2_tbl$indicator_short_name)
           )
 
         } else {
           shiny::updateCheckboxGroupInput(session=session,
                                    inputId ="indicator",
-                                   choices = sort(hefpi::indicators_dat_country$indicator_short_name),
+                                   choices = sort(hefpi::indicators__v2_tbl$indicator_short_name),
                                    selected = c()
                                    )
 
@@ -737,6 +761,7 @@ mod_dots_ind_server <- function(input, output, session){
     }
 
   })
+  
   
   chart_data <- shiny::reactiveValues(plot_data = 'new') 
   shiny::observeEvent(input$generate_chart, {
@@ -752,7 +777,7 @@ mod_dots_ind_server <- function(input, output, session){
     } else {
       dot_list <- list()
       # Get the variable
-      ind_info <- hefpi::indicators_dat_country %>%
+      ind_info <- hefpi::indicators__v2_tbl %>%
         dplyr::filter(indicator_short_name %in% indicator) %>%
         dplyr::select(variable_name, unit_of_measure)
       variable_name <- ind_info$variable_name
@@ -803,10 +828,11 @@ mod_dots_ind_server <- function(input, output, session){
       # df$indicator_short_name <- factor(df$indicator_short_name,levels= sort(unique(df$indicator_short_name), decreasing = TRUE ))
       df$indicator_short_name <- factor(df$indicator_short_name,levels = sort(unique(df$indicator_short_name), decreasing = TRUE ))
       
-      if(input$only_percent_measure) {
+      # Keep only % value
+      # if(input$only_percent_measure) {
         df <- df %>%
           filter(str_detect(unit_of_measure, '%'))
-      } 
+      # } 
       
       
       dot_list <- list(df, unit_of_measure, indicator, date_range, value_range)
@@ -1044,9 +1070,15 @@ mod_dots_ind_server <- function(input, output, session){
         
         # number of countries
         plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
-        if(plot_height < 250){
-          plot_height <- 250
+        if(plot_height < 200){
+          plot_height <- 450
         }
+        
+        df <- df %>%
+          as_tibble() %>%
+          rowwise() %>%
+          mutate(indicator_short_name = add_break_custom(as.character(indicator_short_name)))
+        
         p <- ggplot2::ggplot(df, ggplot2::aes(x=value,
                             y=indicator_short_name,
                             color = variable, 
@@ -1059,6 +1091,7 @@ mod_dots_ind_server <- function(input, output, session){
                              limits = c((value_range[1]), (value_range[2] +5)), 
                              breaks = seq(from = value_range[1],to = value_range[2], by = 10), 
                              expand = c(0,0)) +
+          # ggplot2::scale_y_discrete(labels = function(x) add_break_custom(x)) +
           # coord_flip() +
           ggplot2::labs(
                # title=plot_title, 
@@ -1073,9 +1106,14 @@ mod_dots_ind_server <- function(input, output, session){
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
-                                    y_axis_size = 10,
-                                    x_axis_size = 10,
-                                    y_axis_vjust = 0.5) +
+                                    y_axis_size = 8,
+                                    x_axis_size = 8,
+                                    y_axis_vjust = 0.5,
+                                    legend_position = 'top',
+                                    legend_direction = 'horizontal',
+                                    legend_text_size = 0.75,
+                                    
+                                    ) +
           ggplot2::theme(
                           panel.grid.major.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
                           panel.grid.minor.y = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
@@ -1083,14 +1121,25 @@ mod_dots_ind_server <- function(input, output, session){
                           panel.grid.minor.x = element_blank(),
                           axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1),
                           axis.ticks = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
-                          axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc")
+                          axis.line = element_line(size = 0.5, linetype = 'solid', colour = "#cccccc"),
+                          legend.position = 'top',
+                          legend.direction = 'horizontal',
+                          
                           )
         
         fig <- plotly::ggplotly(p, 
                         tooltip = 'text', 
                         height = plot_height) %>%
           plotly::config(displayModeBar = F)%>%
-          plotly::layout(xaxis = list(side ="top" ), margin = list(t=100))  
+          plotly::layout(
+            xaxis = list(side ="top" ), 
+            margin = list(t=100),
+            legend = list(orientation = "h",   # show entries horizontally
+                          xanchor = "center",  # use center of legend as anchor
+                          x = 0.5,
+                          y = 1.15
+                          )
+            )  
         fig 
         
       }

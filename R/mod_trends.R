@@ -2178,7 +2178,7 @@ mod_trends_quin_server <- function(input, output, session){
                                           p <- p + ggplot2::ggtitle('') +
                                             hefpi::theme_hefpi(grid_major_x = NA,
                                                                x_axis_angle = 90,
-                                                               x_axis_vjust =0.5,
+                                                               x_axis_vjust = 0.5,
                                                                y_axis_vjust = 0.5,
                                                                y_axis_hjust = 1,
                                                                x_axis_size = 12,
@@ -2215,7 +2215,7 @@ mod_trends_quin_server <- function(input, output, session){
                            <div class="chart-label"> Trends </div>
                            <div class="chart-label"> {indicator} </div>
                            <div class="chart-label"> {country_names} </div>
-                          </div>
+                        </div>
                           '))
       plot_title
       

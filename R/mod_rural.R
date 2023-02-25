@@ -475,8 +475,8 @@ mod_rural_server <- function(input, output, session){
                         <div class="chart-header-labels-row">
                            <div class="chart-label"> Urban-rural </div>
                            <div class="chart-label"> {indicator_name} </div>
-                          </div>
-                          '))
+                        </div>
+                        '))
         
       )
     )

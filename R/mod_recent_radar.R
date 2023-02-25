@@ -93,7 +93,7 @@ mod_recent_radar_server <- function(input, output, session){
     plot_years <- input$date_range
     
     # HERE need to figure out a way to make the selection more smooth - that the plot data doesnt have NAs.
-    pd <- hefpi::df %>%
+    pd <- hefpi::hefpi_df %>%
       dplyr::filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       dplyr::filter(country %in% country_names) %>%
@@ -116,6 +116,11 @@ mod_recent_radar_server <- function(input, output, session){
     # Check the diff
     # country_names[!(country_names %in% country_radar_plot)]
     # save(country_radar_plot, file = 'data/country_radar_plot.rda')
+    # percentage_inds <- hefpi::indicators_dat_country %>%
+    #   select(level_1, indicator_short_name) %>%
+    #   filter(unit_of_measure == '%')
+    # 
+    # save(percentage_inds, file = 'data/percentage_inds.rda')
     
     
     indicator_names <- pd  %>% 
@@ -198,7 +203,7 @@ mod_recent_radar_server <- function(input, output, session){
     unit_of_measure = ind_info$unit_of_measure
     
     # Get the data, subsetted by inputs
-    pd <- hefpi::df %>%
+    pd <- hefpi::hefpi_df %>%
       dplyr::filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       dplyr::filter(indic %in% variable_name) %>%
