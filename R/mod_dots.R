@@ -16,7 +16,7 @@ mod_dots_country_ui <- function(id){
   ns <- shiny::NS(id)
   tagList(
     shiny::fluidPage(
-      shiny::column(8,
+      shiny::column(9,
                     shiny::uiOutput(ns('dots_country_title')),
                  tags$div(style='overflow-y: scroll; position: relative', plotly::plotlyOutput(ns('dots_country'), height = '600px', width = '100%') )
       ),
@@ -544,7 +544,7 @@ mod_dots_ind_ui <- function(id) {
   ns <- shiny::NS(id)
   tagList(
     shiny::fluidPage(
-      shiny::column(8,
+      shiny::column(9,
                     shiny::uiOutput(ns('dots_ind_title')),
              p(class='note_class', 'Chart only displays indicators for which data are available'),
              tags$div(style='overflow-y: scroll; position: relative; min-height: 2000px', 
