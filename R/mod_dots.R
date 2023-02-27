@@ -1137,7 +1137,7 @@ mod_dots_ind_server <- function(input, output, session){
             legend = list(orientation = "h",   # show entries horizontally
                           xanchor = "center",  # use center of legend as anchor
                           x = 0.5,
-                          y = 1.15
+                          y = 1.25
                           )
             )  
         fig 
