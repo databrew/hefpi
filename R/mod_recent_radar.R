@@ -97,10 +97,10 @@ mod_recent_radar_server <- function(input, output, session){
       dplyr::filter(year >= min(plot_years),
              year <= max(plot_years)) %>%
       dplyr::filter(country %in% country_names) %>%
-      dplyr::filter(indicator_short_name %in% percentage_inds$indicator_short_name) %>%
+      dplyr::filter(indicator_short_name %in% hefpi::indicators__v2_tbl$indicator_short_name) %>%
       dplyr::group_by(country, indicator_short_name) %>%
-      dplyr::filter(year == max(year)) %>% 
-      tidyr::drop_na() 
+      dplyr::filter(year == max(year)) %>%
+      tidyr::drop_na(pop) 
     
     # country_radar_plot <- hefpi::df %>%
     #     dplyr::filter(year >= min(plot_years),
@@ -195,7 +195,7 @@ mod_recent_radar_server <- function(input, output, session){
     pop_radar_list <- list()
     
     # Get the variable from indicator input
-    ind_info <- hefpi::indicators %>%
+    ind_info <- hefpi::indicators__v2_tbl %>%
       dplyr::filter(indicator_short_name %in% indicator) %>%
       dplyr::select(variable_name, good_or_bad, unit_of_measure)
     variable_name = ind_info$variable_name
@@ -215,7 +215,7 @@ mod_recent_radar_server <- function(input, output, session){
                 indic = indic,
                 year = year,
                 region_name = region_name,
-                survey_list = survey_list,
+                # survey_list = survey_list,
                 data_source = referenceid_list,
                 indicator_short_name = indicator_short_name,
                 indicator_description = indicator_description,
@@ -228,7 +228,7 @@ mod_recent_radar_server <- function(input, output, session){
     # if the indicator (column name) is part of the financial protection group, then subtract the value from 1. 
     for(i in 2:ncol(pd)){
       this_col <- names(pd)[i]
-      this_group <- percentage_inds$level_1[percentage_inds$indicator_short_name == this_col]
+      this_group <- hefpi::indicators__v2_tbl$level_1[hefpi::indicators__v2_tbl$indicator_short_name == this_col]
       if(this_group == 'Financial Protection' ){
         pd[,i] <- 1-pd[,i]
       }

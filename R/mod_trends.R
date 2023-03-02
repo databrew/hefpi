@@ -633,12 +633,37 @@ mod_trends_mean_by_country_ui <- function(id) {
                     br(), br(),
                     p('Country'),
                     # HERE (try 3px or without 1px just solid #aaa)
-                    div(style='border: 1px #FF0000; color:black;', shiny::selectInput(ns('country'),
-                                                                                      label = NULL,
-                                                                                      choices = sort(unique(hefpi::df$country)),
-                                                                                      selected = sort(unique(hefpi::df$country))[2]
-                                                                                      )
-                        ),
+                    div(style='border: 1px #FF0000; color:black;', 
+                        shiny::selectInput(ns('country'),
+                                           label = NULL,
+                                           choices = sort(unique(hefpi::hefpi_df$country)),
+                                           selected = sort(unique(hefpi::hefpi_df$country))[2]
+                        )
+                    ),
+                    br(),
+                    p('Indicator'),
+                    # HERE (try 3px or without 1px just solid #aaa)
+                    # div(style='border: 1px #FF0000; color:black;', 
+                    #     shiny::selectInput(ns('indicator'),
+                    #                        label = NULL,
+                    #                        choices = NULL,
+                    #                        selected = NULL
+                    #     )
+                    # ),
+                    shinyWidgets::dropdownButton(circle = FALSE,  
+                                                 label = 'Select the indicators', 
+                                                 status = "danger",
+                                                 div(style='max-height: 30vh; overflow-y: auto;',
+                                                     shiny::checkboxGroupInput(
+                                                       inputId = ns("indicator"),
+                                                       label = '', 
+                                                       choices = NULL,
+                                                       selected = NULL
+                                                       # choices = as.character(country_list),
+                                                       # selected = as.character(country_list)[1:4]
+                                                     )
+                                                 )
+                    ),
                     # uiOutput(ns('ui_outputs')),
                     # p('Date range'),
                     # shinyWidgets::chooseSliderSkin("Modern", color = "#002244"),
@@ -686,15 +711,41 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       
   })
   
+  observeEvent(input$country, {
+    
+    indicators_list <- hefpi::hefpi_df %>%
+      filter(country == input$country) %>%
+      distinct() %>%
+      .$indicator_short_name
+    
+    
+    shiny::updateCheckboxGroupInput(
+      session = session,
+      inputId = 'indicator',
+      choices = indicators_list,
+      selected = indicators_list[1:3]
+    )
+    
+    # updateSelectInput(session, 
+    #                   inputId = 'indicator',
+    #                   choices = indicators_list,
+    #                   selected = indicators_list[1:3]
+    #                   )
+  })
+  
   filtered_data_reactive <- shiny::reactive({
     req(input$country)
+    req(input$indicator)
     
     hefpi::hefpi_df %>%
       select(country, pop, year, indicator_short_name, referenceid_list, unit_of_measure) %>%
       filter(country == input$country) %>%
+      filter(indicator_short_name %in% input$indicator) %>%
       mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
       mutate(pop = ifelse(percentage_indicator, pop*100, pop)) %>%
-      mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value'))
+      mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value')) %>%
+      # Leave only % indicators
+      filter(percentage_indicator == 'Percent (%)')
   })
   
   plot_reactive <- shiny::reactive({
@@ -716,9 +767,10 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
   p <- ggplot2::ggplot(data = filtered_data_reactive(), ggplot2::aes(year, pop, color = indicator_short_name, text=mytext)) +
         ggplot2::geom_point() +
         ggplot2::geom_line(ggplot2::aes(group = indicator_short_name)) +
-        ggplot2::facet_wrap(~percentage_indicator, ncol = 1, scales='free_y') +
+        # ggplot2::facet_wrap(~percentage_indicator, ncol = 1, scales='free_y') +
         ggplot2::scale_color_manual(name = '', values = trend_palette) +
         ggplot2::scale_x_continuous(breaks = c(min(filtered_data_reactive()$year):max(filtered_data_reactive()$year))) +
+        ggplot2::scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0, 100)) +
         ggplot2::labs(x = 'Year', y = input$country) 
     
   p <- p + hefpi::theme_hefpi(grid_major_x = NA,
@@ -1392,9 +1444,9 @@ mod_trends_con_server <- function(input, output, session){
     countries <- unique(df$country)
     
     if(stringr::str_detect(string = unit_of_measure, pattern = '%')) {
-      max_value <- 100
+      max_value <- 1
       min_value <- 0
-      step_value <- 1
+      step_value <- 0.01
     } else {
       max_value <- ceiling(max(df$CI, na.rm = TRUE))
       min_value <- floor(min(df$CI, na.rm = TRUE))
@@ -1506,7 +1558,8 @@ mod_trends_con_server <- function(input, output, session){
     date_range <- input$date_range
     yn <- input$interpolate
     value_range <- input$value_range
-    value_range <- value_range/100
+    # value_range <- value_range/100
+    
     # print(indicator)
     # print(region)
     # print(country_names)
@@ -1811,7 +1864,8 @@ mod_trends_con_server <- function(input, output, session){
         mytext <- paste(
           "Indicator: ", indicator,"<br>", 
           "Economy: ", as.character(pd$country),"<br>", 
-          "Value: ", paste0(sapply(pd$CI, function(x) { ifelse(str_detect(indicator, '%'), round(x, digits = 4) * 100, round(x, digits = 4)) }), ' (', pd$unit_of_measure, ')'), "<br>",
+          # "Value: ", paste0(sapply(pd$CI, function(x) { ifelse(str_detect(indicator, '%'), round(x, digits = 4) * 100, round(x, digits = 4)) }), ' (', pd$unit_of_measure, ')'), "<br>",
+          "Value: ", paste0(sapply(pd$CI, function(x) { ifelse(str_detect(indicator, '%'), round(x, digits = 4), round(x, digits = 4)) }), ' (', pd$unit_of_measure, ')'), "<br>",
           "Year: ", as.character(pd$year),"<br>",
           "Data source: ", as.character(pd$referenceid_list), "<br>",
           sep="") %>%
@@ -1828,7 +1882,9 @@ mod_trends_con_server <- function(input, output, session){
               ggplot2::scale_color_manual(name = '',
                                  values = trend_palette) +
               ggplot2::scale_y_continuous(limits = c(value_range[1], value_range[2]), 
-                                 expand = c(0,0),labels = scales::percent)+
+                                 expand = c(0,0)
+                                 # ,labels = scales::percent
+                                 )+
               ggplot2::scale_x_continuous(limits = c(date_range[1], (date_range[2] + 1)), 
                                  breaks = seq(from = date_range[1],to = date_range[2], by = 1), 
                                  expand = c(0,0)) +

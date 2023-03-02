@@ -442,16 +442,15 @@ mod_recent_mean_sub_server <- function(input, output, session){
 
 
   # ---- DOWNLOAD PLOT IMAGE ---- #
-  # output$dl_plot <- shiny::downloadHandler(
-  #   filename = function() {
-  #     paste0("barchart_", Sys.Date(), ".png")
-  #   },
-  #   content = function(file) {
-  #     device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = "in")
-  #     ggplot2::ggsave(file, plot = hefpi_sub_plot__reactive(), device = device)
-  #   }
-  # )
-  # 
+  output$dl_plot <- shiny::downloadHandler(
+    filename = function() {
+      paste0("barchart_", Sys.Date(), ".png")
+    },
+    content = function(file) {
+      device <- function(..., width, height) grDevices::png(..., width = width, height = height, res = 300, units = "in")
+      ggplot2::ggsave(file, plot = hefpi_sub_plot__reactive(), device = device)
+    }
+  )
 
 
   # ---- DOWNLOAD DATA FROM MAP ---- #
