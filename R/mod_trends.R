@@ -716,6 +716,10 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
     indicators_list <- hefpi::hefpi_df %>%
       filter(country == input$country) %>%
       distinct() %>%
+      mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
+      mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value')) %>%
+      # Leave only % indicators
+      filter(percentage_indicator == 'Percent (%)') %>%
       .$indicator_short_name
     
     
@@ -723,7 +727,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       session = session,
       inputId = 'indicator',
       choices = indicators_list,
-      selected = indicators_list[1:3]
+      selected = indicators_list[1:length(indicators_list)]
     )
     
     # updateSelectInput(session, 
@@ -751,20 +755,22 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
   plot_reactive <- shiny::reactive({
     req(filtered_data_reactive())
     
-    # text for plot
-    mytext <- paste(
-      "Country: ", as.character(filtered_data_reactive()$country), "<br>", 
-      "Indicator: ", filtered_data_reactive()$indicator_short_name, "<br>", 
-      "Value: ", paste0(round(filtered_data_reactive()$pop, digits = 2), ' (', filtered_data_reactive()$unit_of_measure, ')'), "<br>",
-      "Year: ", as.character(filtered_data_reactive()$year),"<br>",
-      "Data source: ", as.character(filtered_data_reactive()$referenceid_list), "<br>",
-      sep="") %>%
-      lapply(htmltools::HTML)
-    temp <- ggthemes::tableau_color_pal(palette = "Tableau 20")
-    trend_palette <- rep(temp(n = 20), 10)
     
-
-  p <- ggplot2::ggplot(data = filtered_data_reactive(), ggplot2::aes(year, pop, color = indicator_short_name, text=mytext)) +
+    if(nrow(filtered_data_reactive()) > 0) {
+    
+      # text for plot
+      mytext <- paste(
+        "Country: ", as.character(filtered_data_reactive()$country), "<br>", 
+        "Indicator: ", filtered_data_reactive()$indicator_short_name, "<br>", 
+        "Value: ", paste0(round(filtered_data_reactive()$pop, digits = 2), ' (', filtered_data_reactive()$unit_of_measure, ')'), "<br>",
+        "Year: ", as.character(filtered_data_reactive()$year),"<br>",
+        "Data source: ", as.character(filtered_data_reactive()$referenceid_list), "<br>",
+        sep="") %>%
+        lapply(htmltools::HTML)
+      temp <- ggthemes::tableau_color_pal(palette = "Tableau 20")
+      trend_palette <- rep(temp(n = 20), 10)
+      
+      p <- ggplot2::ggplot(data = filtered_data_reactive(), ggplot2::aes(year, pop, color = indicator_short_name, text=mytext)) +
         ggplot2::geom_point() +
         ggplot2::geom_line(ggplot2::aes(group = indicator_short_name)) +
         # ggplot2::facet_wrap(~percentage_indicator, ncol = 1, scales='free_y') +
@@ -772,14 +778,32 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
         ggplot2::scale_x_continuous(breaks = c(min(filtered_data_reactive()$year):max(filtered_data_reactive()$year))) +
         ggplot2::scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0, 100)) +
         ggplot2::labs(x = 'Year', y = input$country) 
-    
-  p <- p + hefpi::theme_hefpi(grid_major_x = NA,
-                              x_axis_angle = 90,
-                              x_axis_vjust = 0.5,
-                              y_axis_vjust = 0.5,
-                              y_axis_hjust = 1,
-                              x_axis_size = 12,
-                              legend_text_size = 0.5)
+      
+      p <- p + hefpi::theme_hefpi(grid_major_x = NA,
+                                  x_axis_angle = 90,
+                                  x_axis_vjust = 0.5,
+                                  y_axis_vjust = 0.5,
+                                  y_axis_hjust = 1,
+                                  x_axis_size = 12,
+                                  legend_text_size = 0.5)
+        
+    } else {
+      empty_plot <- function(title = NULL){
+        p <- plotly::plotly_empty(type = "scatter", mode = "markers") %>%
+          plotly::config(
+            displayModeBar = FALSE
+          ) %>%
+          plotly::layout(
+            title = list(
+              text = title,
+              yref = "paper",
+              y = 0.5
+            )
+          )
+      } 
+      fig <- empty_plot("No data available for the selected inputs")
+      
+    }
     
     
   })
