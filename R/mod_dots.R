@@ -619,8 +619,8 @@ mod_dots_ind_server <- function(input, output, session){
                showConfirmButton = FALSE)
   })
   
-  # # ---- GENERATE UI OUTPUTS---- #
-  # ---- GENERATE UI OUTPUTS---- #
+  # ---- GENERATE UI OUTPUTS ---- #
+  # ---- GENERATE UI OUTPUTS ---- #
   shiny::observe({
     # shiny::req(input$indicator)
     # shiny::req(input$only_percent_measure)
@@ -928,7 +928,7 @@ mod_dots_ind_server <- function(input, output, session){
                                         # number of countries
                                         plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
                                         if(plot_height < 250){
-                                          plot_height <- 250
+                                          plot_height <- 500
                                         }
                                         p <- ggplot2::ggplot(df, ggplot2::aes(x=indicator_short_name,
                                                             y=value,
@@ -1078,7 +1078,19 @@ mod_dots_ind_server <- function(input, output, session){
         plot_height <- ceiling(((length(unique(df$indicator_short_name))* 100) + 100)/3)
         if(plot_height < 200){
           plot_height <- 450
+          y_margin <- 1.3
+        } else {
+          if(plot_height < 650) {
+            y_margin <- 1.33
+          } else {
+            y_margin <- 1.1
+          }
         }
+        
+        
+        
+        print(plot_height)
+        print(y_margin)
         
         df <- df %>%
           as_tibble() %>%
@@ -1138,12 +1150,13 @@ mod_dots_ind_server <- function(input, output, session){
                         height = plot_height) %>%
           plotly::config(displayModeBar = F)%>%
           plotly::layout(
+            height = plot_height,
             xaxis = list(side ="top" ), 
-            margin = list(t=100),
+            # margin = list(t=100),
             legend = list(orientation = "h",   # show entries horizontally
                           xanchor = "center",  # use center of legend as anchor
                           x = 0.5,
-                          y = 1.25
+                          y = y_margin
                           )
             )  
         fig 

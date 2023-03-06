@@ -720,14 +720,21 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value')) %>%
       # Leave only % indicators
       filter(percentage_indicator == 'Percent (%)') %>%
-      .$indicator_short_name
+      .$indicator_short_name %>%
+      unique()
     
+    # indicator Selection length
+    if(length(indicators_list) > 5) {
+      end_selection <- 5
+    } else {
+      end_selection <- length(indicators_list)
+    }
     
     shiny::updateCheckboxGroupInput(
       session = session,
       inputId = 'indicator',
       choices = indicators_list,
-      selected = indicators_list[1:length(indicators_list)]
+      selected = indicators_list[1:end_selection]
     )
     
     # updateSelectInput(session, 
@@ -823,7 +830,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       paste0("trends_mean_country_", Sys.Date(), ".png")
     },
     content = function(file){
-      ggplot2::ggsave(file, plot_reactive(), width = 24, height = 8, type = "cairo")
+      ggplot2::ggsave(file, plot_reactive(), width = 16, height = 8, type = "cairo")
       # ggplot2::ggsave(file, plot_output(), device = input$extension)
       
     }
