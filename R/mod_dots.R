@@ -1081,7 +1081,8 @@ mod_dots_ind_server <- function(input, output, session){
           y_margin <- 1.3
         } else {
           if(plot_height < 650) {
-            y_margin <- 1.33
+            y_margin <- 1.37
+            plot_height <- 575
           } else {
             y_margin <- 1.1
           }
@@ -1124,7 +1125,7 @@ mod_dots_ind_server <- function(input, output, session){
         p <- p + hefpi::theme_hefpi(grid_major_x = NA,
                                     x_axis_hjust = 0.5,
                                     y_axis_hjust = 1,
-                                    y_axis_size = 8,
+                                    y_axis_size = 9,
                                     x_axis_size = 8,
                                     y_axis_vjust = 0.5,
                                     legend_position = 'top',
