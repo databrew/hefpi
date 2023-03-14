@@ -683,6 +683,25 @@ mod_trends_mean_by_country_ui <- function(id) {
   )
 }
 
+add_break_custom <- function(ind_name) {
+  # if(nchar(ind_name) > 35 & nchar(ind_name) < 62) {
+  #   ind_name_split <- ind_name
+  #   ind_name <- as.character(str_glue('{substr(ind_name_split, 1, 35)}\n - {substr(ind_name_split, 36, nchar(ind_name_split))}'));
+  #   return(ind_name)
+  # } else {
+  #   if(nchar(ind_name) >= 62) {
+  #     ind_name_split <- ind_name
+  #     ind_name <- as.character(str_glue('{substr(ind_name_split, 1, 35)}\n - {substr(ind_name_split, 36, 50)}\n - {substr(ind_name_split, 51, nchar(ind_name_split))}'));
+  #     return(ind_name)
+  #   } else {
+  #     return(ind_name) 
+  #   }
+  # }
+  ind_name <- paste(strwrap(ind_name, 40), collapse="\n")
+  return(ind_name)
+}
+
+
 # SERVER FOR TRENDS (NATIONAL MEAN)
 mod_trends_mean_by_country_server <- function(input, output, session) {
   
@@ -756,7 +775,9 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       mutate(pop = ifelse(percentage_indicator, pop*100, pop)) %>%
       mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value')) %>%
       # Leave only % indicators
-      filter(percentage_indicator == 'Percent (%)')
+      filter(percentage_indicator == 'Percent (%)') 
+    # %>%
+    #   mutate(indicator_short_name = add_break_custom(indicator_short_name))
   })
   
   plot_reactive <- shiny::reactive({
@@ -777,7 +798,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       temp <- ggthemes::tableau_color_pal(palette = "Tableau 20")
       trend_palette <- rep(temp(n = 20), 10)
       
-      p <- ggplot2::ggplot(data = filtered_data_reactive(), ggplot2::aes(year, pop, color = indicator_short_name, text=mytext)) +
+      p <- ggplot2::ggplot(data = filtered_data_reactive(), ggplot2::aes(year, pop, color = stringr::str_wrap(indicator_short_name, 25), text=mytext)) +
         ggplot2::geom_point() +
         ggplot2::geom_line(ggplot2::aes(group = indicator_short_name)) +
         # ggplot2::facet_wrap(~percentage_indicator, ncol = 1, scales='free_y') +
@@ -792,7 +813,11 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
                                   y_axis_vjust = 0.5,
                                   y_axis_hjust = 1,
                                   x_axis_size = 12,
-                                  legend_text_size = 0.5)
+                                  legend_text_size = 1) 
+      # +
+      #   theme(
+      #     legend.key.height = unit(2, "cm")
+      #   )
         
     } else {
       empty_plot <- function(title = NULL){
