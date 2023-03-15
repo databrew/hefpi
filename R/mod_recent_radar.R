@@ -206,7 +206,7 @@ mod_recent_radar_server <- function(input, output, session){
       dplyr::group_by(country, indicator_short_name) %>%
       dplyr::filter(year == max(year, na.rm = TRUE)) %>%
       dplyr::filter(referenceid_list == first(referenceid_list)) %>%
-      dplyr::summarise(value = first(pop),
+      dplyr::reframe(value = first(pop),
                 indic = indic,
                 year = year,
                 region_name = region_name,
