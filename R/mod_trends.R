@@ -813,7 +813,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
                                   y_axis_vjust = 0.5,
                                   y_axis_hjust = 1,
                                   x_axis_size = 12,
-                                  legend_text_size = 1) 
+                                  legend_text_size = 0.8) 
       # +
       #   theme(
       #     legend.key.height = unit(2, "cm")
