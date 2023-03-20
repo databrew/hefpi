@@ -666,14 +666,14 @@ mod_trends_mean_by_country_ui <- function(id) {
                     ),
                     # uiOutput(ns('ui_outputs')),
                     # p('Date range'),
-                    # shinyWidgets::chooseSliderSkin("Modern", color = "#002244"),
-                    # shiny::sliderInput(ns('date_range'),
-                    #                    label =  NULL,
-                    #                    min = 1982,
-                    #                    max = 2021,
-                    #                    value = c(1982, 2021),
-                    #                    step = 1,
-                    #                    sep = ''),
+                    shinyWidgets::chooseSliderSkin("Modern", color = "#002244"),
+                    shiny::sliderInput(ns('date_range'),
+                                       label =  NULL,
+                                       min = 1982,
+                                       max = 2021,
+                                       value = c(1982, 2021),
+                                       step = 1,
+                                       sep = ''),
                     # shiny::checkboxInput(ns('interpolate'), 'Interpolate missing values',
                     #                      value = TRUE),
                     shiny::downloadButton(ns("dl_plot"), label = 'Download image', class = 'btn-primary'),
@@ -732,15 +732,25 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
   
   observeEvent(input$country, {
     
-    indicators_list <- hefpi::hefpi_df %>%
+    filtered_tbl <- hefpi::hefpi_df %>%
       filter(country == input$country) %>%
       distinct() %>%
       mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
       mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value')) %>%
       # Leave only % indicators
       filter(percentage_indicator == 'Percent (%)') %>%
+      select(year, indicator_short_name)
+    
+    
+    indicators_list <- filtered_tbl %>%
       .$indicator_short_name %>%
       unique()
+    
+    # years <- filtered_tbl %>%
+    #   select(year) %>%
+    #   drop_na(year) %>%
+    #   pull() %>%
+    #   as.numeric()
     
     # indicator Selection length
     if(length(indicators_list) > 5) {
@@ -756,6 +766,14 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       selected = indicators_list[1:end_selection]
     )
     
+    # shiny::updateSliderInput(
+    #   session = session,
+    #   inputId = 'date_range',
+    #   min = min(years),
+    #   max = max(years),
+    #   step = 1
+    # )
+    
     # updateSelectInput(session, 
     #                   inputId = 'indicator',
     #                   choices = indicators_list,
@@ -763,14 +781,44 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
     #                   )
   })
   
+  observeEvent(input$indicator, {
+
+    years <- hefpi::hefpi_df %>%
+      select(country, pop, year, indicator_short_name, referenceid_list, unit_of_measure) %>%
+      filter(country == input$country) %>%
+      filter(indicator_short_name %in% input$indicator) %>%
+      mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
+      mutate(pop = ifelse(percentage_indicator, pop*100, pop)) %>%
+      mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value')) %>%
+      # Leave only % indicators
+      filter(percentage_indicator == 'Percent (%)') %>%
+      select(year) %>%
+      distinct() %>%
+      drop_na(year) %>%
+      pull() %>%
+      as.numeric()
+
+
+    shiny::updateSliderInput(
+      session = session,
+      inputId = 'date_range',
+      min = min(years),
+      max = max(years),
+      value = c(min(years), max(years)),
+      step = 1
+    )
+  })
+  
   filtered_data_reactive <- shiny::reactive({
     req(input$country)
     req(input$indicator)
+    req(input$date_range)
     
     hefpi::hefpi_df %>%
       select(country, pop, year, indicator_short_name, referenceid_list, unit_of_measure) %>%
       filter(country == input$country) %>%
       filter(indicator_short_name %in% input$indicator) %>%
+      filter(year %in% input$date_range) %>%
       mutate(percentage_indicator = stringr::str_detect(indicator_short_name, pattern = '%')) %>%
       mutate(pop = ifelse(percentage_indicator, pop*100, pop)) %>%
       mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value')) %>%

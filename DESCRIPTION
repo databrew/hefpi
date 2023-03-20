@@ -19,7 +19,7 @@ Imports:
     DT,
     glue,
     htmltools,
-    dplyr,
+    dplyr (<= 1.0.9),
     tidyr,
     ggplot2,
     leaflet,

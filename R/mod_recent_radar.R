@@ -269,7 +269,7 @@ mod_recent_radar_server <- function(input, output, session){
         fig <<- fig %>%
           add_trace(
             r     = c(pd[[x]]$value, pd[[x]]$value[1]),
-            theta = c(pd[[x]]$name, pd[[x]]$name[1]),
+            theta = c(stringr::str_wrap(pd[[x]]$name, 20), stringr::str_wrap(pd[[x]]$name[1], 20)),
             name  = unique(pd[[x]]$country)
           ) 
       })
