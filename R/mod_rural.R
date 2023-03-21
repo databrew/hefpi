@@ -253,7 +253,7 @@ mod_rural_server <- function(input, output, session){
         tidyr::pivot_longer(cols = c('urb', 'rur'), names_to = 'urb_rur') %>%
         dplyr::group_by(urb_rur) %>%
         dplyr::filter(year == max(year, na.rm = TRUE)) %>%
-        dplyr::summarise(value = first(value),
+        dplyr::reframe(value = first(value),
                   indic = indic,
                   year = year,
                   # region_name = rn,
