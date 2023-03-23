@@ -263,7 +263,8 @@ mod_rural_server <- function(input, output, session){
                   #survey_list = survey_list,
                   indicator_short_name = indicator_short_name,
                   good_or_bad = good_or_bad,
-                  unit_of_measure = unit_of_measure) 
+                  unit_of_measure = unit_of_measure) %>%
+        tidyr::drop_na(value)
       
       return(df)
     }
@@ -280,7 +281,8 @@ mod_rural_server <- function(input, output, session){
     indicator <- input$indicator
     cn <- input$country
     
-    
+    # print('DF output')
+    # print(hefpi_sub_df__reactive())
     
     if(is.null(hefpi_sub_df__reactive())){
       NULL
