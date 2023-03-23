@@ -665,7 +665,16 @@ mod_trends_mean_by_country_ui <- function(id) {
                                                  )
                     ),
                     # uiOutput(ns('ui_outputs')),
-                    # p('Date range'),
+                    p('Y-axis'),
+                    shinyWidgets::chooseSliderSkin("Modern", color = "#002244"),
+                    shiny::sliderInput(ns('y_axis'),
+                                       label =  NULL,
+                                       min = 0,
+                                       max = 100,
+                                       value = c(0, 100),
+                                       step = 1,
+                                       sep = ''),
+                    p('Date range'),
                     shinyWidgets::chooseSliderSkin("Modern", color = "#002244"),
                     shiny::sliderInput(ns('date_range'),
                                        label =  NULL,
@@ -813,6 +822,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
     req(input$country)
     req(input$indicator)
     req(input$date_range)
+    req(input$y_axis)
     
     hefpi::hefpi_df %>%
       select(country, pop, year, indicator_short_name, referenceid_list, unit_of_measure) %>%
@@ -823,8 +833,8 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
       mutate(pop = ifelse(percentage_indicator, pop*100, pop)) %>%
       mutate(percentage_indicator = ifelse(percentage_indicator, 'Percent (%)', 'Indicator-Specific Value')) %>%
       # Leave only % indicators
-      filter(percentage_indicator == 'Percent (%)') 
-    # %>%
+      filter(percentage_indicator == 'Percent (%)') %>%
+      filter(between(pop, min(input$y_axis), max(input$y_axis)))
     #   mutate(indicator_short_name = add_break_custom(indicator_short_name))
   })
   
@@ -852,7 +862,7 @@ mod_trends_mean_by_country_server <- function(input, output, session) {
         # ggplot2::facet_wrap(~percentage_indicator, ncol = 1, scales='free_y') +
         ggplot2::scale_color_manual(name = '', values = trend_palette) +
         ggplot2::scale_x_continuous(breaks = c(min(filtered_data_reactive()$year):max(filtered_data_reactive()$year))) +
-        ggplot2::scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0, 100)) +
+        ggplot2::scale_y_continuous(breaks = seq(0, 100, 20), limits = c(min(input$y_axis), max(input$y_axis))) +
         ggplot2::labs(x = 'Year', y = input$country) 
       
       p <- p + hefpi::theme_hefpi(grid_major_x = NA,
