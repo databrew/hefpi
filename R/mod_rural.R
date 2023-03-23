@@ -119,7 +119,7 @@ mod_rural_server <- function(input, output, session){
       unique() %>%
       sort()
     
-    indicator_intersect <- indicators_list
+    indicator_intersect <- hefpi::indicators_list_v2
     indicator_intersect$`Financial Protection` <- dplyr::intersect(indicators_list$`Financial Protection`, ind) %>% as.list()
     indicator_intersect$`Healthcare Coverage` <- dplyr::intersect(indicators_list$`Healthcare Coverage`, ind) %>% as.list()
     indicator_intersect$`Health Outcomes` <- dplyr::intersect(indicators_list$`Health Outcomes`, ind) %>% as.list()
@@ -139,7 +139,7 @@ mod_rural_server <- function(input, output, session){
 
     ind_selected = input$indicator
     
-    measure_unit <- hefpi::indicators %>%
+    measure_unit <- hefpi::indicators_dat_country %>%
       dplyr::select(indicator_short_name, unit_of_measure) %>%
       dplyr::filter(indicator_short_name == ind_selected) %>%
       dplyr::distinct() %>%
@@ -224,6 +224,9 @@ mod_rural_server <- function(input, output, session){
     shiny::req(input$country)
     shiny::req(input$indicator)
     shiny::req(input$date_range)
+    # cn = 'St. Lucia'
+    # indicator = 'BMI, adults (BMI)'
+    # year = c(2012)
     #cn = 'India'
     #plot_years = c(2019)
     #indicator = "4+ antenatal care visits (%)"
@@ -245,7 +248,7 @@ mod_rural_server <- function(input, output, session){
         dplyr::select(country, year, regioncode, indic, urb, rur) %>%
         # filter(country == cn) %>%
         dplyr::left_join(
-          hefpi::indicators %>% dplyr::select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
+          hefpi::indicators_dat_country %>% dplyr::select(good_or_bad, variable_name, indicator_short_name, unit_of_measure),
           by = c('indic' = 'variable_name')
         ) %>%
         dplyr::filter(indicator_short_name == indicator) %>%
@@ -253,14 +256,15 @@ mod_rural_server <- function(input, output, session){
         tidyr::pivot_longer(cols = c('urb', 'rur'), names_to = 'urb_rur') %>%
         dplyr::group_by(urb_rur) %>%
         dplyr::filter(year == max(year, na.rm = TRUE)) %>%
-        dplyr::summarise(value = first(value),
+        dplyr::reframe(value = first(value),
                   indic = indic,
                   year = year,
                   # region_name = rn,
                   #survey_list = survey_list,
                   indicator_short_name = indicator_short_name,
                   good_or_bad = good_or_bad,
-                  unit_of_measure = unit_of_measure) 
+                  unit_of_measure = unit_of_measure) %>%
+        tidyr::drop_na(value)
       
       return(df)
     }
@@ -277,7 +281,8 @@ mod_rural_server <- function(input, output, session){
     indicator <- input$indicator
     cn <- input$country
     
-    
+    # print('DF output')
+    # print(hefpi_sub_df__reactive())
     
     if(is.null(hefpi_sub_df__reactive())){
       NULL

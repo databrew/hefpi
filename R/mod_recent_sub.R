@@ -116,7 +116,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
       # filter(year %in% plot_years) %>%
       dplyr::group_by(key) %>%
       dplyr::filter(year == max(year, na.rm = TRUE)) %>%
-      dplyr::summarise(value = first(value),
+      dplyr::reframe(value = first(value),
                 indic = indic,
                 year = year,
                 region_name = region_name,
@@ -268,7 +268,7 @@ mod_recent_mean_sub_server <- function(input, output, session){
         #        year <= max(plot_years)) %>%
         dplyr::group_by(key) %>%
         # filter(year == max(year, na.rm = TRUE)) %>%
-        dplyr::summarise(value = first(value),
+        dplyr::reframe(value = first(value),
                   indic = indic,
                   year = year,
                   # region_name = rn,

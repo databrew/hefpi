@@ -211,7 +211,7 @@ mod_recent_radar_server <- function(input, output, session){
       dplyr::group_by(country, indicator_short_name) %>%
       dplyr::filter(year == max(year, na.rm = TRUE)) %>%
       dplyr::filter(referenceid_list == first(referenceid_list)) %>%
-      dplyr::summarise(value = first(pop),
+      dplyr::reframe(value = first(pop),
                 indic = indic,
                 year = year,
                 region_name = region_name,
@@ -269,7 +269,7 @@ mod_recent_radar_server <- function(input, output, session){
         fig <<- fig %>%
           add_trace(
             r     = c(pd[[x]]$value, pd[[x]]$value[1]),
-            theta = c(pd[[x]]$name, pd[[x]]$name[1]),
+            theta = c(stringr::str_wrap(pd[[x]]$name, 20), stringr::str_wrap(pd[[x]]$name[1], 20)),
             name  = unique(pd[[x]]$country)
           ) 
       })

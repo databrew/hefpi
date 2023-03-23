@@ -107,7 +107,7 @@ mod_recent_mean_server <- function(input, output, session){
       dplyr::group_by(ISO3 = iso3c) %>%
       dplyr::filter(year == max(year, na.rm = TRUE)) %>%
       dplyr::filter(referenceid_list == first(referenceid_list)) %>%
-      dplyr::summarise(value = first(pop),
+      dplyr::reframe(value = first(pop),
                 indic = indic,
                 year = year,
                 region_name = region_name,
@@ -532,7 +532,7 @@ mod_recent_con_server <- function(input, output, session){
       dplyr::group_by(ISO3 = iso3c) %>%
       dplyr::filter(year == max(year, na.rm = TRUE)) %>%
       dplyr::filter(referenceid_list == first(referenceid_list))%>%
-      dplyr::summarise(value = first(CI),
+      dplyr::reframe(value = first(CI),
                 indic = indic,
                 year = year,
                 region_name = region_name,
